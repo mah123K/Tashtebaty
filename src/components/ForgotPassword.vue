@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md text-center">
-      <h2 class="text-3xl font-bold text-[#5984C6] mb-2">Reset Password</h2>
-      <p class="text-gray-600 mb-6">
-       Enter your email to get a reset link.
+  <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-dark-blue px-4">
+    <div :class="['bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 w-full max-w-md', $i18n.locale === 'ar' ? 'text-right' : 'text-center']">
+      <h2 class="text-3xl font-bold text-[#5984C6] dark:text-[#5984C6] mb-2">{{ $t('forgotPassword.title') }}</h2>
+      <p class="text-gray-600 dark:text-gray-300 mb-6">
+       {{ $t('forgotPassword.prompt') }}
       </p>
 
       <div v-if="message" :class="`mb-4 text-sm font-medium ${messageColor}`">
@@ -14,9 +14,9 @@
         <input
           type="email"
           v-model="email"
-          placeholder="Enter your email"
+          :placeholder="$t('forgotPassword.emailPlaceholder')"
           required
-          class="w-full border border-gray-300 rounded-lg px-3 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[#5984C6]"
+          :class="['w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-3 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[#5984C6]', $i18n.locale === 'ar' ? 'text-right' : 'text-left']"
         />
 
         <button
@@ -24,16 +24,16 @@
           class="w-full bg-[#5984C6] text-white py-3 rounded-lg font-semibold hover:bg-[#4a73b1] transition duration-200"
           :disabled="loading"
         >
-          <span v-if="!loading">Send Reset Link</span>
-          <span v-else><i class="fa fa-spinner fa-spin"></i> Sending...</span>
+          <span v-if="!loading">{{ $t('forgotPassword.button') }}</span>
+          <span v-else><i class="fa fa-spinner fa-spin"></i> {{ $t('forgotPassword.sending') }}</span>
         </button>
       </form>
 
       <router-link
         to="/login"
-        class="block mt-6 text-[#5984C6] hover:text-blue-500 font-medium"
+        class="block mt-6 text-[#5984C6] hover:text-blue-500 dark:text-[#5984C6] dark:hover:text-blue-400 font-medium"
       >
-        Back to Login
+        {{ $t('forgotPassword.backToLogin') }}
       </router-link>
     </div>
   </div>

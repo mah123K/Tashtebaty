@@ -3,13 +3,13 @@
  
    <!-- Section Header -->
    <div class="mb-6">
-     <h2 class="text-2xl font-bold text-[#5984C6] dark:text-[#8db4ff]">Payment Management</h2>
-     <p class="text-gray-600 dark:text-gray-300">Track all transactions and payments</p>
+     <h2 class="text-2xl font-bold text-[#5984C6] dark:text-[#8db4ff]">{{ $t('adminDashboard.payments.title') }}</h2>
+     <p class="text-gray-600 dark:text-gray-300 mt-2">{{ $t('adminDashboard.payments.subtitle') }}</p>
     </div>
 
     <div  class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
    <div class="flex justify-between items-center mb-4 px-4 pt-4">
-     <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">All Transactions</h3>
+     <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">{{ $t('adminDashboard.payments.allTransactions') }}</h3>
 
       <div class="flex items-center gap-4">
         <!-- Search Input (smaller) -->
@@ -17,7 +17,7 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search..."
+            :placeholder="$t('adminDashboard.payments.searchPlaceholder')"
            class="w-full py-2 pl-9 pr-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#5984C6]"
           />
           <i class="bi bi-search absolute left-3 top-2.5 text-gray-500 text-sm"></i>
@@ -30,7 +30,7 @@
             class="flex items-center gap-2 bg-[#1E293B] dark:bg-[#111827] text-white px-4 py-2 rounded-lg hover:bg-[#334155] dark:hover:bg-gray-800 transition text-sm"
           >
             <i class="bi bi-funnel"></i>
-            Filter
+            {{ $t('adminDashboard.payments.filter') }}
           </button>
 
           <!-- Filter Menu -->
@@ -45,7 +45,7 @@
                 @click="filterStatus = option; showFilter = false"
                class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm"
               >
-                {{ option }}
+                {{ $t(`adminDashboard.payments.statuses.${option.toLowerCase()}`) }}
               </li>
             </ul>
           </div>
@@ -53,17 +53,23 @@
       </div>
     </div>
 
-    <table class="min-w-full text-sm text-gray-700 dark:text-gray-200">
+    <!-- Loading -->
+    <div v-if="loading" class="text-center py-6 text-gray-400 dark:text-gray-300">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5984C6] mx-auto mb-3"></div>
+      {{ $t('adminDashboard.users.loading') }}
+    </div>
+
+    <table v-else class="min-w-full text-sm text-gray-700 dark:text-gray-200">
       <thead class="bg-[#5984C6] text-white">
         <tr>
-          <th class="py-3 px-4 text-left">Payment ID</th>
-          <th class="py-3 px-4 text-left">Customer</th>
-          <th class="py-3 px-4 text-left">Order ID</th>
-          <th class="py-3 px-4 text-left">Amount</th>
-      
-          <th class="py-3 px-4 text-left">Date</th>
-          <th class="py-3 px-4 text-left">Status</th>
-          <th class="py-3 px-4 text-left">Actions</th>
+          <th :class="['py-3 px-4', $i18n.locale === 'ar' ? 'text-right' : 'text-left']">{{ $t('adminDashboard.payments.paymentId') }}</th>
+          <th :class="['py-3 px-4', $i18n.locale === 'ar' ? 'text-right' : 'text-left']">{{ $t('adminDashboard.payments.customer') }}</th>
+          <th :class="['py-3 px-4', $i18n.locale === 'ar' ? 'text-right' : 'text-left']">{{ $t('adminDashboard.payments.orderId') }}</th>
+          <th :class="['py-3 px-4', $i18n.locale === 'ar' ? 'text-right' : 'text-left']">{{ $t('adminDashboard.payments.amount') }}</th>
+
+          <th :class="['py-3 px-4', $i18n.locale === 'ar' ? 'text-right' : 'text-left']">{{ $t('adminDashboard.payments.date') }}</th>
+          <th :class="['py-3 px-4', $i18n.locale === 'ar' ? 'text-right' : 'text-left']">{{ $t('adminDashboard.payments.status') }}</th>
+          <th :class="['py-3 px-4', $i18n.locale === 'ar' ? 'text-right' : 'text-left']">{{ $t('adminDashboard.payments.actions') }}</th>
         </tr>
       </thead>
 
@@ -73,18 +79,18 @@
           :key="payment.id"
           class="border-t border-gray-200 dark:border-gray-700 hover:bg-[#f3f9fc] dark:hover:bg-gray-800 transition"
         >
-          <td class="py-3 px-4">{{ payment.id }}</td>
-          <td class="py-3 px-4">{{ payment.customer }}</td>
-          <td class="py-3 px-4">{{ payment.orderId }}</td>
-          <td class="py-3 px-4 font-semibold">{{ payment.amount }}EGP</td>
-         
-          <td class="py-3 px-4">
+          <td :class="['py-3 px-4', $i18n.locale === 'ar' ? 'text-right' : 'text-left']">{{ payment.id }}</td>
+          <td :class="['py-3 px-4', $i18n.locale === 'ar' ? 'text-right' : 'text-left']">{{ payment.customer }}</td>
+          <td :class="['py-3 px-4', $i18n.locale === 'ar' ? 'text-right' : 'text-left']">{{ payment.orderId }}</td>
+          <td :class="['py-3 px-4 font-semibold', $i18n.locale === 'ar' ? 'text-right' : 'text-left']">{{ payment.amount }}EGP</td>
+
+          <td :class="['py-3 px-4', $i18n.locale === 'ar' ? 'text-right' : 'text-left']">
             <div class="flex flex-col">
               <span class="text-gray-700 dark:text-gray-200 font-medium">{{ payment.date }}</span>
               <span class="text-gray-500 dark:text-gray-400 text-xs">{{ payment.time }}</span>
             </div>
           </td>
-          <td class="py-3 px-4">
+          <td :class="['py-3 px-4', $i18n.locale === 'ar' ? 'text-right' : 'text-left']">
             <span
               :class="[
                 'px-3 py-1 rounded-full text-xs font-semibold',
@@ -99,11 +105,11 @@
                   : 'bg-rose-100 text-rose-700',
               ]"
             >
-              {{ payment.status }}
+              {{ $t(`adminDashboard.payments.statuses.${payment.status}`) }}
             </span>
           </td>
 
-          <td class="py-3 px-4 flex space-x-2">
+          <td :class="['py-3 px-4 flex', $i18n.locale === 'ar' ? 'space-x-reverse flex-row-reverse' : 'space-x-2']">
             <button
               @click="openModal('view', payment)"
               class="p-2 rounded-lg text-blue-500 hover:bg-blue-100 transition"
@@ -148,38 +154,38 @@
 
         <!-- Dynamic Modal Title -->
         <h3 class="text-lg font-semibold text-[#5984C6] mb-4">
-          {{ modalType === 'view' ? 'View Payment' : modalType === 'edit' ? 'Edit Payment' : 'Delete Confirmation' }}
+          {{ modalType === 'view' ? $t('adminDashboard.payments.viewModalTitle') : modalType === 'edit' ? $t('adminDashboard.payments.editModalTitle') : $t('adminDashboard.payments.deleteModalTitle') }}
         </h3>
 
         <!-- View (read-only) or Edit Form -->
         <div v-if="modalType === 'view'" class="space-y-3">
           <div class="grid grid-cols-1 gap-2">
             <div>
-              <div class="text-sm text-gray-500 dark:text-gray-300">Payment ID</div>
+              <div class="text-sm text-gray-500 dark:text-gray-300">{{ $t('adminDashboard.payments.paymentId') }}</div>
               <div class="font-medium text-gray-800 dark:text-gray-100">{{ selectedPayment.id }}</div>
             </div>
             <div>
-              <div class="text-sm text-gray-500 dark:text-gray-300">Customer</div>
+              <div class="text-sm text-gray-500 dark:text-gray-300">{{ $t('adminDashboard.payments.customer') }}</div>
               <div class="font-medium text-gray-800 dark:text-gray-100">{{ selectedPayment.customer }}</div>
             </div>
             <div>
-              <div class="text-sm text-gray-500 dark:text-gray-300">Order ID</div>
+              <div class="text-sm text-gray-500 dark:text-gray-300">{{ $t('adminDashboard.payments.orderId') }}</div>
               <div class="font-medium text-gray-800 dark:text-gray-100">{{ selectedPayment.orderId }}</div>
             </div>
             <div>
-              <div class="text-sm text-gray-500 dark:text-gray-300">Amount</div>
+              <div class="text-sm text-gray-500 dark:text-gray-300">{{ $t('adminDashboard.payments.amount') }}</div>
               <div class="font-medium text-gray-800 dark:text-gray-100">{{ selectedPayment.amount }}EGP</div>
             </div>
             <div>
-              <div class="text-sm text-gray-500 dark:text-gray-300">Method</div>
+              <div class="text-sm text-gray-500 dark:text-gray-300">{{ $t('adminDashboard.payments.method') }}</div>
               <div class="font-medium text-gray-800 dark:text-gray-100">{{ selectedPayment.method || '—' }}</div>
             </div>
             <div>
-              <div class="text-sm text-gray-500 dark:text-gray-300">Date & Time</div>
+              <div class="text-sm text-gray-500 dark:text-gray-300">{{ $t('adminDashboard.payments.dateTimeLabel') }}</div>
               <div class="font-medium text-gray-800 dark:text-gray-100">{{ selectedPayment.date }} <span class="text-gray-500 dark:text-gray-400 text-xs">{{ selectedPayment.time }}</span></div>
             </div>
             <div>
-              <div class="text-sm text-gray-500 dark:text-gray-300">Status</div>
+              <div class="text-sm text-gray-500 dark:text-gray-300">{{ $t('adminDashboard.payments.status') }}</div>
               <div>
                 <span
                   :class="[
@@ -195,7 +201,7 @@
                       : 'bg-rose-100 text-rose-700',
                   ]"
                 >
-                  {{ selectedPayment.status }}
+                  {{ $t(`adminDashboard.payments.statuses.${selectedPayment.status}`) }}
                 </span>
               </div>
             </div>
@@ -203,7 +209,7 @@
         </div>
         <div v-else-if="modalType === 'edit'" class="space-y-3">
           <div>
-            <label class="text-sm font-medium text-gray-600 dark:text-gray-200">Customer</label>
+            <label class="text-sm font-medium text-gray-600 dark:text-gray-200">{{ $t('adminDashboard.payments.customer') }}</label>
             <input
               v-model="selectedPayment.customer"
               class="w-full p-2 border dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
@@ -211,7 +217,7 @@
           </div>
 
           <div>
-            <label class="text-sm font-medium text-gray-600 dark:text-gray-200">Order ID</label>
+            <label class="text-sm font-medium text-gray-600 dark:text-gray-200">{{ $t('adminDashboard.payments.orderId') }}</label>
             <input
               v-model="selectedPayment.orderId"
               class="w-full p-2 border dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
@@ -219,7 +225,7 @@
           </div>
 
           <div>
-            <label class="text-sm font-medium text-gray-600 dark:text-gray-200">Amount</label>
+            <label class="text-sm font-medium text-gray-600 dark:text-gray-200">{{ $t('adminDashboard.payments.amount') }}</label>
             <input
               v-model="selectedPayment.amount"
               class="w-full p-2 border dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
@@ -227,7 +233,7 @@
           </div>
 
           <div>
-            <label class="text-sm font-medium text-gray-600 dark:text-gray-200">Status</label>
+            <label class="text-sm font-medium text-gray-600 dark:text-gray-200">{{ $t('adminDashboard.payments.status') }}</label>
             <input
               v-model="selectedPayment.status"
               class="w-full p-2 border dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
@@ -239,26 +245,26 @@
               @click="saveChanges"
               class="bg-[#5984C6] text-white px-4 py-2 rounded-lg hover:bg-[#4369a4] transition text-sm"
             >
-              Save Changes
+              {{ $t('adminDashboard.payments.saveChanges') }}
             </button>
           </div>
         </div>
 
         <!-- Delete Confirmation -->
         <div v-else class="text-center">
-          <p class="text-gray-600 dark:text-gray-300 mb-4">Are you sure you want to delete this payment?</p>
+          <p class="text-gray-600 dark:text-gray-300 mb-4">{{ $t('adminDashboard.payments.deleteConfirmText') }}</p>
           <div class="flex justify-center gap-3">
             <button
               @click="confirmDelete"
               class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-sm"
             >
-              Delete
+              {{ $t('adminDashboard.payments.delete') }}
             </button>
             <button
               @click="closeModal"
               class="bg-gray-200 dark:bg-gray-700 dark:text-gray-100 px-4 py-2 rounded-lg text-sm hover:bg-gray-300 dark:hover:bg-gray-600"
             >
-              Cancel
+              {{ $t('adminDashboard.payments.cancel') }}
             </button>
           </div>
         </div>
@@ -282,7 +288,7 @@ export default {
   data() {
     return {
       payments: [],
-      loading: false,
+      loading: true,
       unsubscribeOrders: null,
       showModal: false,
       modalType: '',

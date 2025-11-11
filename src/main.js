@@ -14,7 +14,8 @@ import { createRouter, createWebHistory } from "vue-router";
 import App from "./assets/App.vue";
 import "./assets/main.css";
 import i18n from "./i18n";
-
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
 // ================================
 // 🔹 Components Imports (unchanged)
 // ================================
@@ -133,14 +134,45 @@ router.afterEach((to) => {
   }
 });
 
+
 router.beforeEach(async (to, from, next) => {
   const user = auth.currentUser;
+
   const requiresAdmin = to.meta.requiresAdmin;
   const requiresTechnician = to.meta.requiresTechnician;
   const requiresAuth = to.meta.requiresAuth;
 
   if (!user && (requiresAdmin || requiresTechnician || requiresAuth)) {
     return next("/login");
+  }
+
+  if (user) {
+
+    const collections = ["admin", "clients", "technicians", "companies"];
+    let found = false;
+
+    for (const collection of collections) {
+      const docRef = doc(db, collection, user.uid);
+      const userDoc = await getDoc(docRef);
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+         if (userData.status === "banned") {
+          await auth.signOut();
+         setTimeout(() => {
+    router.push('/ContactUs');
+  }, 4000); 
+  return;
+        }
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+     
+      await auth.signOut();
+      return next("/login");
+    }
   }
 
   if ((to.path === "/login" || to.path === "/signup") && user) {
@@ -159,6 +191,14 @@ router.beforeEach(async (to, from, next) => {
 const app = createApp(App);
 app.use(router);
 app.use(i18n);
+   app.use(Toast, {
+  position: 'top-center',
+  timeout: 5000,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+});
+
 app.mount("#app");
 
 // ================================
