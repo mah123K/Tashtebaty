@@ -214,9 +214,10 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   try {
-    const [adminDoc, techDoc] = await Promise.all([
+    const [adminDoc, techDoc, companyDoc] = await Promise.all([
       getDoc(doc(db, "admin", user.uid)),
       getDoc(doc(db, "technicians", user.uid)),
+      getDoc(doc(db, "companies", user.uid)),
     ]);
 
     const currentPath = router.currentRoute.value.path;
@@ -238,7 +239,16 @@ onAuthStateChanged(auth, async (user) => {
       if (currentPath === "/" || currentPath === "/login" || currentPath === "/signup") {
         router.replace(lastRoute);
       }
-    } else if (currentPath === "/login" || currentPath === "/signup") {
+    }else if (companyDoc.exists()) {
+      if (!lastRoute || !lastRoute.startsWith("/technician-dashboard")) {
+        localStorage.setItem("lastDashboardRoute", "/technician-dashboard");
+        lastRoute = "/technician-dashboard";
+      }
+      if (currentPath === "/" || currentPath === "/login" || currentPath === "/signup") {
+        router.replace(lastRoute);
+      }
+    } 
+    else if (currentPath === "/login" || currentPath === "/signup") {
       router.replace("/");
     }
   } catch (error) {

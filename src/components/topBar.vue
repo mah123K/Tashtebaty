@@ -101,15 +101,15 @@
                   {{ $t("topBar.ratingTitle") }}
                 </summary>
                 <div class="mt-2 space-y-1 pl-2 rtl:pl-0 rtl:pr-2">
-                  <label v-for="n in [5, 4, 3, 2, 1]" :key="n" class="flex items-center gap-2">
+                  <label v-for="n in ratingOptions " :key="n.value" class="flex items-center gap-2">
                     <input
                       type="radio"
                       v-model="ratingFilter"
-                      :value="`${n}stars`"
+                      :value="n.value"
                       class="mr-2 rtl:mr-0 rtl:ml-2 accent-(--accent)"
                       @change="emitFilters"
                     />
-                    {{ $t(`topBar.rating.${n}Stars`) }}
+                    {{ $t(n.label) }}
                   </label>
                 </div>
               </details>
@@ -220,6 +220,19 @@ export default {
         { value: "few", label: "topBar.projects.few" },
         { value: "medium", label: "topBar.projects.medium" },
         { value: "many", label: "topBar.projects.many" },
+      ],
+      ratingOptions: [
+        { value: "fiveStars", label: "topBar.rating.fiveStars" },
+        { value: "fourStars", label: "topBar.rating.fourStars" },
+        { value: "threeStars", label: "topBar.rating.threeStars" },
+        { value: "twoStars", label: "topBar.rating.twoStars" },
+        { value: "oneStars", label: "topBar.rating.oneStars" },
+      ],
+      sortOptions: [
+        { value: "default", label: "topBar.sort.default" },
+        { value: "ratingDesc", label: "topBar.sort.ratingDesc" },
+        { value: "ratingAsc", label: "topBar.sort.ratingAsc" },
+        { value: "locationClosest", label: "topBar.sort.locationClosest" },
       ],
     };
   },

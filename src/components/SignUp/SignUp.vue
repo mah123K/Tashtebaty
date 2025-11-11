@@ -192,7 +192,7 @@ export default {
           profileImage: profileUrl,
           idCardImage: idCardUrl,
           userType: "technician",
-          status: "Active",
+          status: "pending",
           createdAt: new Date().toISOString(),
         };
 
@@ -253,7 +253,7 @@ export default {
           website: formData.website || "",
           teamSize: formData.teamSize || "",
           crn: formData.crn || "",
-          description: formData.description || "",
+          description: formData.bio || "",
           logoImage: logoUrl || "",
           crnImage: crnUrl || "",
           userType: "company",
