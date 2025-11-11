@@ -6,13 +6,15 @@
 
     <!-- 🔹 Logo + Tax Card -->
     <div class="flex justify-between mb-6 max-w-6xl mx-auto w-full">
-      <div class="flex flex-col items-start ml-40">
+      <div class="flex flex-col items-center text-center ml-40 ">
         <label class="font-semibold mb-2">Tax Card</label>
         <div
           @click="$refs.crnInput.click()"
           class="w-32 h-32 rounded-full shadow-lg bg-[#f5f5f5] overflow-hidden flex items-center justify-center cursor-pointer hover:border-accent-color relative"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 512" class="w-[60px] h-[60px]">
+         <img v-if ="crnPreview" :src="crnPreview" class="w-full h-full object-cover" alt="">
+         <div v-else>
+           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 512" class="w-[60px] h-[60px]">
             <path
               fill="#5984c6"
               d="M0 96C0 60.7 28.7 32 64 32l448 0c35.3 0 64 28.7 64 64L0 96zm0 48l576 0 0 272c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 144zM247.3 416c20.2 0 35.3-19.4 22.4-35-14.7-17.7-36.9-29-61.7-29l-64 0c-24.8 0-47 11.3-61.7 29-12.9 15.6 2.2 35 22.4 35l142.5 0zM176 312a56 56 0 1 0 0-112 56 56 0 1 0 0 112zM360 208c-13.3 0-24 10.7-24 24s10.7 24 24 24l112 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-112 0zm0 96c-13.3 0-24 10.7-24 24s10.7 24 24 24l112 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-112 0z"
@@ -26,8 +28,10 @@
               />
             </svg>
           </div>
+         </div>
         </div>
         <input ref="crnInput" type="file" @change="previewCrn" class="hidden" />
+        <p v-if="errors.crnImage" class="text-red-500 text-sm mt-1">{{ errors.crnImage }}</p>
       </div>
 
       <div class="flex flex-col items-end mr-40">
@@ -36,10 +40,12 @@
           @click="$refs.logoInput.click()"
           class="w-32 h-32 rounded-full shadow-lg bg-[#f5f5f5] overflow-hidden flex items-center justify-center cursor-pointer hover:border-accent-color relative"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 512" class="w-[60px] h-[60px]">
+        <img v-if="logoPreview" :src="logoPreview" class="w-full h-full object-cover" alt="">
+        <div v-else>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 512" class="w-[60px] h-[60px]">
             <path
               fill="#5984c6"
-              d="M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-384c0-35.3-28.7-64-64-64L64 0zM176 352l32 0c17.7 0 32 14.3 32 32l0 80-96 0 0-80c0-17.7 14.3-32 32-32zM96 112c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zm144-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16zM96 240c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zm144-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0 8.8 7.2-16 16-16z"
+              d="M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-384c0-35.3-28.7-64-64-64L64 0zM176 352l32 0c17.7 0 32 14.3 32 32l0 80-96 0 0-80c0-17.7 14.3-32 32-32z"
             />
           </svg>
           <div class="absolute bottom-6 left-5 z-50">
@@ -51,14 +57,16 @@
             </svg>
           </div>
         </div>
+        </div>
         <input ref="logoInput" type="file" @change="previewLogo" class="hidden" />
       </div>
     </div>
 
     <!-- 🔹 Form Fields -->
-    <div class="grid grid-cols-2 gap-8 max-w-6xl mx-auto w-full">
-      <div class="flex flex-col gap-5">
-        <div>
+    <div class="flex flex-col gap-5 max-w-6xl mx-auto w-full">
+      <!-- Company Name + Email -->
+      <div class="flex gap-5">
+        <div class="w-1/2">
           <input
             v-model="form.companyName"
             type="text"
@@ -70,19 +78,7 @@
             {{ errors.companyName }}
           </p>
         </div>
-
-        <div>
-          <input
-            v-model="form.username"
-            type="text"
-            placeholder="Username *"
-            :class="inputClass(errors.username)"
-            @input="clearError('username')"
-          />
-          <p v-if="errors.username" class="text-red-500 text-sm mt-1">{{ errors.username }}</p>
-        </div>
-
-        <div>
+        <div class="w-1/2">
           <input
             v-model="form.email"
             type="email"
@@ -92,8 +88,10 @@
           />
           <p v-if="errors.email" class="text-red-500 text-sm mt-1">{{ errors.email }}</p>
         </div>
-
-        <div class="relative">
+      </div>
+      <!-- Password + Confirm Password -->
+      <div class="flex gap-5">
+        <div class="relative w-1/2">
           <input
             v-model="form.password"
             :type="showPassword ? 'text' : 'password'"
@@ -111,7 +109,7 @@
           <p v-if="errors.password" class="text-red-500 text-sm mt-1">{{ errors.password }}</p>
         </div>
 
-        <div class="relative">
+        <div class="relative w-1/2">
           <input
             v-model="form.confirmPassword"
             :type="showConfirmPassword ? 'text' : 'password'"
@@ -130,32 +128,11 @@
             {{ errors.confirmPassword }}
           </p>
         </div>
-
-        <div>
-          <input
-            v-model="form.phone"
-            type="text"
-            placeholder="Phone Number *"
-            :class="inputClass(errors.phone)"
-            @input="clearError('phone')"
-          />
-          <p v-if="errors.phone" class="text-red-500 text-sm mt-1">{{ errors.phone }}</p>
-        </div>
       </div>
 
-      <div class="flex flex-col gap-5">
-        <div>
-          <input
-            v-model="form.address"
-            type="text"
-            placeholder="Street Address *"
-            :class="inputClass(errors.address)"
-            @input="clearError('address')"
-          />
-          <p v-if="errors.address" class="text-red-500 text-sm mt-1">{{ errors.address }}</p>
-        </div>
-
-        <div>
+      <!-- City + Address -->
+      <div class="flex gap-5">
+        <div class="w-1/2">
           <input
             v-model="form.city"
             type="text"
@@ -165,7 +142,21 @@
           />
           <p v-if="errors.city" class="text-red-500 text-sm mt-1">{{ errors.city }}</p>
         </div>
-        <div>
+        <div class="w-1/2">
+          <input
+            v-model="form.address"
+            type="text"
+            placeholder="Street Address *"
+            :class="inputClass(errors.address)"
+            @input="clearError('address')"
+          />
+          <p v-if="errors.address" class="text-red-500 text-sm mt-1">{{ errors.address }}</p>
+        </div>
+      </div>
+
+      <!-- Website + Team Size -->
+      <div class="flex gap-5">
+        <div class="w-1/2">
           <input
             v-model="form.website"
             type="text"
@@ -173,15 +164,9 @@
             :class="inputClass(errors.website)"
             @input="clearError('website')"
           />
-          <p v-if="errors.website" class="text-red-500 text-sm mt-1">{{ errors.country }}</p>
+          <p v-if="errors.website" class="text-red-500 text-sm mt-1">{{ errors.website }}</p>
         </div>
-        <!-- <input
-          v-model="form.teamSize"
-          type="text"
-          placeholder="Team Size"
-          class="p-4 border border-gray-300 rounded-xl"
-        /> -->
-        <div>
+        <div class="w-1/2">
           <input
             v-model="form.teamSize"
             type="text"
@@ -191,7 +176,21 @@
           />
           <p v-if="errors.teamSize" class="text-red-500 text-sm mt-1">{{ errors.teamSize }}</p>
         </div>
-        <div>
+      </div>
+
+      <!-- Phone + CRN -->
+      <div class="flex gap-5">
+        <div class="w-1/2">
+          <input
+            v-model="form.phone"
+            type="text"
+            placeholder="Phone Number *"
+            :class="inputClass(errors.phone)"
+            @input="clearError('phone')"
+          />
+          <p v-if="errors.phone" class="text-red-500 text-sm mt-1">{{ errors.phone }}</p>
+        </div>
+        <div class="w-1/2">
           <input
             v-model="form.crn"
             type="text"
@@ -201,27 +200,29 @@
           />
           <p v-if="errors.crn" class="text-red-500 text-sm mt-1">{{ errors.crn }}</p>
         </div>
-
-        <input
-          v-model="form.description"
-          placeholder="Bio"
-          class="p-4 border border-gray-300 rounded-2xl resize-none"
-        />
       </div>
+
+      <!-- Bio -->
+      <textarea
+        v-model="form.bio"
+        rows="3"
+        placeholder="Bio (Optional)"
+        class="w-full p-4 border rounded-xl border-gray-300 focus:ring-2 focus:ring-accent-color focus:outline-none resize-none"
+      ></textarea>
     </div>
 
-    <!-- 🔹 Submit -->
-    <button
+    <!-- Submit -->
+   <button
       @click="handleSubmit"
-      class="mt-10 mx-auto bg-accent-color text-white text-[20px] px-3 py-2 rounded-xl font-semibold transition cursor-pointer"
       :disabled="isSubmitting"
+      class="mt-10 mx-auto bg-accent-color text-white text-[20px] px-3 py-2 rounded-xl font-semibold transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {{ isSubmitting ? "Submitting..." : "Sign Up" }}
     </button>
 
     <p class="text-center mt-4 text-gray-500 dark:text-white">
       Already have an account?
-      <a :href="loginRoute" class="text-accent-color font-semibold hover:underline"> Login here </a>
+      <a :href="loginRoute" class="text-accent-color font-semibold hover:underline">Login here</a>
     </p>
   </div>
 </template>
@@ -249,13 +250,16 @@ export default {
         website: "",
         teamSize: "",
         crn: "",
-        description: "",
+        bio: "",
         logoImage: null,
         crnImage: null,
       },
     };
   },
   methods: {
+    setSubmitting(value) {
+      this.isSubmitting = value;
+    },
     inputClass(error, hasPadding = false) {
       return [
         "w-full p-4 border rounded-xl focus:outline-none focus:ring-1 transition-all duration-200",
@@ -307,6 +311,10 @@ export default {
       }
       if (!this.form.password.trim()) {
         this.errors.password = "Password is required";
+        valid = false;
+      }
+      if(!this.form.crnImage){
+        this.errors.crnImage = "Please upload your Tax Card.";
         valid = false;
       }
 

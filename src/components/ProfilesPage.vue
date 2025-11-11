@@ -19,12 +19,12 @@
       <div
         v-for="n in 6"
         :key="n"
-        class="bg-white rounded-2xl shadow-xl p-4 animate-pulse flex flex-col items-center"
+        class="bg-white dark:bg-dark-blue text-(--text-muted) rounded-2xl shadow-xl p-4 animate-pulse flex flex-col items-center"
       >
-        <div class="w-full h-48 bg-gray-200 rounded-xl mb-4"></div>
-        <div class="h-4 bg-gray-200 w-2/3 mb-2 rounded"></div>
-        <div class="h-3 bg-gray-200 w-1/2 mb-2 rounded"></div>
-        <div class="h-3 bg-gray-200 w-3/4 rounded"></div>
+        <div class="w-full h-48  bg-gray-200 dark:bg-(--surface) rounded-xl mb-4"></div>
+        <div class="h-4 bg-gray-200 dark:bg-(--surface) w-2/3 mb-2 rounded"></div>
+        <div class="h-3 bg-gray-200 dark:bg-(--surface) w-1/2 mb-2 rounded"></div>
+        <div class="h-3 bg-gray-200 dark:bg-(--surface) w-3/4 rounded"></div>
       </div>
     </div>
 
@@ -51,6 +51,8 @@ import TopBar from "./topBar.vue";
 import { db } from "@/firebase/firebase";
 import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import defaultAvatar from "@/images/defaultAvatar.jpeg";
+
 
 export default {
   name: "ProfilesPage",
@@ -205,16 +207,15 @@ export default {
       this.profiles = [];
 
       try {
+        // --- Fetch technicians ---
         const techniciansCol = collection(db, "technicians");
         const snapshot = await getDocs(techniciansCol);
-
         const fetchedProfiles = [];
 
-        // Fetch all profiles and their completed orders count
         for (const docSnap of snapshot.docs) {
           const data = docSnap.data();
 
-          // Fetch completed orders count for this technician
+          // Fetch completed orders count
           let completedOrders = 0;
           try {
             const ordersRef = collection(db, "orders");
@@ -233,27 +234,51 @@ export default {
             id: docSnap.id,
             name: data.name,
             service: data.skill,
-            // UPDATED: Use $t for fallback text
             location: data.address?.city || this.$t("profilesPage.fallbackLocation"),
             rating: data.ratingAverage || data.rating || 0,
-            // UPDATED: Use $t for fallback text
             bio: data.description || this.$t("profilesPage.fallbackBio"),
-            profileImage: data.profileImage || null,
+            profileImage: data.profileImage || defaultAvatar,
             completedOrders: completedOrders,
+            type: "technician", // add type to distinguish
           });
+        }
+
+        // --- Fetch companies only if serviceName is finishing ---
+        // --- Fetch companies only if serviceName is finishing ---
+        if (this.serviceName === "Finishing") {
+          const companiesCol = collection(db, "companies");
+          console.log("companiesCol:", companiesCol);
+          const companiesSnap = await getDocs(companiesCol);
+
+          for (const docSnap of companiesSnap.docs) {
+            const data = docSnap.data();
+            fetchedProfiles.push({
+              id: docSnap.id,
+              name: data.companyName, // ✅ fix name field
+              service: "Finishing",
+              location: data.city || data.address?.city || this.$t("profilesPage.fallbackLocation"),
+              rating: data.ratingAverage || data.rating || 0,
+              bio: data.description || this.$t("profilesPage.fallbackBio"),
+              profileImage: data.logoImage || data.logo || defaultAvatar,
+              completedOrders: data.completedProjects || 0,
+              type: "company",
+            });
+          }
         }
 
         this.profiles = fetchedProfiles;
       } catch (error) {
         console.error("Error fetching profiles: ", error);
-        // UPDATED: Use $t for the error message
         alert(this.$t("profilesPage.loadingError"));
       }
+
       this.isLoading = false;
     },
   },
   mounted() {
     this.serviceName = this.$route.params.service || "All";
+    console.log("serviceName from route =", this.serviceName);
+
 
     // Get client's city for location-based sorting
     const auth = getAuth();
