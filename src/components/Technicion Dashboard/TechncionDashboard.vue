@@ -28,6 +28,13 @@ import TechnicianWorkGallery from "./TechnicianWorkGallery.vue";
 import AlertPopup from "../AlertPopup.vue"; // <-- Adjust path if needed
 // ✅ NEW: use the same Cloudinary uploader used elsewhere
 import { uploadImageOnly } from "@/composables/useImageUpload";
+import { useTechnicianNotifications } from "@/composables/useTechnicianNotifications"; // ✅ shared composable
+
+// ✅ Shared notifications (sidebar + top navbar)
+const { notifications, unreadCount, showNotifications, toggleNotifications } =
+  useTechnicianNotifications();
+
+const isDark = ref(false);
 
 // 🟦 Refs & states
 const technicianId = ref(null);
@@ -69,8 +76,7 @@ for (let h = 9; h <= 23; h++) {
   }
 }
 
-
-// 🟩 Notification system (REPLACED)
+// 🟩 Notification system (popup alert only)
 const showPopupMessage = ref(false);
 const popupMessageContent = ref("");
 
@@ -86,6 +92,16 @@ const closeAlert = () => {
 // 🟩 Tab switch
 const handleTabChange = (tabName) => {
   mainTab.value = tabName;
+};
+
+const applyTheme = (mode) => {
+  isDark.value = mode === "dark";
+  document.documentElement.classList.toggle("dark", isDark.value);
+};
+const toggleDarkMode = () => {
+  const next = isDark.value ? "light" : "dark";
+  applyTheme(next);
+  localStorage.setItem("theme", next);
 };
 
 // 🟩 Auth & Firestore listeners
@@ -151,11 +167,9 @@ const saveAvailability = async () => {
     await updateDoc(docRef, {
       availability: anyActive ? days.value : [],
     });
-    // UPDATED
     triggerAlert("Availability saved successfully!");
   } catch (error) {
     console.error("Error saving availability:", error);
-    // UPDATED
     triggerAlert("Failed to save availability.");
   }
   availabilitySaving.value = false;
@@ -236,7 +250,7 @@ const updateOrderStatus = async (id, status, reason = "") => {
 
 // 🟩 Technician actions
 const handleAcceptOrder = (id) => updateOrderStatus(id, "unconfirmed");
-const handleConfirmPayment = (id) => updateOrderStatus(id, "upcoming"); // after client pays
+const handleConfirmPayment = (id) => updateOrderStatus(id, "upcoming");
 const handleMarkCompletedOrder = (id) => updateOrderStatus(id, "completed");
 const handleDeclineOrder = ({ id, reason }) =>
   updateOrderStatus(id, "declined", reason);
@@ -248,7 +262,7 @@ const openEditPopup = (service) => {
   selectedService.value = service;
   serviceTitle.value = service.descreption;
   servicePrice.value = service.price;
-  newImage.value = null; // will be replaced by Cloudinary URL if user uploads
+  newImage.value = null;
   showPopup.value = true;
 };
 
@@ -271,7 +285,7 @@ const handleImageChange = async (e) => {
       return;
     }
     triggerAlert("Uploading image...");
-    const url = await uploadImageOnly(file); // Cloudinary HTTPS URL
+    const url = await uploadImageOnly(file);
     newImage.value = url;
     triggerAlert("Image uploaded successfully ✅");
   } catch (err) {
@@ -300,7 +314,6 @@ const saveChanges = async () => {
     const payload = {
       descreption: serviceTitle.value,
       price: servicePrice.value,
-      // ✅ always store a permanent URL (prefer Cloudinary URL if uploaded in this session)
       image:
         newImage.value ||
         selectedService.value?.image ||
@@ -345,7 +358,7 @@ const closePopup = () => {
 
 const formatLocation = (loc) => {
   if (!loc) return "—";
-  if (typeof loc === "string") return loc; // في حال اتخزنت كنص
+  if (typeof loc === "string") return loc;
   if (typeof loc === "object") {
     const parts = [loc.street, loc.city, loc.country]
       .filter(Boolean)
@@ -380,7 +393,7 @@ const totalEarnings = computed(() => {
 
 // 🔹 Earnings grouped by month (for chart)
 const monthlyEarnings = computed(() => {
-  const monthly = Array(12).fill(0); // Jan–Dec
+  const monthly = Array(12).fill(0);
   orders.value.forEach((order) => {
     if (order.status === "completed" && order.date) {
       const dateObj = new Date(order.date);
@@ -491,11 +504,60 @@ watch(
 
 
 
+
 <template>
   <div class="min-h-screen bg-gray-100 dark:bg-[#0B1217] flex">
+    <!-- 🟦 Fixed Top Mini Navbar -->
+    <div
+      class="fixed top-0 left-[20%] w-[80%] h-[60px] bg-white/70 dark:bg-[#0b1822]/80 backdrop-blur-md flex justify-end items-center px-8 shadow-md z-40"
+    >
+      <!-- 🌙 Dark Mode -->
+      <button @click="toggleDarkMode" class="mr-6 cursor-pointer" :title="isDark ? 'Light mode' : 'Dark mode'">
+        <i v-if="isDark" class="fa-solid fa-sun text-yellow-400 text-xl"></i>
+        <i v-else class="fa-solid fa-moon text-[#133B5D] dark:text-white text-xl"></i>
+      </button>
+
+      <!-- 🔔 Notifications -->
+      <div class="relative">
+        <button @click="toggleNotifications" class="relative cursor-pointer">
+          <i class="fa-solid fa-bell text-xl text-[#133B5D] dark:text-white"></i>
+          <span
+            v-if="unreadCount > 0"
+            class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center"
+          >
+            {{ unreadCount }}
+          </span>
+        </button>
+
+        <transition name="fade">
+          <div
+            v-if="showNotifications"
+            class="absolute right-0 mt-2 w-80 bg-white dark:bg-[#16222B] border border-gray-300 dark:border-gray-600 rounded-xl shadow-xl z-50"
+          >
+            <div class="p-3 font-semibold border-b border-gray-300 dark:border-gray-600 text-[#133B5D] dark:text-white">
+              Notifications
+            </div>
+            <ul class="max-h-64 overflow-y-auto">
+              <li
+                v-for="n in notifications"
+                :key="n.id"
+                class="p-3 border-b border-gray-200 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition text-[#133B5D] dark:text-gray-200"
+              >
+                <p>{{ n.message }}</p>
+                <p class="text-xs text-gray-400 mt-1">
+                  {{ n.timestamp?.toDate?.().toLocaleString?.() || 'Just now' }}
+                </p>
+              </li>
+              <li v-if="!notifications.length" class="p-3 text-gray-400 text-center">No notifications yet</li>
+            </ul>
+          </div>
+        </transition>
+      </div>
+    </div>
     <TechnicionDashNav :active="mainTab" @changeTab="handleTabChange" />
 
-    <div class="myOrders ml-[20%] w-[80%] px-8 py-6 relative">
+
+    <div class="myOrders ml-[20%] w-[80%] px-8 py-6 relative pt-[80px]">
       <template v-if="mainTab === 'orders'">
         <h2 class="text-2xl font-semibold text-[#133B5D] dark:text-white mb-4">Orders</h2>
         <div

@@ -429,6 +429,17 @@ const confirmPayment = async () => {
     // 🟩 أولًا: حدث الحالة في Firestore إلى "upcoming"
     const orderRef = doc(db, "orders", selectedOrder.value.id);
     await updateDoc(orderRef, { status: "upcoming" });
+    // 🔔 Notify technician
+    if (selectedOrder.value?.technicianId) {
+      const notifCol = collection(db, "technicians", selectedOrder.value.technicianId, "notifications");
+      await addDoc(notifCol, {
+        orderId: selectedOrder.value.id,
+        message: `✅ The order "${getTranslatedName(selectedOrder.value.serviceTitle)}" has been confirmed.`,
+        status: "upcoming",
+        isRead: false,
+        timestamp: serverTimestamp(),
+      });
+    }
 
     // 🟦 ثانيًا: كمل العملية عادي بالربط مع السيرفر / باي موب
     const response = await fetch("http://localhost:5001/pay", {
@@ -471,6 +482,17 @@ const confirmCancelOrder = async () => {
     const orderData = orderSnap.exists() ? orderSnap.data() : null;
 
     await updateDoc(orderRef, { status: "cancelled" });
+    // 🔔 Notify technician
+    if (orderData?.technicianId) {
+      const notifCol = collection(db, "technicians", orderData.technicianId, "notifications");
+      await addDoc(notifCol, {
+        orderId: orderToCancel.value.id,
+        message: `⚠️ The client has cancelled the order "${orderData.descreption || "No description"}". Status changed to cancelled.`,
+        status: "cancelled",
+        isRead: false,
+        timestamp: serverTimestamp(),
+      });
+    }
 
     // 🔔 Notify technician
     if (orderData?.technicianId) {
