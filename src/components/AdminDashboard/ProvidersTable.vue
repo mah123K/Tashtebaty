@@ -73,10 +73,11 @@
           <tr>
             <th class="py-3 px-4 text-left">{{ $t('adminDashboard.providers.profile') }}</th>
             <th class="py-3 px-4 text-left">{{ $t('adminDashboard.providers.companyName') }}</th>
-            <th class="py-3 px-4 text-left">{{ $t('adminDashboard.providers.email') }}</th>
-            <th class="py-3 px-4 text-left">{{ $t('adminDashboard.providers.phone') }}</th>
-            <th class="py-3 px-4 text-left">{{ $t('adminDashboard.providers.address') }}</th>
+            <th class="py-3 px-10 text-left">{{ $t('adminDashboard.providers.email') }}</th>
+            <th class="py-3 px-8 text-left">{{ $t('adminDashboard.providers.phone') }}</th>
+            <th class="py-3 px-8 text-left">{{ $t('adminDashboard.providers.address') }}</th>
             <th class="py-3 px-4 text-left">{{ $t('adminDashboard.providers.rating') }}</th>
+            <th class="py-3 px-4 text-left">{{ $t('adminDashboard.providers.viewModal.teamSize') }}</th>
             <th class="py-3 px-4 text-left">{{ $t('adminDashboard.providers.orders') }}</th>
             <th class="py-3 px-6 text-left">{{ $t('adminDashboard.providers.status') }}</th>
                 <th class="py-3 px-16  text-left">{{ $t('adminDashboard.providers.actions') }}</th>
@@ -86,23 +87,24 @@
           <tr
             v-for="company in filteredCompanies"
             :key="company.id"
-             class="border-t border-gray-200 dark:border-gray-700 hover:bg-[#f3f9fc] dark:hover:bg-gray-800 transition"
+             class="border-t border-gray-200 dark:border-gray-700 hover:bg-[#f3f9fc] dark:hover:bg-gray-500 transition"
           >
             <td class="py-3 px-4">
-              <div class="h-10 w-10 rounded-full bg-[#e8f0fe] dark:bg-gray-800 overflow-hidden flex items-center justify-center text-[#5984C6] font-semibold">
-                <img :src="getProviderImage(company) || defaultAvatar" alt="logo" class="h-full w-full object-cover" @error="onImgError" />
+              <div class="h-10 w-10 rounded-full bg-[#dedede] dark:bg-gray-800 border-2 border-[#5984C6] dark:border-[#8db4ff] overflow-hidden flex items-center justify-center text-[#5984C6] font-semibold hover:scale-110 transition-transform duration-200">
+                <img :src="company.logoImage || getProviderImage(company) || defaultAvatar" alt="logo" class="h-full w-full object-contain" @error="onImgError" />
               </div>
             </td>
             <td class="py-3 px-4">{{ company.name }}</td>
             <td class="py-3 px-4">{{ company.email }}</td>
             <td class="py-3 px-4">{{ company.phone || '-' }}</td>
-          <td class="py-3 px-4">{{ formatAddress(company) }}</td>
+          <td class="py-3 px-10">{{ formatAddress(company) }}</td>
 
             <td class="py-3 px-4 flex items-center space-x-1">
               <span>{{ company.rating ?? 0 }}</span>
               <i class="bi bi-star-fill text-yellow-400"></i>
             </td>
-            <td class="py-3 px-4">{{ company.orderCount ?? 0 }}</td>
+            <td class="py-3 px-4 text-center">{{ company.teamSize ?? 0 }}</td>
+            <td class="py-3 px-8">{{ company.orderCount ?? 0 }}</td>
 
             <td class="py-3 px-6">
               <span
@@ -183,10 +185,10 @@
           <tr
             v-for="craft in filteredCraftsmen"
             :key="craft.id"
-             class="border-t border-gray-200 dark:border-gray-700 hover:bg-[#f3f9fc] dark:hover:bg-gray-800 transition"
+             class="border-t border-gray-200 dark:border-gray-700 hover:bg-[#f3f9fc] dark:hover:bg-gray-500 transition"
           >
             <td class="py-2 px-3">
-              <div class="h-10 w-10 rounded-full bg-[#e8f0fe] dark:bg-gray-800 overflow-hidden flex items-center justify-center text-[#5984C6] font-semibold">
+              <div class="h-10 w-10 rounded-full bg-[#e8f0fe] dark:bg-gray-800 border-2 border-[#5984C6] dark:border-[#8db4ff] overflow-hidden flex items-center justify-center text-[#5984C6] font-semibold hover:scale-110 transition-transform duration-200">
                 <img :src="getProviderImage(craft) || defaultAvatar" alt="avatar" class="h-full w-full object-cover" @error="onImgError" />
               </div>
             </td>
@@ -200,7 +202,7 @@
               <span>{{ craft.rating ?? 0 }}</span>
               <i class="bi bi-star-fill text-yellow-400"></i>
             </td>
-            <td class="py-2 px-3">{{ craft.orderCount ?? 0 }}</td>
+            <td class="py-2 px-8">{{ craft.orderCount ?? 0 }}</td>
             <td class="py-3 px-8">
               <span
                 :class="[
@@ -287,12 +289,12 @@
 
     <!-- VIEW MODAL -->
     <div v-if="showViewModal" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="relative bg-white dark:bg-[#111827] dark:text-gray-100 rounded-2xl shadow-xl w-full max-w-lg p-6 animate-fadeIn">
-      <button @click="closeViewModal" class="absolute top-4 right-6 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">✖</button>
+      <div class="relative bg-white dark:bg-[#111827] dark:text-gray-100 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 animate-fadeIn">
+      <button @click="closeViewModal" class="absolute top-4 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 z-10">✖</button>
 
       <div class="flex items-center gap-4 mb-4">
-        <div class="h-16 w-16 rounded-full bg-[#e8f0fe] dark:bg-gray-800 overflow-hidden flex items-center justify-center text-[#5984C6] text-xl font-semibold">
-          <img :src="getProviderImage(selectedProvider) || defaultAvatar" alt="avatar" class="h-full w-full object-cover" @error="onImgError" />
+        <div class="h-16 w-16 rounded-full bg-[#e8f0fe] dark:bg-gray-800 border-2 border-[#5984C6] dark:border-[#8db4ff] overflow-hidden flex items-center justify-center text-[#5984C6] text-xl font-semibold">
+          <img :src="getProviderImage(selectedProvider) || defaultAvatar" alt="avatar" :class="selectedProvider?.skill ? 'h-full w-full object-cover' : 'h-full w-full object-contain'" @error="onImgError" />
         </div>
           <div class="flex-1 min-w-0">
             <h3 class="text-2xl font-semibold text-[#5984C6] truncate">{{ selectedProvider?.name || 'Provider' }}</h3>
@@ -339,14 +341,34 @@
             <p class="text-gray-500 dark:text-gray-400">{{ $t('adminDashboard.providers.orders') }}</p>
             <p class="font-medium">{{ selectedProvider.orderCount ?? 0 }} {{ $t('adminDashboard.providers.total') }} · {{ selectedProvider.completedCount ?? 0 }} {{ $t('adminDashboard.providers.completed') }}</p>
           </div>
+          <div v-if="selectedProvider?.userType === 'company'">
+            <p class="text-gray-500 dark:text-gray-400">{{ $t('adminDashboard.providers.viewModal.teamSize') }}</p>
+            <p class="font-medium">{{ selectedProvider.teamSize ?? 0 }}</p>
+          </div>
+        </div>
+
+        <!-- Display idCardImage for Craftsmen -->
+        <div v-if="selectedProvider?.skill && selectedProvider?.idCardImage" class="mt-4">
+          <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">{{ $t('adminDashboard.providers.viewModal.idCardImage') }}</h4>
+          <img :src="selectedProvider.idCardImage" alt="ID Card" class="w-full max-w-sm rounded-lg shadow-md" @error="onImgError" />
+        </div>
+
+
+
+        <!-- Display crnImage for Companies with scroll -->
+        <div v-if="selectedProvider?.userType === 'company' && selectedProvider?.crnImage" class="mt-4">
+          <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">{{ $t('adminDashboard.providers.viewModal.crnImage') }}</h4>
+          <div class="max-h-64 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-lg">
+            <img :src="selectedProvider.crnImage" alt="CRN" class="w-full rounded-lg" @error="onImgError" />
+          </div>
         </div>
       </div>
     </div>
 
     <!-- EDIT MODAL -->
     <div v-if="showEditModal" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 rounded-2xl shadow-xl w-full max-w-md p-6 animate-fadeIn">
-        <button @click="closeEditModal" class="absolute top-4 right-6 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">✖</button>
+      <div class="relative bg-white dark:bg-[#111827] dark:text-gray-100 rounded-2xl shadow-xl w-full max-w-md p-6 animate-fadeIn">
+        <button @click="closeEditModal" class="absolute top-1 right-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">✖</button>
         <h3 class="text-2xl font-semibold text-[#5984C6] mb-4">{{ $t('adminDashboard.providers.editProvider') }}</h3>
         <form @submit.prevent="saveProviderChanges" class="space-y-4">
           <div>
@@ -751,7 +773,7 @@ const openEditModal = (provider) => {
   editForm.name = provider.name || "";
   editForm.email = provider.email || "";
   editForm.phone = provider.phone || "";
-  editForm.address = provider.address || "";
+  editForm.address = formatAddress(provider) || "";
   editForm.status = provider.status || "active";
   showEditModal.value = true;
 };

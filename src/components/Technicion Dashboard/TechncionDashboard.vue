@@ -398,21 +398,21 @@ const completedCount = computed(() =>
   orders.value.filter((o) => o.status === "completed").length
 );
 
-// 🔹 Calculate total and monthly earnings dynamically
+// Calculate total (90% of order price)
 const totalEarnings = computed(() => {
   return orders.value
     .filter((o) => o.status === "completed")
-    .reduce((sum, o) => sum + (parseFloat(o.price) || 0), 0);
+    .reduce((sum, o) => sum + (parseFloat(o.price) * 0.9 || 0), 0);
 });
 
-// 🔹 Earnings grouped by month (for chart)
+// 🔹 Earnings grouped by month (for chart) (90% of order price)
 const monthlyEarnings = computed(() => {
   const monthly = Array(12).fill(0);
   orders.value.forEach((order) => {
     if (order.status === "completed" && order.date) {
       const dateObj = new Date(order.date);
       const monthIndex = dateObj.getMonth();
-      monthly[monthIndex] += parseFloat(order.price) || 0;
+      monthly[monthIndex] += (parseFloat(order.price) * 0.9) || 0;
     }
   });
   return monthly;

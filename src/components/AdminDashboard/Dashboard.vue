@@ -62,7 +62,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-10 max-w-6xl">
       <div class="bg-white dark:bg-[#111827] dark:text-gray-100 p-6 rounded-2xl shadow-md">
         <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">{{ $t('adminDashboard.dashboard.monthlyRevenue') }}</h2>
-        <div class="w-full h-60 md:h-72 lg:h-96">
+        <div class="w-full h-120">
           <canvas id="revenueChart" class="w-full h-full"></canvas>
         </div>
       </div>
@@ -72,21 +72,51 @@
           <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">{{ $t('adminDashboard.dashboard.topRatedProviders') }}</h2>
           <span class="text-sm text-gray-500 dark:text-gray-300">{{ $t('adminDashboard.dashboard.top5') }}</span>
         </div>
-        <div class="space-y-3">
-          <div v-if="!topProviders.length" class="text-gray-500 dark:text-gray-300">{{ $t('adminDashboard.dashboard.noProviders') }}</div>
-          <div v-for="p in topProviders" :key="p.id" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-            <div class="h-12 w-12 rounded-full bg-[#e8f0fe] dark:bg-gray-800 overflow-hidden flex items-center justify-center text-[#5984C6] font-semibold">
-              <img :src="p.image || defaultAvatar" alt="avatar" class="w-full h-full object-cover" @error="(e)=>e.target.src=defaultAvatar" />
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center justify-between">
-                <div class="truncate">
-                  <p class="font-semibold text-gray-800 dark:text-gray-100 truncate">{{ p.name }}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-300">{{ p.type }}</p>
+
+        <!-- Top Rated Craftsmen -->
+        <div class="mb-6">
+          <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">{{ $t('adminDashboard.providers.craftsmen') }}</h3>
+          <div class="space-y-3">
+            <div v-if="!topProviders.filter(p => p.type === 'Technician').length" class="text-gray-500 dark:text-gray-300">{{ $t('adminDashboard.dashboard.noProviders') }}</div>
+            <div v-for="p in topProviders.filter(p => p.type === 'Technician')" :key="p.id" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+              <div class="h-12 w-12 rounded-full overflow-hidden flex items-center justify-center text-[#5984C6] font-semibold">
+                <img :src="p.image || defaultAvatar" alt="avatar" class="w-full h-full object-cover" @error="(e)=>e.target.src=defaultAvatar" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <div class="truncate">
+                    <p class="font-semibold text-gray-800 dark:text-gray-100 truncate">{{ p.name }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-300">{{ p.type }}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-semibold text-sm text-gray-800 dark:text-gray-100">{{ p.rating?.toFixed(2) || '0.00' }}</p>
+                    <div class="text-yellow-400 text-xs">★</div>
+                  </div>
                 </div>
-                <div class="text-right">
-                  <p class="font-semibold text-sm text-gray-800 dark:text-gray-100">{{ p.rating?.toFixed(2) || '0.00' }}</p>
-                  <div class="text-yellow-400 text-xs">★</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Rated Companies -->
+        <div>
+          <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">{{ $t('adminDashboard.providers.company') }}</h3>
+          <div class="space-y-3">
+            <div v-if="!topProviders.filter(p => p.type === 'Company').length" class="text-gray-500 dark:text-gray-300">{{ $t('adminDashboard.dashboard.noProviders') }}</div>
+            <div v-for="p in topProviders.filter(p => p.type === 'Company')" :key="p.id" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+              <div class="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center text-[#5984C6] font-semibold">
+                <img :src="p.image || defaultAvatar" alt="avatar" class="w-full h-full object-contain" @error="(e)=>e.target.src=defaultAvatar" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <div class="truncate">
+                    <p class="font-semibold text-gray-800 dark:text-gray-100 truncate">{{ p.name }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-300">{{ p.type }}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-semibold text-sm text-gray-800 dark:text-gray-100">{{ p.rating?.toFixed(2) || '0.00' }}</p>
+                    <div class="text-yellow-400 text-xs">★</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -133,9 +163,13 @@ export default {
 
     // حساب نسبة التغير
     const calculateChange = (current, last) => {
-      if (last === 0) return current > 0 ? 100 : 0;
-      return Math.round(((current - last) / last) * 100);
+      if (last === 0) return current > 5 ? 100 : 10; // أول مرة يظهر رقم صغير = 10%
+      const change = ((current - last) / last) * 100;
+      if (Math.abs(change) > 100) return change > 0 ? 100 : -100; // حد أقصى منطقي
+      return parseFloat(change.toFixed(1));
     };
+
+
 
     const fetchData = async () => {
       const now = new Date();
@@ -158,7 +192,7 @@ export default {
       totalOrders.value = ordersSnapshot.size;
 
       // Pending Orders
-      const pendingSnapshot = await getDocs(query(collection(db, "orders"), where("price", "==", "Pending Quote")));
+      const pendingSnapshot = await getDocs(query(collection(db, "orders"), where("status", "==", "unconfirmed")));
       pendingOrdersCount.value = pendingSnapshot.size;
 
       // Orders last week for percent change
@@ -171,54 +205,51 @@ export default {
       );
       ordersChange.value = calculateChange(totalOrders.value, lastWeekOrdersSnapshot.size);
 
-      // Example: fixed percent changes for demo
-      userChange.value = 5;
-      companyChange.value = -2;
-      craftsmenChange.value = 3;
+      // Users last week
+      const lastWeekUsersSnapshot = await getDocs(
+        query(
+          collection(db, "clients"),
+          where("createdAt", "<", Timestamp.fromDate(now)),
+          where("createdAt", ">", Timestamp.fromDate(oneWeekAgo))
+        )
+      );
+      userChange.value = calculateChange(totalUsers.value, lastWeekUsersSnapshot.size);
 
-      // Monthly Revenue Calculation (derive from `payments` collection)
-      const paymentsSnapshot = await getDocs(collection(db, 'payments'));
+      // Companies last week
+      const lastWeekCompaniesSnapshot = await getDocs(
+        query(
+          collection(db, "companies"),
+          where("createdAt", "<", Timestamp.fromDate(now)),
+          where("createdAt", ">", Timestamp.fromDate(oneWeekAgo))
+        )
+      );
+      companyChange.value = calculateChange(totalCompanies.value, lastWeekCompaniesSnapshot.size);
+
+      // Craftsmen last week
+      const lastWeekCraftsmenSnapshot = await getDocs(
+        query(
+          collection(db, "technicians"),
+          where("createdAt", "<", Timestamp.fromDate(now)),
+          where("createdAt", ">", Timestamp.fromDate(oneWeekAgo))
+        )
+      );
+      craftsmenChange.value = calculateChange(totalCraftsmen.value, lastWeekCraftsmenSnapshot.size);
+
+      // Monthly Revenue Calculation (derive from `orders` collection) - Site profits: 10% of completed orders
+      const ordersSnapshotRevenue = await getDocs(collection(db, 'orders'));
       const revenueByMonth = Array(12).fill(0); // 12 months
-      paymentsSnapshot.forEach((docItem) => {
+      ordersSnapshotRevenue.forEach((docItem) => {
         const data = docItem.data();
-        // support fields: amount, price
-        const price = parseFloat(data.amount ?? data.price ?? 0);
-        if (!isNaN(price)) {
-          let dateObj;
-          // Firestore Timestamp
-          if (data.date && data.date.seconds) {
-            dateObj = new Date(data.date.seconds * 1000);
-          } else if (data.date) {
-            // try parsing string date
-            dateObj = new Date(data.date);
-            if (isNaN(dateObj.getTime())) dateObj = new Date();
-          } else if (data.createdAt && data.createdAt.seconds) {
-            dateObj = new Date(data.createdAt.seconds * 1000);
-          } else {
-            dateObj = new Date();
-          }
-
-          revenueByMonth[dateObj.getMonth()] += price;
-        }
-      });
-      monthlyRevenue.value = revenueByMonth;
-
-        // topProviders will be populated by real-time listeners set up in subscribeTopProviders()
-    };
-
-    // compute monthly revenue from a collection snapshot or array of docs
-    const computeMonthlyRevenue = (items) => {
-      const revenueByMonth = Array(12).fill(0);
-      try {
-        const arr = items || [];
-        arr.forEach((docItem) => {
-          const data = (docItem.data && docItem.data()) ? docItem.data() : docItem;
-          const price = parseFloat(data.amount ?? data.price ?? 0);
+        // Only include orders with status "completed"
+        if (data.status === "completed") {
+          const price = parseFloat(data.price || 0);
           if (!isNaN(price)) {
             let dateObj;
+            // Firestore Timestamp
             if (data.date && data.date.seconds) {
               dateObj = new Date(data.date.seconds * 1000);
             } else if (data.date) {
+              // try parsing string date
               dateObj = new Date(data.date);
               if (isNaN(dateObj.getTime())) dateObj = new Date();
             } else if (data.createdAt && data.createdAt.seconds) {
@@ -226,7 +257,40 @@ export default {
             } else {
               dateObj = new Date();
             }
-            revenueByMonth[dateObj.getMonth()] += price;
+
+            revenueByMonth[dateObj.getMonth()] += price * 0.1; // 10% site profit
+          }
+        }
+      });
+      monthlyRevenue.value = revenueByMonth;
+
+        // topProviders will be populated by real-time listeners set up in subscribeTopProviders()
+    };
+
+    // compute monthly revenue from a collection snapshot or array of docs - Site profits: 10% of completed orders
+    const computeMonthlyRevenue = (items) => {
+      const revenueByMonth = Array(12).fill(0);
+      try {
+        const arr = items || [];
+        arr.forEach((docItem) => {
+          const data = (docItem.data && docItem.data()) ? docItem.data() : docItem;
+          // Only include orders with status "completed"
+          if (data.status === "completed") {
+            const price = parseFloat(data.price || 0);
+            if (!isNaN(price)) {
+              let dateObj;
+              if (data.date && data.date.seconds) {
+                dateObj = new Date(data.date.seconds * 1000);
+              } else if (data.date) {
+                dateObj = new Date(data.date);
+                if (isNaN(dateObj.getTime())) dateObj = new Date();
+              } else if (data.createdAt && data.createdAt.seconds) {
+                dateObj = new Date(data.createdAt.seconds * 1000);
+              } else {
+                dateObj = new Date();
+              }
+              revenueByMonth[dateObj.getMonth()] += price * 0.1; // 10% site profit
+            }
           }
         });
       } catch (e) {
@@ -323,19 +387,19 @@ export default {
       }
     };
 
-    const subscribePaymentsRealtime = () => {
+    const subscribeOrdersRealtime = () => {
       try {
-        paymentsUnsub = onSnapshot(collection(db, 'payments'), (snap) => {
+        paymentsUnsub = onSnapshot(collection(db, 'orders'), (snap) => {
           try {
             const revenue = computeMonthlyRevenue(snap.docs);
             monthlyRevenue.value = revenue;
             renderRevenueChart();
           } catch (e) {
-            console.error('payments snapshot handling error:', e);
+            console.error('orders snapshot handling error:', e);
           }
-        }, (err) => console.error('payments realtime error:', err));
+        }, (err) => console.error('orders realtime error:', err));
       } catch (e) {
-        console.error('subscribePaymentsRealtime failed:', e);
+        console.error('subscribeOrdersRealtime failed:', e);
       }
     };
 
@@ -343,7 +407,7 @@ export default {
       await fetchData();
       renderRevenueChart();
       subscribeTopProviders();
-      subscribePaymentsRealtime();
+      subscribeOrdersRealtime();
     });
 
     onUnmounted(() => {

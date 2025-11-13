@@ -739,7 +739,10 @@
         "rating": "التقييم",
         "orders": "الطلبات",
         "total": "إجمالي",
-        "completed": "مكتمل"
+        "completed": "مكتمل",
+        "idCardImage": "صورة بطاقة الهوية",
+        "crnImage": "صورة السجل التجاري",
+        "teamSize": "حجم الفريق"
       }
     },
     "serviceCategoryCard": {
