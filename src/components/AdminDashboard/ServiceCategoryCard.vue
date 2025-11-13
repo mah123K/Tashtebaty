@@ -79,12 +79,13 @@
           </div>
 
           <div v-else class="grid gap-6">
-            <div v-for="provider in providers" :key="provider.id" 
-                class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 flex items-center gap-4 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-              <img 
-                :src="provider.profileImage || provider.logoImage || defaultAvatar" 
+            <div v-for="provider in providers" :key="provider.id"
+                class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex items-center gap-4 hover:bg-[#dedede] dark:hover:bg-gray-700 transition-colors">
+              <img
+                :src="provider.profileImage || provider.logoImage || defaultAvatar"
                 :alt="provider.userType === 'company' ? (provider.companyName || provider.name) : provider.name"
-                class="w-12 h-12 rounded-full object-cover"
+                :class="provider.userType === 'company' ? 'w-10 h-10 object-contain' : 'w-12 h-12 object-cover'"
+                class="rounded-full bg-gray-300"
                 @error="onImgError"
               >
               <div class="flex-1">
@@ -130,10 +131,11 @@
 
         <div class="p-6 overflow-y-auto">
           <div class="flex items-center gap-4 mb-6">
-            <img 
-              :src="selectedProvider.profileImage || selectedProvider.logoImage || defaultAvatar" 
+            <img
+              :src="selectedProvider.profileImage || selectedProvider.logoImage || defaultAvatar"
               :alt="selectedProvider.name"
-              class="w-24 h-24 rounded-full object-cover"
+              :class="selectedProvider.userType === 'company' ? 'w-16 h-16 object-contain' : 'w-12 h-12 object-cover'"
+              class="rounded-full bg-gray-300"
               @error="onImgError"
             >
             <div>

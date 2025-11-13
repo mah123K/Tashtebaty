@@ -648,7 +648,10 @@
         "rating": "Rating",
         "orders": "Orders",
         "total": "total",
-        "completed": "completed"
+        "completed": "completed",
+        "idCardImage": "ID Card Image",
+        "crnImage": "CRN Image",
+        "teamSize": "Team Size"
       }
     },
     "services": {

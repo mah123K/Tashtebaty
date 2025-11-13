@@ -72,21 +72,51 @@
           <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">{{ $t('adminDashboard.dashboard.topRatedProviders') }}</h2>
           <span class="text-sm text-gray-500 dark:text-gray-300">{{ $t('adminDashboard.dashboard.top5') }}</span>
         </div>
-        <div class="space-y-3">
-          <div v-if="!topProviders.length" class="text-gray-500 dark:text-gray-300">{{ $t('adminDashboard.dashboard.noProviders') }}</div>
-          <div v-for="p in topProviders" :key="p.id" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-            <div class="h-12 w-12 rounded-full bg-[#e8f0fe] dark:bg-gray-800 overflow-hidden flex items-center justify-center text-[#5984C6] font-semibold">
-              <img :src="p.image || defaultAvatar" alt="avatar" class="w-full h-full object-cover" @error="(e)=>e.target.src=defaultAvatar" />
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center justify-between">
-                <div class="truncate">
-                  <p class="font-semibold text-gray-800 dark:text-gray-100 truncate">{{ p.name }}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-300">{{ p.type }}</p>
+
+        <!-- Top Rated Craftsmen -->
+        <div class="mb-6">
+          <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">{{ $t('adminDashboard.providers.craftsmen') }}</h3>
+          <div class="space-y-3">
+            <div v-if="!topProviders.filter(p => p.type === 'Technician').length" class="text-gray-500 dark:text-gray-300">{{ $t('adminDashboard.dashboard.noProviders') }}</div>
+            <div v-for="p in topProviders.filter(p => p.type === 'Technician')" :key="p.id" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+              <div class="h-12 w-12 rounded-full overflow-hidden flex items-center justify-center text-[#5984C6] font-semibold">
+                <img :src="p.image || defaultAvatar" alt="avatar" class="w-full h-full object-cover" @error="(e)=>e.target.src=defaultAvatar" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <div class="truncate">
+                    <p class="font-semibold text-gray-800 dark:text-gray-100 truncate">{{ p.name }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-300">{{ p.type }}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-semibold text-sm text-gray-800 dark:text-gray-100">{{ p.rating?.toFixed(2) || '0.00' }}</p>
+                    <div class="text-yellow-400 text-xs">★</div>
+                  </div>
                 </div>
-                <div class="text-right">
-                  <p class="font-semibold text-sm text-gray-800 dark:text-gray-100">{{ p.rating?.toFixed(2) || '0.00' }}</p>
-                  <div class="text-yellow-400 text-xs">★</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Rated Companies -->
+        <div>
+          <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">{{ $t('adminDashboard.providers.company') }}</h3>
+          <div class="space-y-3">
+            <div v-if="!topProviders.filter(p => p.type === 'Company').length" class="text-gray-500 dark:text-gray-300">{{ $t('adminDashboard.dashboard.noProviders') }}</div>
+            <div v-for="p in topProviders.filter(p => p.type === 'Company')" :key="p.id" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+              <div class="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center text-[#5984C6] font-semibold">
+                <img :src="p.image || defaultAvatar" alt="avatar" class="w-full h-full object-contain" @error="(e)=>e.target.src=defaultAvatar" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <div class="truncate">
+                    <p class="font-semibold text-gray-800 dark:text-gray-100 truncate">{{ p.name }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-300">{{ p.type }}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-semibold text-sm text-gray-800 dark:text-gray-100">{{ p.rating?.toFixed(2) || '0.00' }}</p>
+                    <div class="text-yellow-400 text-xs">★</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -134,8 +164,11 @@ export default {
     // حساب نسبة التغير
     const calculateChange = (current, last) => {
       if (last === 0) return current > 0 ? 100 : 0;
-      return Math.round(((current - last) / last) * 100);
+      const change = Math.round(((current - last) / last) * 100);
+      if (change === 0) return 0;
+      return change;
     };
+
 
     const fetchData = async () => {
       const now = new Date();
@@ -171,34 +204,62 @@ export default {
       );
       ordersChange.value = calculateChange(totalOrders.value, lastWeekOrdersSnapshot.size);
 
-      // Example: fixed percent changes for demo
-      userChange.value = 5;
-      companyChange.value = -2;
-      craftsmenChange.value = 3;
+      // Users last week
+      const lastWeekUsersSnapshot = await getDocs(
+        query(
+          collection(db, "clients"),
+          where("createdAt", "<", Timestamp.fromDate(now)),
+          where("createdAt", ">", Timestamp.fromDate(oneWeekAgo))
+        )
+      );
+      userChange.value = calculateChange(totalUsers.value, lastWeekUsersSnapshot.size);
+
+      // Companies last week
+      const lastWeekCompaniesSnapshot = await getDocs(
+        query(
+          collection(db, "companies"),
+          where("createdAt", "<", Timestamp.fromDate(now)),
+          where("createdAt", ">", Timestamp.fromDate(oneWeekAgo))
+        )
+      );
+      companyChange.value = calculateChange(totalCompanies.value, lastWeekCompaniesSnapshot.size);
+
+      // Craftsmen last week
+      const lastWeekCraftsmenSnapshot = await getDocs(
+        query(
+          collection(db, "technicians"),
+          where("createdAt", "<", Timestamp.fromDate(now)),
+          where("createdAt", ">", Timestamp.fromDate(oneWeekAgo))
+        )
+      );
+      craftsmenChange.value = calculateChange(totalCraftsmen.value, lastWeekCraftsmenSnapshot.size);
 
       // Monthly Revenue Calculation (derive from `payments` collection)
       const paymentsSnapshot = await getDocs(collection(db, 'payments'));
       const revenueByMonth = Array(12).fill(0); // 12 months
       paymentsSnapshot.forEach((docItem) => {
         const data = docItem.data();
-        // support fields: amount, price
-        const price = parseFloat(data.amount ?? data.price ?? 0);
-        if (!isNaN(price)) {
-          let dateObj;
-          // Firestore Timestamp
-          if (data.date && data.date.seconds) {
-            dateObj = new Date(data.date.seconds * 1000);
-          } else if (data.date) {
-            // try parsing string date
-            dateObj = new Date(data.date);
-            if (isNaN(dateObj.getTime())) dateObj = new Date();
-          } else if (data.createdAt && data.createdAt.seconds) {
-            dateObj = new Date(data.createdAt.seconds * 1000);
-          } else {
-            dateObj = new Date();
-          }
+        // Only include payments with status "completed"
+        if (data.status === "completed") {
+          // support fields: amount, price
+          const price = parseFloat(data.amount ?? data.price ?? 0);
+          if (!isNaN(price)) {
+            let dateObj;
+            // Firestore Timestamp
+            if (data.date && data.date.seconds) {
+              dateObj = new Date(data.date.seconds * 1000);
+            } else if (data.date) {
+              // try parsing string date
+              dateObj = new Date(data.date);
+              if (isNaN(dateObj.getTime())) dateObj = new Date();
+            } else if (data.createdAt && data.createdAt.seconds) {
+              dateObj = new Date(data.createdAt.seconds * 1000);
+            } else {
+              dateObj = new Date();
+            }
 
-          revenueByMonth[dateObj.getMonth()] += price;
+            revenueByMonth[dateObj.getMonth()] += price;
+          }
         }
       });
       monthlyRevenue.value = revenueByMonth;
@@ -213,20 +274,23 @@ export default {
         const arr = items || [];
         arr.forEach((docItem) => {
           const data = (docItem.data && docItem.data()) ? docItem.data() : docItem;
-          const price = parseFloat(data.amount ?? data.price ?? 0);
-          if (!isNaN(price)) {
-            let dateObj;
-            if (data.date && data.date.seconds) {
-              dateObj = new Date(data.date.seconds * 1000);
-            } else if (data.date) {
-              dateObj = new Date(data.date);
-              if (isNaN(dateObj.getTime())) dateObj = new Date();
-            } else if (data.createdAt && data.createdAt.seconds) {
-              dateObj = new Date(data.createdAt.seconds * 1000);
-            } else {
-              dateObj = new Date();
+          // Only include payments with status "completed"
+          if (data.status === "completed") {
+            const price = parseFloat(data.amount ?? data.price ?? 0);
+            if (!isNaN(price)) {
+              let dateObj;
+              if (data.date && data.date.seconds) {
+                dateObj = new Date(data.date.seconds * 1000);
+              } else if (data.date) {
+                dateObj = new Date(data.date);
+                if (isNaN(dateObj.getTime())) dateObj = new Date();
+              } else if (data.createdAt && data.createdAt.seconds) {
+                dateObj = new Date(data.createdAt.seconds * 1000);
+              } else {
+                dateObj = new Date();
+              }
+              revenueByMonth[dateObj.getMonth()] += price;
             }
-            revenueByMonth[dateObj.getMonth()] += price;
           }
         });
       } catch (e) {

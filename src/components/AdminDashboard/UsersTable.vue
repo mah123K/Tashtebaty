@@ -59,7 +59,7 @@
           <tr
             v-for="client in filteredClients"
             :key="client.uid"
-            class="border-t border-gray-200 dark:border-gray-700 hover:bg-[#f3f9fc] dark:hover:bg-gray-800 transition"
+            class="border-t border-gray-200 dark:border-gray-700 hover:bg-[#f3f9fc] dark:hover:bg-gray-500 transition"
           >
           <td class="py-3 px-6">
               <div class="flex items-center gap-3">
