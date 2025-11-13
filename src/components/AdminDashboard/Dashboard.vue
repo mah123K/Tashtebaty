@@ -62,7 +62,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-10 max-w-6xl">
       <div class="bg-white dark:bg-[#111827] dark:text-gray-100 p-6 rounded-2xl shadow-md">
         <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">{{ $t('adminDashboard.dashboard.monthlyRevenue') }}</h2>
-        <div class="w-full h-60 md:h-72 lg:h-96">
+        <div class="w-full h-120">
           <canvas id="revenueChart" class="w-full h-full"></canvas>
         </div>
       </div>
@@ -163,11 +163,12 @@ export default {
 
     // حساب نسبة التغير
     const calculateChange = (current, last) => {
-      if (last === 0) return current > 0 ? 100 : 0;
-      const change = Math.round(((current - last) / last) * 100);
-      if (change === 0) return 0;
-      return change;
+      if (last === 0) return current > 5 ? 100 : 10; // أول مرة يظهر رقم صغير = 10%
+      const change = ((current - last) / last) * 100;
+      if (Math.abs(change) > 100) return change > 0 ? 100 : -100; // حد أقصى منطقي
+      return parseFloat(change.toFixed(1));
     };
+
 
 
     const fetchData = async () => {
@@ -191,7 +192,7 @@ export default {
       totalOrders.value = ordersSnapshot.size;
 
       // Pending Orders
-      const pendingSnapshot = await getDocs(query(collection(db, "orders"), where("price", "==", "Pending Quote")));
+      const pendingSnapshot = await getDocs(query(collection(db, "orders"), where("status", "==", "unconfirmed")));
       pendingOrdersCount.value = pendingSnapshot.size;
 
       // Orders last week for percent change
@@ -234,15 +235,14 @@ export default {
       );
       craftsmenChange.value = calculateChange(totalCraftsmen.value, lastWeekCraftsmenSnapshot.size);
 
-      // Monthly Revenue Calculation (derive from `payments` collection)
-      const paymentsSnapshot = await getDocs(collection(db, 'payments'));
+      // Monthly Revenue Calculation (derive from `orders` collection) - Site profits: 10% of completed orders
+      const ordersSnapshotRevenue = await getDocs(collection(db, 'orders'));
       const revenueByMonth = Array(12).fill(0); // 12 months
-      paymentsSnapshot.forEach((docItem) => {
+      ordersSnapshotRevenue.forEach((docItem) => {
         const data = docItem.data();
-        // Only include payments with status "completed"
+        // Only include orders with status "completed"
         if (data.status === "completed") {
-          // support fields: amount, price
-          const price = parseFloat(data.amount ?? data.price ?? 0);
+          const price = parseFloat(data.price || 0);
           if (!isNaN(price)) {
             let dateObj;
             // Firestore Timestamp
@@ -258,7 +258,7 @@ export default {
               dateObj = new Date();
             }
 
-            revenueByMonth[dateObj.getMonth()] += price;
+            revenueByMonth[dateObj.getMonth()] += price * 0.1; // 10% site profit
           }
         }
       });
@@ -267,16 +267,16 @@ export default {
         // topProviders will be populated by real-time listeners set up in subscribeTopProviders()
     };
 
-    // compute monthly revenue from a collection snapshot or array of docs
+    // compute monthly revenue from a collection snapshot or array of docs - Site profits: 10% of completed orders
     const computeMonthlyRevenue = (items) => {
       const revenueByMonth = Array(12).fill(0);
       try {
         const arr = items || [];
         arr.forEach((docItem) => {
           const data = (docItem.data && docItem.data()) ? docItem.data() : docItem;
-          // Only include payments with status "completed"
+          // Only include orders with status "completed"
           if (data.status === "completed") {
-            const price = parseFloat(data.amount ?? data.price ?? 0);
+            const price = parseFloat(data.price || 0);
             if (!isNaN(price)) {
               let dateObj;
               if (data.date && data.date.seconds) {
@@ -289,7 +289,7 @@ export default {
               } else {
                 dateObj = new Date();
               }
-              revenueByMonth[dateObj.getMonth()] += price;
+              revenueByMonth[dateObj.getMonth()] += price * 0.1; // 10% site profit
             }
           }
         });
@@ -387,19 +387,19 @@ export default {
       }
     };
 
-    const subscribePaymentsRealtime = () => {
+    const subscribeOrdersRealtime = () => {
       try {
-        paymentsUnsub = onSnapshot(collection(db, 'payments'), (snap) => {
+        paymentsUnsub = onSnapshot(collection(db, 'orders'), (snap) => {
           try {
             const revenue = computeMonthlyRevenue(snap.docs);
             monthlyRevenue.value = revenue;
             renderRevenueChart();
           } catch (e) {
-            console.error('payments snapshot handling error:', e);
+            console.error('orders snapshot handling error:', e);
           }
-        }, (err) => console.error('payments realtime error:', err));
+        }, (err) => console.error('orders realtime error:', err));
       } catch (e) {
-        console.error('subscribePaymentsRealtime failed:', e);
+        console.error('subscribeOrdersRealtime failed:', e);
       }
     };
 
@@ -407,7 +407,7 @@ export default {
       await fetchData();
       renderRevenueChart();
       subscribeTopProviders();
-      subscribePaymentsRealtime();
+      subscribeOrdersRealtime();
     });
 
     onUnmounted(() => {
