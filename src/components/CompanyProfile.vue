@@ -43,7 +43,7 @@ const closeAlert = () => {
 // 🟦 Dynamic service list from Firestore
 const serviceList = ref([]);
 
-// Completed orders count for this technician
+// Completed orders count for this company
 const completedCount = ref(0);
 
 let _ordersUnsub = null;
@@ -56,15 +56,15 @@ const currentIndex = ref(0);
 
 const route = useRoute();
 const router = useRouter();
-const technician = ref(null);
+const company = ref(null);
 const isLoading = ref(true);
 const isSubmitting = ref(false);
 
 // Stores the fetched availability schedule from Firebase
 const availabilitySchedule = ref([]);
 
-// Live orders for this technician (to mark booked appointments)
-const technicianOrders = ref([]);
+// Live orders for this company (to mark booked appointments)
+const companyOrders = ref([]);
 
 // Holds the currently logged-in user (client)
 const clientUser = ref(null);
@@ -119,16 +119,17 @@ const prevSlide = () => {
 };
 
 // --- Computed Properties ---
-const technicianName = computed(() => technician.value?.name || "Technician");
-const technicianSkill = computed(() => technician.value?.skill || "Specialty");
-const technicianLocation = computed(() => technician.value?.address.city || "Not Specified");
-const technicianRating = computed(() => Math.round(technician.value?.ratingAverage || 0));
-const technicianReviews = computed(() => technician.value?.ratingCount || 0);
-const technicianProfileImage = computed(
-  () => technician.value?.profileImage || new URL("../images/Ellipse 56.png", import.meta.url).href
+const companyName = computed(() => company.value?.name || "company");
+const companySkill = computed(() => company.value?.skill || "Finishing");
+const companyLocation = computed(() => company.value?.city || "Not Specified");
+const companyRating = computed(() => Math.round(company.value?.ratingAverage || 0));
+const companyReviews = computed(() => company.value?.ratingCount || 0);
+const companyProfileImage = computed(
+  () => company.value?.logoImage || new URL("../images/Ellipse 56.png", import.meta.url).href
 );
-const technicianMemberSince = computed(() => {
-  const ca = technician.value?.createdAt;
+const companyTeamSize = computed(() => company.value?.teamSize );
+const companyMemberSince = computed(() => {
+  const ca = company.value?.createdAt;
   if (!ca) return "N/A";
 
   let date;
@@ -294,9 +295,9 @@ const availableTimeSlots = computed(() => {
 
 // Set of booked times for currently selected day (based on existing orders)
 const bookedTimesForSelectedDay = computed(() => {
-  if (!selectedDayInfo.value || technicianOrders.value.length === 0) return new Set();
+  if (!selectedDayInfo.value || companyOrders.value.length === 0) return new Set();
   const dayDisplay = selectedDayInfo.value.display;
-  const times = technicianOrders.value
+  const times = companyOrders.value
     .filter((o) => o.appointmentDay === dayDisplay)
     .map((o) => o.appointmentTime)
     .filter(Boolean);
@@ -318,9 +319,9 @@ const openPopup = (service = null, price = null) => {
   orderDescription.value = "";
 
   if (service && price) {
-    // 🔹 Predefined technician service
+    // 🔹 Predefined company service
     serviceTitle.value = service;
-    servicePrice.value = price;
+    servicePrice.value = 300;
     orderDescription.value = service;
     isPriceLocked.value = true;
     isCustomService.value = false; // hide AI button
@@ -392,7 +393,7 @@ const uploadImagesToCloudinary = async (files) => {
 
 
 const submitOrder = async () => {
-  if (!selectedDayInfo.value || !selectedTime.value || !clientUser.value || !technician.value) {
+  if (!selectedDayInfo.value || !selectedTime.value || !clientUser.value || !company.value) {
     triggerAlert("Please select an available day and time.");
     return;
   }
@@ -403,11 +404,11 @@ const submitOrder = async () => {
     isSubmitting.value = false;
     return;
   }
-  if (!servicePrice.value.trim()) {
-    triggerAlert("Please enter an estimated price or budget.");
-    isSubmitting.value = false;
-    return;
-  }
+  // if (!servicePrice.value.trim()) {
+  //   triggerAlert("Please enter an estimated price or budget.");
+  //   isSubmitting.value = false;
+  //   return;
+  // }
 } 
   isSubmitting.value = true;
 
@@ -424,12 +425,12 @@ const submitOrder = async () => {
       clientId: clientUser.value.uid,
       clientName: clientData.value?.name || clientUser.value.email.split("@")[0],
       clientEmail: clientUser.value.email,
-      technicianId: route.params.id,
-      technicianName: technician.value.name || "Technician",
-      technicianSkill: technician.value.skill || "General",
+      companyId: route.params.id,
+      companyName: company.value.name || "company",
+      companySkill: company.value.skill || "General",
       serviceTitle: serviceTitle.value || "Custom Service Request",
       description: orderDescription.value || serviceTitle.value || "",
-      price: servicePrice.value || "Pending Quote",
+      price: 300,
       appointmentDate: selectedDate,
       appointmentDay: selectedDayInfo.value.display,
       appointmentTime: selectedTime.value,
@@ -467,31 +468,31 @@ const submitOrder = async () => {
   }
 };
 
-// --- Fetch Technician, Client, and Services ---
-const fetchTechnicianServices = async (technicianId) => {
+// --- Fetch company, Client, and Services ---
+const fetchcompanyServices = async (companyId) => {
   try {
-    const servicesRef = collection(db, "technicians", technicianId, "services");
+    const servicesRef = collection(db, "companies", companyId, "services");
     const snapshot = await getDocs(servicesRef);
     serviceList.value = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
   } catch (error) {
-    console.error("Error fetching technician services:", error);
+    console.error("Error fetching company services:", error);
   }
 };
 
-// 🟩 NEW: Fetch Technician Gallery
-const fetchTechnicianGallery = async (technicianId) => {
+// 🟩 NEW: Fetch company Gallery
+const fetchcompanyGallery = async (companyId) => {
   try {
-    const galleryRef = collection(db, "technicians", technicianId, "gallery");
+    const galleryRef = collection(db, "companies", companyId, "gallery");
     const snapshot = await getDocs(galleryRef);
     galleryImages.value = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
   } catch (error) {
-    console.error("Error fetching technician gallery:", error);
+    console.error("Error fetching company gallery:", error);
     galleryImages.value = [];
   }
 };
@@ -515,36 +516,36 @@ onMounted(async () => {
     }
   });
 
-  const technicianIdParam = route.params.id;
-  if (!technicianIdParam) {
-    console.error("No technician ID found in route.");
+  const companyIdParam = route.params.id;
+  if (!companyIdParam) {
+    console.error("No company ID found in route.");
     isLoading.value = false;
     return;
   }
   try {
-    const docRef = doc(db, "technicians", technicianIdParam);
+    const docRef = doc(db, "companies", companyIdParam);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-      technician.value = docSnap.data();
+      company.value = docSnap.data();
 
-      if (technician.value.availability && Array.isArray(technician.value.availability)) {
-        availabilitySchedule.value = technician.value.availability;
+      if (company.value.availability && Array.isArray(company.value.availability)) {
+        availabilitySchedule.value = company.value.availability;
       } else {
         availabilitySchedule.value = [];
       }
 
-      // 🟩 Fetch technician services dynamically
-      await fetchTechnicianServices(technicianIdParam);
+      // 🟩 Fetch company services dynamically
+      await fetchcompanyServices(companyIdParam);
 
-      // 🟩 Fetch technician gallery dynamically
-      await fetchTechnicianGallery(technicianIdParam);
+      // 🟩 Fetch company gallery dynamically
+      await fetchcompanyGallery(companyIdParam);
 
       // 🟩 Listen for completed orders count (live)
       try {
         const ordersRef = collection(db, "orders");
         const q = query(
           ordersRef,
-          where("technicianId", "==", technicianIdParam),
+          where("companyId", "==", companyIdParam),
           where("status", "==", "completed")
         );
         _ordersUnsub = onSnapshot(q, (snap) => {
@@ -554,29 +555,29 @@ onMounted(async () => {
         console.error("Error listening for completed orders:", e);
       }
 
-      // 🔹 Listen to all orders for this technician to disable booked slots
+      // 🔹 Listen to all orders for this company to disable booked slots
       try {
         const allOrdersRef = collection(db, "orders");
-        const qAll = query(allOrdersRef, where("technicianId", "==", technicianIdParam));
+        const qAll = query(allOrdersRef, where("companyId", "==", companyIdParam));
         onSnapshot(qAll, (snap) => {
-          technicianOrders.value = snap.docs.map((d) => d.data());
+          companyOrders.value = snap.docs.map((d) => d.data());
         });
       } catch (e) {
-        console.error("Error listening for technician orders:", e);
+        console.error("Error listening for company orders:", e);
       }
       
-      // 🟩 Listen for Ratings for this technician (no orderBy; sort client-side)
+      // 🟩 Listen for Ratings for this company (no orderBy; sort client-side)
       try {
         const mapRatings = (docs) =>
           docs
             .map((d) => ({ id: d.id, ...d.data() }))
             .filter((r) => {
-              const techId = technicianIdParam;
+              const compId = companyIdParam;
               return (
-                r.technicianId === techId ||
-                r.technicianID === techId ||
-                r.providerId === techId ||
-                r.providerID === techId
+                r.companyId === compId ||
+                r.companyId === compId ||
+                r.providerId === compId ||
+                r.providerID === compId
               );
             })
             .map((r) => ({
@@ -605,7 +606,7 @@ onMounted(async () => {
 
         // 'Ratings' collection
         const ratingsRefA = collection(db, "Ratings");
-        const rqAFallback = query(ratingsRefA, where("technicianId", "==", technicianIdParam));
+        const rqAFallback = query(ratingsRefA, where("providerId", "==", companyIdParam));
         onSnapshot(rqAFallback, (snapA) => {
           const itemsA = mapRatings(snapA.docs).map((x) => ({ ...x, __src: "ratingsA" }));
           feedbacks.value = mergeAndSort(itemsA, feedbacks.value.filter((x) => x.__src !== "ratingsA"));
@@ -614,7 +615,7 @@ onMounted(async () => {
 
         // 'ratings' (lowercase) for backward compatibility
         const ratingsRefB = collection(db, "ratings");
-        const rqBFallback = query(ratingsRefB, where("technicianId", "==", technicianIdParam));
+        const rqBFallback = query(ratingsRefB, where("companyId", "==", companyIdParam));
         onSnapshot(rqBFallback, (snapB) => {
           const itemsB = mapRatings(snapB.docs).map((x) => ({ ...x, __src: "ratingsB" }));
           feedbacks.value = mergeAndSort(feedbacks.value.filter((x) => x.__src !== "ratingsB"), itemsB);
@@ -624,11 +625,11 @@ onMounted(async () => {
         console.error("Error listening for ratings:", e);
       }
     } else {
-      technician.value = null;
+      company.value = null;
     }
   } catch (error) {
-    console.error("Error fetching technician:", error);
-    technician.value = null;
+    console.error("Error fetching company:", error);
+    company.value = null;
   } finally {
     isLoading.value = false;
   }
@@ -652,8 +653,8 @@ watch(selectedDayInfo, () => {
   </div>
 
   <!-- Not Found State -->
-  <div v-else-if="!technician" class="flex justify-center items-center min-h-screen">
-    <p class="text-2xl text-red-500">Technician not found.</p>
+  <div v-else-if="!company" class="flex justify-center items-center min-h-screen">
+    <p class="text-2xl text-red-500">company not found.</p>
   </div>
 
   <!-- Profile Content -->
@@ -661,17 +662,17 @@ watch(selectedDayInfo, () => {
     <div
       class="technichainProfile my-10 md:my-20 w-[90%] md:w-[80%] mx-auto flex flex-col lg:flex-row justify-between gap-8 lg:gap-12"
     >
-      <!-- Left Card (Technician Info) -->
+      <!-- Left Card (company Info) -->
       <div class="card w-full lg:w-[35%] bg-gray-50 dark:bg-[#16222B] rounded-2xl shadow-lg self-start p-6">
         <div class="imgContainer flex flex-col items-center justify-center">
           <img
-            :src="technicianProfileImage"
+            :src="companyProfileImage"
             class="mt-3 w-40 h-40 md:w-48 md:h-48 rounded-full object-cover border-4 border-white shadow-md"
-            alt="Technician Profile Photo"
+            alt="company Profile Photo"
           />
           <div class="nameContainer flex items-center mt-4">
             <h2 class="font-semibold text-2xl md:text-3xl text-gray-800 dark:text-white">
-              {{ technicianName }}
+              {{ companyName }}
             </h2>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -684,17 +685,17 @@ watch(selectedDayInfo, () => {
             </svg>
           </div>
           <h3 class="text-lg md:text-xl text-gray-600 dark:text-white mt-1">
-            {{ technicianSkill }}
+            {{ companySkill }}
           </h3>
           <div class="flex justify-center my-2 text-yellow-400 text-lg md:text-xl">
-            <i v-for="n in technicianRating" :key="n" class="fas fa-star fill-current"></i>
+            <i v-for="n in companyRating" :key="n" class="fas fa-star fill-current"></i>
             <i
-              v-for="n in 5 - technicianRating"
+              v-for="n in 5 - companyRating"
               :key="'empty-' + n"
               class="far fa-star text-gray-300"
             ></i>
           </div>
-          <p class="text-sm md:text-base mb-3 text-gray-500 dark:text-white">({{ technicianReviews }} reviews)</p>
+          <p class="text-sm md:text-base mb-3 text-gray-500 dark:text-white">({{ companyReviews }} reviews)</p>
           <div class="line w-full h-px bg-gray-300 my-4"></div>
         </div>
 
@@ -718,12 +719,17 @@ watch(selectedDayInfo, () => {
               <i class="fas fa-briefcase w-5 text-center text-accent-color"></i>
               Orders Completed
             </div>
+            <div class="flex items-center gap-2">
+              <i class="fas fa-users w-5 text-center text-accent-color"></i>
+            Team Size
+            </div>
           </div>
           <div class="dataValue space-y-3 text-right text-gray-600 dark:text-white font-normal">
-            <div>{{ technicianLocation }}</div>
-            <div>{{ technicianMemberSince }}</div>
+            <div>{{ companyLocation }}</div>
+            <div>{{ companyMemberSince }}</div>
             <div>~35 Minutes</div>
             <div>{{ completedCount }}</div>
+            <div>{{ companyTeamSize }}</div>
           </div>
         </div>
         <div class="flex justify-center mb-6 px-6">
@@ -731,7 +737,7 @@ watch(selectedDayInfo, () => {
             :to="{ path: '/chat', query: { uid: route.params.id } }"
             class="w-full bg-accent-color text-white text-center px-6 py-3 rounded-lg text-lg font-semibold hover:bg-[#4a74b3] transition cursor-pointer shadow-md"
           >
-            Chat with {{ technicianName.split(" ")[0] }}
+            Chat with {{ companyName.split(" ")[0] }}
           </router-link>
         </div>
       </div>
@@ -788,7 +794,7 @@ watch(selectedDayInfo, () => {
                   <template v-else>
                     <UserServiceCard
                       :service="service"
-                      :userType="'technician'"
+                      :userType="'company'"
                       class="h-full w-full"
                       @order="(srv) => openPopup(srv.descreption, srv.price)"
                     />
@@ -833,7 +839,7 @@ watch(selectedDayInfo, () => {
         >
           &times;
         </button>
-        <h2 class="text-2xl font-semibold mb-6 text-accent-color">Order Details</h2>
+        <h2 class="text-2xl font-semibold mb-6 text-accent-color">Inspection Fee</h2>
         <div class="subContainer flex flex-col md:flex-row gap-6">
           <div class="orderDetails w-full md:w-1/2 space-y-4">
             <div class="flex flex-col items-start">
@@ -905,18 +911,18 @@ watch(selectedDayInfo, () => {
               </button>
 
             </div>
-            <div>
-              <label class="block text-left font-semibold text-gray-700 mb-1 dark:text-white">Price</label>
-              <input
-                v-model="servicePrice"
-                :disabled="isPriceLocked"
-                type="text"
-                :placeholder="
-                  isPriceLocked ? 'Price set by service' : 'Enter Your Budget (Optional)...'
-                "
-                class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-accent-color disabled:bg-gray-100 dark:disabled:bg-transparent"
-              />
-            </div>
+           <div>
+  <label class="block text-left font-semibold text-gray-700 mb-1 dark:text-white">
+    Price
+  </label>
+  <input
+    type="text"
+    value="300 EGP"
+    disabled
+    class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-accent-color disabled:bg-gray-100 dark:disabled:bg-transparent"
+  />
+</div>
+
           </div>
           <div class="orderTime w-full md:w-1/2 flex flex-col items-center">
             <h3 class="text-xl font-semibold text-accent-color mb-4 dark:text-white">Choose Appointment</h3>
@@ -933,7 +939,7 @@ watch(selectedDayInfo, () => {
                   <option :value="null" disabled>
                     {{
                       activeAvailableDays.length === 0
-                        ? "Technician not available"
+                        ? "company not available"
                         : "-- Select Day --"
                     }}
                   </option>
@@ -1009,7 +1015,7 @@ watch(selectedDayInfo, () => {
 
     <!-- 🟦 Safe Dynamic Work Gallery -->
     <div
-      v-if="technician && Array.isArray(galleryImages)"
+      v-if="company && Array.isArray(galleryImages)"
       class="WorkGallery flex flex-col items-center justify-center w-[90%] md:w-[80%] mx-auto mt-16 md:mt-24"
     >
       <h1 class="main-header">Work Gallery</h1>
@@ -1032,7 +1038,7 @@ watch(selectedDayInfo, () => {
       </div>
 
       <div v-else class="text-gray-500 mt-6 italic">
-        This technician has not uploaded any work photos yet.
+        This company has not uploaded any work photos yet.
       </div>
     </div>
 

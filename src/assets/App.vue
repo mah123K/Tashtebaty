@@ -4,6 +4,7 @@ import NavBar from "../layout/NavBar.vue";
 import TechncionDashboard from "../components/Technicion Dashboard/TechncionDashboard.vue";
 import TechnicionDashNav from "../layout/TechnicionDashNav.vue";
 import MannageUserProfile from "../components/MannageUserProfile.vue";
+import CompanyDashboard from "@/components/companyDashboard/CompanyDashboard.vue";
 
 export default {
   name: "App",
@@ -12,7 +13,7 @@ export default {
   },
   computed: {
     hideLayout() {
-      const hiddenRoutes = ["/login", "/signup", "/dashboard","/technician-dashboard", "/technician-chat"];
+      const hiddenRoutes = ["/login", "/signup", "/dashboard","/technician-dashboard", "/technician-chat", "/company-dashboard"];
       return hiddenRoutes.some((path) => this.$route.path.startsWith(path));
     },
     
@@ -27,6 +28,7 @@ export default {
     FooterLayout,
     TechnicionDashNav,
     MannageUserProfile,
+    CompanyDashboard
   },
   
   // This 'watch' block is 100% correct and will

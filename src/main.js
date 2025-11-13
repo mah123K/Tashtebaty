@@ -46,17 +46,14 @@ import AddOffer from "./components/AdminDashboard/AddOffers.vue";
 
 // Technician Dashboard
 import TechncionDashboard from "./components/Technicion Dashboard/TechncionDashboard.vue";
-import CreateServiceCard from "./components/Technicion Dashboard/CreateServiceCard.vue";
-import MyAppointments from "./components/Technicion Dashboard/MyAppointments.vue";
-import ManageTechnicianProfile from "./components/Technicion Dashboard/MannageTechnicionProfile.vue";
-import ordersCard from "./components/Technicion Dashboard/ordersCard.vue";
-import ServiceCard from "./components/Technicion Dashboard/ServiceCard.vue";
-
+// Company Dashboard
+import CompanyDashboard from "./components/companyDashboard/CompanyDashboard.vue";
 // ✅ User Pages
 import UserOrders from "./components/UserOrders.vue";
 import PaymentSuccess from "./components/PaymentSuccess.vue";
 import PaymentFailed from "./components/PaymentFailed.vue";
 import PaymentPage from "./components/PaymentPage.vue";
+import CompanyProfile from "./components/CompanyProfile.vue";
 
 // ================================
 // ⚙️ Firebase Config
@@ -86,6 +83,7 @@ const routes = [
   { path: "/about", component: AboutUs },
   { path: "/profiles/:service", name: "ProfilesPage", component: ProfilesPage },
   { path: "/profile/:id", component: TechnicianProfile },
+  { path: "/company-profile/:id", component: CompanyProfile },
   { path: "/contactus", component: ContactUs },
   { path: "/chat", component: ChatPage },
   { path: "/manageUserProfile", component: ManageUserProfile },
@@ -117,6 +115,7 @@ const routes = [
     ],
   },
   { path: "/technician-dashboard", component: TechncionDashboard, meta: { requiresTechnician: true } },
+  { path: "/company-dashboard", name: "CompanyDashboard", component: CompanyDashboard, meta: { requiresCompany: true } },
   { path: "/technician-chat", name: "TechnicianChat", component: ChatPage, meta: { requiresTechnician: true } },
 ];
 
@@ -129,7 +128,7 @@ const router = createRouter({
 });
 
 router.afterEach((to) => {
-  if (to.path.startsWith("/dashboard") || to.path.startsWith("/technician-dashboard")) {
+  if (to.path.startsWith("/dashboard") || to.path.startsWith("/technician-dashboard") || to.path.startsWith("/company-dashboard")) {
     localStorage.setItem("lastDashboardRoute", to.fullPath);
   }
 });
@@ -141,8 +140,9 @@ router.beforeEach(async (to, from, next) => {
   const requiresAdmin = to.meta.requiresAdmin;
   const requiresTechnician = to.meta.requiresTechnician;
   const requiresAuth = to.meta.requiresAuth;
+  const requiresCompany = to.meta.requiresCompany;
 
-  if (!user && (requiresAdmin || requiresTechnician || requiresAuth)) {
+  if (!user && (requiresAdmin || requiresTechnician || requiresAuth|| requiresCompany)) {
     return next("/login");
   }
 
@@ -179,6 +179,7 @@ router.beforeEach(async (to, from, next) => {
     const lastRoute = localStorage.getItem("lastDashboardRoute");
     if (lastRoute?.startsWith("/dashboard")) return next(lastRoute);
     if (lastRoute?.startsWith("/technician-dashboard")) return next(lastRoute);
+    if(lastRoute?.startsWith("/company-dashboard")) return next(lastRoute);
     return next("/");
   }
 
@@ -207,7 +208,7 @@ app.mount("#app");
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     localStorage.removeItem("lastDashboardRoute");
-    if (router.currentRoute.value.meta.requiresAdmin || router.currentRoute.value.meta.requiresTechnician) {
+    if (router.currentRoute.value.meta.requiresAdmin || router.currentRoute.value.meta.requiresTechnician|| router.currentRoute.value.meta.requiresCompany) {
       router.push("/login");
     }
     return;
@@ -240,9 +241,9 @@ onAuthStateChanged(auth, async (user) => {
         router.replace(lastRoute);
       }
     }else if (companyDoc.exists()) {
-      if (!lastRoute || !lastRoute.startsWith("/technician-dashboard")) {
-        localStorage.setItem("lastDashboardRoute", "/technician-dashboard");
-        lastRoute = "/technician-dashboard";
+      if (!lastRoute || !lastRoute.startsWith("/company-dashboard")) {
+        localStorage.setItem("lastDashboardRoute", "/company-dashboard");
+        lastRoute = "/company-dashboard";
       }
       if (currentPath === "/" || currentPath === "/login" || currentPath === "/signup") {
         router.replace(lastRoute);

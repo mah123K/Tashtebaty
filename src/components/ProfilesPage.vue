@@ -247,7 +247,7 @@ export default {
         // --- Fetch companies only if serviceName is finishing ---
         if (this.serviceName === "Finishing") {
           const companiesCol = collection(db, "companies");
-          console.log("companiesCol:", companiesCol);
+          // console.log("companiesCol:", companiesCol);
           const companiesSnap = await getDocs(companiesCol);
 
           for (const docSnap of companiesSnap.docs) {

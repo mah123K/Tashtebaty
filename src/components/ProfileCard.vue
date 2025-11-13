@@ -61,20 +61,20 @@
           </span>
           <i class="fa-solid fa-star text-[#FF9529]"></i>
         </div>
+
         <div class="flex flex-row items-center gap-10">
           <button
             class="mt-4 text-white text-sm font-medium px-5 py-2 rounded-lg shadow transition-all duration-500"
             :class="isHovered ? 'bg-[#0B161B]' : 'bg-[#5984C6]'"
+            @click="goToProfile"
           >
-            <router-link :to="`/profile/${profile.id}`" class="">
-              {{ $t("profilesPage.viewProfile") }}
-            </router-link>
+            {{ $t('profilesPage.viewProfile') }}
           </button>
 
           <div class="flex items-center gap-1 mt-2">
             <i
               class="fa-solid fa-location-dot"
-            :class="isHovered ? 'text-white' : 'text-(--text-primary)'"
+              :class="isHovered ? 'text-white' : 'text-(--text-primary)'"
             ></i>
             <span class="text-sm" :class="isHovered ? 'text-white' : 'text-(--text-primary)'">
               {{ profile.location }}
@@ -84,6 +84,7 @@
       </div>
     </div>
 
+    <!-- ========== LIST VIEW ========== -->
     <div
       v-else
       @mouseenter="isHovered = true"
@@ -126,8 +127,9 @@
           </div>
           <button
             class="w-full sm:w-auto mx-auto sm:mx-0 text-white text-sm font-medium px-5 py-2 rounded-lg transition duration-300 bg-accent-color hover:bg-dark-blue"
+            @click="goToProfile"
           >
-            {{ $t("profilesPage.viewProfile") }}
+            {{ $t('profilesPage.viewProfile') }}
           </button>
         </div>
       </div>
@@ -156,48 +158,52 @@ export default {
       default: "grid",
     },
   },
+  methods: {
+    goToProfile() {
+      // 👇 تحديد الوجهة حسب نوع الحساب
+      if (this.profile.type === "technician") {
+        this.$router.push(`/profile/${this.profile.id}`);
+      } else if (this.profile.type === "company") {
+        this.$router.push(`/company-profile/${this.profile.id}`);
+      } else {
+        // fallback لو مفيش نوع
+        this.$router.push(`/profile/${this.profile.id}`);
+      }
+    },
+  },
   async mounted() {
     try {
       const profileId = this.profile?.id;
-
       if (profileId) {
-        try {
-          const userRef = doc(db, "technicians", profileId); 
-          const userSnap = await getDoc(userRef);
-          if (userSnap.exists()) {
-            const data = userSnap.data();
-            if (data.createdAt?.seconds) {
-              const date = new Date(data.createdAt.seconds * 1000);
-              this.memberSince = date.getFullYear();
-            } else if (data.createdAt) {
-              const d = new Date(data.createdAt);
-              this.memberSince = isNaN(d.getTime())
-                ? this.$t("profilesPage.fallbackNA")
-                : d.getFullYear();
-            } else {
-              this.memberSince = this.$t("profilesPage.fallbackNA");
-            }
+        const userRef = doc(db, "technicians", profileId);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          if (data.createdAt?.seconds) {
+            const date = new Date(data.createdAt.seconds * 1000);
+            this.memberSince = date.getFullYear();
+          } else if (data.createdAt) {
+            const d = new Date(data.createdAt);
+            this.memberSince = isNaN(d.getTime())
+              ? this.$t("profilesPage.fallbackNA")
+              : d.getFullYear();
+          } else {
+            this.memberSince = this.$t("profilesPage.fallbackNA");
           }
-        } catch (e) {
-          console.error("Error fetching profile createdAt:", e);
         }
       }
 
-      try {
-        const pid = profileId || auth.currentUser?.uid;
-        if (pid) {
-          const ordersRef = collection(db, "orders");
-          const q = query(
-            ordersRef,
-            where("technicianId", "==", pid),
-            where("status", "==", "completed")
-          );
-          this.ordersUnsub = onSnapshot(q, (snap) => {
-            this.ordersCompleted = snap.size;
-          });
-        }
-      } catch (e) {
-        console.error("ProfileCard orders listener error:", e);
+      const pid = profileId || auth.currentUser?.uid;
+      if (pid) {
+        const ordersRef = collection(db, "orders");
+        const q = query(
+          ordersRef,
+          where("technicianId", "==", pid),
+          where("status", "==", "completed")
+        );
+        this.ordersUnsub = onSnapshot(q, (snap) => {
+          this.ordersCompleted = snap.size;
+        });
       }
     } catch (e) {
       console.error("ProfileCard mounted error:", e);

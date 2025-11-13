@@ -4,6 +4,7 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+   userType: String 
 })
 
 const emit = defineEmits(["order"])
@@ -26,6 +27,7 @@ const emit = defineEmits(["order"])
     </h2>
 
     <button
+    v-if="userType === 'technician'"
       @click="emit('order', service)"
       class="w-full bg-accent-color text-white px-4 py-2 mt-auto rounded-lg font-semibold hover:bg-[#4a74b3] transition cursor-pointer"
     >

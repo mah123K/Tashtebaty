@@ -46,7 +46,10 @@
                 </div>
 
                 <ul class="space-y-2 text-(--text-muted)">
-                  <li><span class="font-semibold text-(--text-primary)">Technician:</span> {{ getTranslatedName(order.technicianName) || '—' }}</li>
+                  <li>
+                  <span class="font-semibold text-(--text-primary)">{{ getOrderProviderLabel(order) }}:</span>
+                  {{ getOrderProviderName(order) }}
+                  </li>
                   <li><span class="font-semibold text-(--text-primary)">Price:</span> {{ order.price }} EGP</li>
                   <li><span class="font-semibold text-(--text-primary)">Date:</span> {{ order.date }}</li>
                   <li><span class="font-semibold text-(--text-primary)">Time:</span> {{ order.time }}</li>
@@ -106,7 +109,10 @@
                 </div>
 
                 <ul class="space-y-2 text-(--text-muted)">
-                  <li><span class="font-semibold text-(--text-primary)">Technician:</span> {{ getTranslatedName(order.technicianName) || '—' }}</li>
+                  <li>
+                  <span class="font-semibold text-(--text-primary)">{{ getOrderProviderLabel(order) }}:</span>
+                  {{ getOrderProviderName(order) }}
+                  </li>
                   <li><span class="font-semibold text-(--text-primary)">Price:</span> {{ order.price }} EGP</li>
                   <li><span class="font-semibold text-(--text-primary)">Date:</span> {{ order.date }}</li>
                   <li><span class="font-semibold text-(--text-primary)">Time:</span> {{ order.time }}</li>
@@ -140,7 +146,10 @@
                 </div>
 
                 <ul class="space-y-2 text-(--text-muted)">
-                  <li><span class="font-semibold text-(--text-primary)">Technician:</span> {{ getTranslatedName(order.technicianName) || '—' }}</li>
+                    <li>
+                  <span class="font-semibold text-(--text-primary)">{{ getOrderProviderLabel(order) }}:</span>
+                  {{ getOrderProviderName(order) }}
+                  </li>
                   <li><span class="font-semibold text-(--text-primary)">Price:</span> {{ order.price }} EGP</li>
                   <li><span class="font-semibold text-(--text-primary)">Date:</span> {{ order.date }}</li>
                   <li><span class="font-semibold text-(--text-primary)">Time:</span> {{ order.time }}</li>
@@ -172,8 +181,10 @@
                 </div>
 
                 <ul class="space-y-2 text-(--text-muted)">
-                  <li><span class="font-semibold text-(--text-primary)">Technician:</span> {{ getTranslatedName(order.technicianName) || '—' }}</li>
-                  <li><span class="font-semibold text-(--text-primary)">Price:</span> {{ order.price }} EGP</li>
+                  <li>
+                  <span class="font-semibold text-(--text-primary)">{{ getOrderProviderLabel(order) }}:</span>
+                  {{ getOrderProviderName(order) }}
+                  </li>                  <li><span class="font-semibold text-(--text-primary)">Price:</span> {{ order.price }} EGP</li>
                   <li><span class="font-semibold text-(--text-primary)">Date:</span> {{ order.date }}</li>
                   <li><span class="font-semibold text-(--text-primary)">Time:</span> {{ order.time }}</li>
                   <li><span class="font-semibold text-(--text-primary)">Location:</span> {{ formatLocation(order.location) }}</li>
@@ -187,7 +198,7 @@
                     @click="openRatePopup(order)"
                     class="bg-accent-color hover:bg-(--accent) text-white px-4 py-2 rounded-lg font-semibold transition"
                   >
-                    Rate Technician
+                    Rate {{ getOrderProviderLabel(order) }}
                   </button>
                   <div v-else class="text-(--text-muted)">You rated: {{ getExistingRating(order.id) }}★</div>
                 </div>
@@ -283,11 +294,11 @@
     <transition name="fade">
       <div v-if="showRatePopup" class="fixed inset-0 bg-[#000000d0] flex items-center justify-center z-50">
         <div class="bg-white rounded-2xl p-8 w-[90%] max-w-md shadow-lg text-center">
-          <h2 class="text-2xl font-semibold text-[#133B5D] mb-4">Rate Technician</h2>
+          <h2 class="text-2xl font-semibold text-[#133B5D] mb-4">Rate {{ getOrderProviderLabel(ratingOrder) }}</h2>
 
           <p class="text-gray-700 mb-4">
-            <span class="font-semibold">Technician:</span>
-            {{ getTranslatedName(ratingOrder?.technicianName) || 'Technician' }}
+            <span class="font-semibold">{{ getOrderProviderLabel(ratingOrder) }}:</span>
+            {{ getOrderProviderName(ratingOrder) }}
           </p>
           <p class="text-gray-700 mb-4">
             <span class="font-semibold">Service:</span>
@@ -349,7 +360,6 @@ import {
   getDoc,
   getDocs,
   runTransaction,
-  or,
 } from "firebase/firestore";
 // NEW: Import the custom alert popup
 import AlertPopup from "../components/AlertPopup.vue"; // <-- Adjust path as needed
@@ -623,7 +633,7 @@ const submitRating = async () => {
     const user = auth.currentUser;
     if (!user) throw new Error("Not authenticated");
 
-    // Prevent duplicate rating by checking again
+    // ✅ Prevent duplicate rating
     const existingQ = query(
       collection(db, "Ratings"),
       where("orderId", "==", ratingOrder.value.id),
@@ -637,7 +647,7 @@ const submitRating = async () => {
       return;
     }
 
-    // Load client profile to include saved name and image
+    // ✅ Load client info
     let clientImageUrl = "";
     let clientName = ratingOrder.value.clientName || user.displayName || null;
     try {
@@ -652,10 +662,22 @@ const submitRating = async () => {
       console.warn("Could not fetch client profile:", e);
     }
 
+    // ✅ Determine provider (technician OR company)
+    const isTechnician = !!ratingOrder.value.technicianId;
+    const providerId = isTechnician
+      ? ratingOrder.value.technicianId
+      : ratingOrder.value.companyId;
+    const providerName = isTechnician
+      ? ratingOrder.value.technicianName
+      : ratingOrder.value.companyName;
+    const providerType = isTechnician ? "technician" : "company";
+
+    // ✅ Add rating record
     await addDoc(collection(db, "Ratings"), {
       orderId: ratingOrder.value.id,
-      technicianId: ratingOrder.value.technicianId,
-      technicianName: ratingOrder.value.technicianName || null,
+      providerId,
+      providerName: providerName || null,
+      providerType, // 👈 useful to know what type of provider this rating belongs to
       clientId: user.uid,
       clientName,
       clientImageUrl,
@@ -664,16 +686,21 @@ const submitRating = async () => {
       createdAt: serverTimestamp(),
     });
 
-    // Atomically update technician average and count
-    const techRef = doc(db, "technicians", ratingOrder.value.technicianId);
+    // ✅ Update provider’s rating average & count
+    const collectionName = isTechnician ? "technicians" : "companies";
+    const providerRef = doc(db, collectionName, providerId);
+
     await runTransaction(db, async (transaction) => {
-      const techSnap = await transaction.get(techRef);
-      const data = techSnap.exists() ? techSnap.data() : {};
+      const providerSnap = await transaction.get(providerRef);
+      const data = providerSnap.exists() ? providerSnap.data() : {};
       const currentAvg = Number(data.ratingAverage || 0);
       const currentCount = Number(data.ratingCount || 0);
       const newCount = currentCount + 1;
-      const newAvg = newCount > 0 ? (currentAvg * currentCount + ratingStars.value) / newCount : ratingStars.value;
-      transaction.update(techRef, {
+      const newAvg =
+        newCount > 0
+          ? (currentAvg * currentCount + ratingStars.value) / newCount
+          : ratingStars.value;
+      transaction.update(providerRef, {
         ratingAverage: Number(newAvg.toFixed(2)),
         ratingCount: newCount,
       });
@@ -688,6 +715,21 @@ const submitRating = async () => {
     submittingRating.value = false;
   }
 };
+
+const getOrderProviderName = (order) => {
+  if (order.companyId && order.companyName) {
+    return getTranslatedName(order.companyName); // لو في شركة
+  } else if (order.technicianName) {
+    return getTranslatedName(order.technicianName); // لو فني
+  } else {
+    return "—";
+  }
+};
+
+const getOrderProviderLabel = (order) => {
+  return order.companyId ? "Company" : "Technician";
+};
+
 </script>
 
 <style scoped>

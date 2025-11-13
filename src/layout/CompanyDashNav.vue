@@ -3,7 +3,14 @@ import { getAuth, signOut } from "firebase/auth";
 import { useRouter } from "vue-router";
 import { ref, onMounted, computed } from "vue";
 import { db } from "@/firebase/firebase";
-import { doc, getDoc, collection, query, where, onSnapshot } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  where,
+  onSnapshot,
+} from "firebase/firestore";
 import { useTechnicianNotifications } from "@/composables/useTechnicianNotifications"; // ✅ shared notifications composable
 
 const props = defineProps({
@@ -13,13 +20,17 @@ const emit = defineEmits(["changeTab"]);
 
 const router = useRouter();
 
-const technician = ref({ name: "", earnings: 0, image: "" });
-const technicianId = ref(null);
+const company = ref({ name: "", earnings: 0, image: "" });
+const companyId = ref(null);
 const orders = ref([]);
 
 // ✅ Use shared notifications composable
-const { notifications, unreadCount, showNotifications, toggleNotifications } =
-  useTechnicianNotifications();
+const {
+  notifications,
+  unreadCount,
+  showNotifications,
+  toggleNotifications,
+} = useTechnicianNotifications();
 
 // 🔹 Calculate total and monthly earnings dynamically
 const totalEarnings = computed(() => {
@@ -49,16 +60,16 @@ onMounted(async () => {
   const auth = getAuth();
   const user = auth.currentUser;
   if (user) {
-    technicianId.value = user.uid;
+    companyId.value = user.uid;
 
-    const docRef = doc(db, "technicians", user.uid);
+    const docRef = doc(db, "companies", user.uid);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-      technician.value = docSnap.data();
+      company.value = docSnap.data();
     }
 
     const ordersRef = collection(db, "orders");
-    const q = query(ordersRef, where("technicianId", "==", user.uid));
+    const q = query(ordersRef, where("companyId", "==", user.uid));
     onSnapshot(q, (snapshot) => {
       orders.value = snapshot.docs.map((d) => d.data());
     });
@@ -69,7 +80,7 @@ onMounted(async () => {
   }
   window.addEventListener("profile-updated", (event) => {
     if (event.detail?.image) {
-      technician.value.profileImage = event.detail.image;
+      company.value.profileImage = event.detail.image;
     }
   });
 });
@@ -97,48 +108,73 @@ const handleLogout = async () => {
 
           <div class="flex flex-col items-center">
             <img
-              :src="technician.profileImage || '/images/default-tech.png'"
+              :src="company.logoImage || '/images/default-tech.png'"
               alt=""
               class="w-20 h-20 rounded-full border-4 border-white shadow-md mb-2 object-cover"
             />
             <p class="text-base font-semibold">
-              {{ technician.name || "Technician" }}
+              {{ company.name || "company" }}
             </p>
 
-            <!-- Earnings -->
-            <div class="flex items-center gap-2 text-sm opacity-90 mb-3">
-              <p class="font-medium">My Earnings:</p>
-              <p class="font-bold text-xl text-green-600">
-                {{ totalEarnings?.toLocaleString?.() || 0 }}
-                <span class="text-sm font-semibold">EGP</span>
-              </p>
-            </div>
+              <!-- Earnings -->
+        <div class="flex items-center gap-2 text-sm opacity-90 mb-3">
+          <p class="font-medium">My Earnings:</p>
+          <p class="font-bold text-xl text-green-600 ">
+            {{ totalEarnings?.toLocaleString?.() || 0 }} 
+            <span class="text-sm font-semibold ">EGP</span>
+          </p>
+        </div>
           </div>
         </div>
 
         <!-- Navigation -->
         <nav class="flex flex-col w-full space-y-1 px-2">
+             <button
+            @click="emit('changeTab', 'dashboard')"
+            :class="[
+              props.active === 'dashboard'
+                ? 'bg-[#1b5383]'
+                : 'hover:bg-[#1b5383]/60',
+            ]"
+            class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
+          >
+            <i class="bi bi-house"></i>
+            Dashboard
+          </button>
           <button
-            @click="emit('changeTab', 'orders')"
-            :class="[props.active === 'orders' ? 'bg-[#1b5383]' : 'hover:bg-[#1b5383]/60']"
+            @click="emit('changeTab', 'projects')"
+            :class="[
+              props.active === 'projects'
+                ? 'bg-[#1b5383]'
+                : 'hover:bg-[#1b5383]/60',
+            ]"
             class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
           >
             <i class="fa-solid fa-clipboard-list text-white text-lg"></i>
-            Orders
+            Projects
           </button>
-
           <button
             @click="emit('changeTab', 'appointments')"
-            :class="[props.active === 'appointments' ? 'bg-[#1b5383]' : 'hover:bg-[#1b5383]/60']"
+            :class="[
+              props.active === 'appointments'
+                ? 'bg-[#1b5383]'
+                : 'hover:bg-[#1b5383]/60',
+            ]"
             class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
           >
-            <i class="fa-solid fa-calendar-days text-white text-lg"></i>
+            <i class="fa-solid fa-clipboard-list text-white text-lg"></i>
             Appointments
           </button>
 
+      
+
           <button
             @click="emit('changeTab', 'services')"
-            :class="[props.active === 'services' ? 'bg-[#1b5383]' : 'hover:bg-[#1b5383]/60']"
+            :class="[
+              props.active === 'services'
+                ? 'bg-[#1b5383]'
+                : 'hover:bg-[#1b5383]/60',
+            ]"
             class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
           >
             <i class="fa-solid fa-screwdriver-wrench text-white text-lg"></i>
@@ -147,7 +183,11 @@ const handleLogout = async () => {
 
           <button
             @click="emit('changeTab', 'workGallery')"
-            :class="[props.active === 'workGallery' ? 'bg-[#1b5383]' : 'hover:bg-[#1b5383]/60']"
+            :class="[
+              props.active === 'workGallery'
+                ? 'bg-[#1b5383]'
+                : 'hover:bg-[#1b5383]/60',
+            ]"
             class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
           >
             <i class="fa-solid fa-image text-white text-lg"></i>
@@ -156,7 +196,11 @@ const handleLogout = async () => {
 
           <button
             @click="emit('changeTab', 'earnings')"
-            :class="[props.active === 'earnings' ? 'bg-[#1b5383]' : 'hover:bg-[#1b5383]/60']"
+            :class="[
+              props.active === 'earnings'
+                ? 'bg-[#1b5383]'
+                : 'hover:bg-[#1b5383]/60',
+            ]"
             class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
           >
             <i class="fa-solid fa-coins text-white text-lg"></i>
@@ -165,24 +209,37 @@ const handleLogout = async () => {
 
           <button
             @click="emit('changeTab', 'chat')"
-            :class="[props.active === 'chat' ? 'bg-[#1b5383]' : 'hover:bg-[#1b5383]/60']"
+            :class="[
+              props.active === 'chat'
+                ? 'bg-[#1b5383]'
+                : 'hover:bg-[#1b5383]/60',
+            ]"
             class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
           >
             <i class="fa-solid fa-comments text-white text-lg"></i>
             Chat
           </button>
           <button
-            @click="emit('changeTab', 'reviews')"
-            :class="[props.active === 'reviews' ? 'bg-[#1b5383]' : 'hover:bg-[#1b5383]/60']"
-            class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
-          >
-            <i class="fa-solid fa-star text-white text-lg"></i>
-            Reviews
-          </button>
+          @click="emit('changeTab', 'reviews')"
+        :class="[
+          props.active === 'reviews'
+          ? 'bg-[#1b5383]'
+        : 'hover:bg-[#1b5383]/60',
+      ]"
+    class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
+    >
+        <i class="fa-solid fa-star text-white text-lg"></i>
+      Reviews
+    </button>
+
 
           <button
             @click="emit('changeTab', 'Techsettings')"
-            :class="[props.active === 'Techsettings' ? 'bg-[#1b5383]' : 'hover:bg-[#1b5383]/60']"
+            :class="[
+              props.active === 'Techsettings'
+                ? 'bg-[#1b5383]'
+                : 'hover:bg-[#1b5383]/60',
+            ]"
             class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
           >
             <i class="fa-solid fa-gear text-white text-lg"></i>
@@ -192,7 +249,9 @@ const handleLogout = async () => {
       </div>
 
       <!-- Logout always visible -->
-      <div class="w-full flex flex-col items-center mt-auto mb-2 shrink-0">
+      <div
+        class="w-full flex flex-col items-center mt-auto mb-2 shrink-0"
+      >
         <button
           @click="handleLogout"
           class="cursor-pointer border hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-xl w-[88%] transition shadow-md text-[16px] flex items-center justify-center gap-2"
