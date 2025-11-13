@@ -43,6 +43,7 @@ const services = ref([]);
 const unreadChatCount = ref(0);
 const mainTab = ref("orders");
 const orderTab = ref("requests");
+const reviews = ref([]); // ✅ جديد — لتخزين الريفيوهات
 
 const showPopup = ref(false);
 const selectedService = ref(null);
@@ -113,6 +114,7 @@ onMounted(() => {
       listenForOrders();
       listenForServices();
       listenForUnreadChats();
+      listenForReviews();
     } else {
       technicianId.value = null;
       orders.value = [];
@@ -122,6 +124,18 @@ onMounted(() => {
     }
   });
 });
+//Listen for reviews
+const listenForReviews = () => {
+  if (!technicianId.value) return;
+ const reviewsRef = collection(db, "Ratings");
+  const q = query(reviewsRef, where("technicianId", "==", technicianId.value));
+  onSnapshot(q, (snapshot) => {
+    reviews.value = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  });
+};
 
 // 🟩 Listen for unread chats
 const listenForUnreadChats = () => {
@@ -987,15 +1001,16 @@ watch(
                   <div class="flex-1 w-full sm:w-auto">
                     <label
                       :for="`start-${day.name}`"
-                      class="block text-sm font-medium text-gray-600 mb-1 dark:text-white"
+                      class="block text-sm font-medium text-gray-600 mb-1 dark:text-white "
                       >Start Time</label
                     >
                     <select
                       :id="`start-${day.name}`"
                       v-model="day.start"
-                      class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#133B5D] focus:border-[#133B5D] text-black bg-white"
+                      class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#133B5D] focus:border-[#133B5D] text-black bg-white dark:bg-[#9ca3af]/30 dark:text-white "
                     >
                       <option
+                       class="bg-white text-gray-800 dark:bg-gray-700 dark:text-gray-100"
                         v-for="time in timeOptions"
                         :key="`start-${time}`"
                         :value="time"
@@ -1014,9 +1029,10 @@ watch(
                     <select
                       :id="`end-${day.name}`"
                       v-model="day.end"
-                      class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#133B5D] focus:border-[#133B5D] text-black bg-white"
+                      class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#133B5D] focus:border-[#133B5D] text-black bg-white dark:bg-[#9ca3af]/30 dark:text-white"
                     >
                       <option
+                      class="bg-white text-gray-800 dark:bg-gray-700 dark:text-gray-100"
                         v-for="time in timeOptions"
                         :key="`end-${time}`"
                         :value="time"
@@ -1034,7 +1050,7 @@ watch(
                   class="flex-1 w-full md:w-3/4"
                 >
                   <p
-                    class="text-gray-500 italic p-2 rounded bg-gray-200 text-center"
+                    class="text-gray-500 italic p-2 rounded bg-gray-200 text-center dark:bg-[#9ca3af]/30 dark:text-white"
                   >
                     Not available
                   </p>
@@ -1075,6 +1091,63 @@ watch(
           </div>
         </div>
       </template>
+      <template v-else-if="mainTab === 'reviews'">
+  <h2 class="text-2xl font-bold mb-4 text-[#133B5D] dark:text-white">Reviews</h2>
+
+  <div v-if="reviews.length === 0" class="text-gray-500 dark:text-gray-300 dark:bg-[#16222B] p-4 rounded-lg">
+    No reviews yet.
+  </div>
+
+  <div
+    v-for="review in reviews"
+    :key="review.id"
+    class="bg-white rounded-lg shadow-md p-6 mb-6 border border-gray-200 dark:border-gray-700 dark:bg-[#16222B] dark:text-white"
+  >
+    <!-- Date at top right -->
+    <div class="flex justify-end mb-2">
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        {{ new Date(review.createdAt?.seconds * 1000).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }}
+      </p>
+    </div>
+
+    <!-- Body: icon left + content right -->
+    <div class="flex gap-4">
+      <!-- Icon -->
+      <img
+        :src="review.clientImageUrl || '/images/default-user.png'"
+        alt="client"
+        class="w-12 h-12 rounded-full object-cover border border-gray-300"
+      />
+
+      <!-- Content -->
+      <div class="flex-1">
+        <!-- Name -->
+        <p class="font-semibold text-lg text-[#133B5D] dark:text-white mb-2">{{ review.clientName }}</p>
+
+        <!-- Comment -->
+        <p class="text-gray-700 dark:text-gray-300 mb-3 leading-relaxed">
+          {{ review.comment }}
+        </p>
+
+        <!-- Stars -->
+        <div class="flex items-center">
+          <i
+            v-for="i in 5"
+            :key="i"
+            :class="[
+              'fa-star',
+              'text-lg',
+              i <= review.stars ? 'fa-solid text-yellow-400' : 'fa-regular text-gray-400',
+            ]"
+            class="fa"
+          ></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+
 
       <template v-else-if="mainTab === 'Techsettings'">
         <h2 class="text-2xl font-semibold text-[#133B5D] dark:text-white mb-6">Settings</h2>

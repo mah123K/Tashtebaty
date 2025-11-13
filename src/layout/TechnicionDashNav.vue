@@ -73,7 +73,6 @@ onMounted(async () => {
     onSnapshot(q, (snapshot) => {
       orders.value = snapshot.docs.map((d) => d.data());
     });
-
     window.history.pushState(null, "", window.location.href);
     window.addEventListener("popstate", () => {
       window.history.pushState(null, "", window.location.href);
@@ -99,11 +98,11 @@ const handleLogout = async () => {
 
 <template>
   <div
-    class="fixed left-0 top-0 h-full w-[20%] bg-[#133B5D] text-white flex flex-col items-center py-4 overflow-hidden"
+    class="fixed left-0 top-0 h-full md:w-[20%] w-[75%] sm:w-[40%] bg-[#133B5D] text-white flex flex-col items-center py-4 overflow-hidden z-50"
   >
     <div class="flex flex-col justify-between h-full w-full overflow-hidden">
       <!-- Scrollable content -->
-      <div class="flex flex-col items-center w-full flex-1 overflow-y-auto pb-4">
+      <div class="flex flex-col items-center w-full flex-1 pb-4">
         <div class="flex flex-col items-center shrink-0">
           <img src="../images/white logo.png" alt="logo" class="w-[140px]" />
 
@@ -111,18 +110,20 @@ const handleLogout = async () => {
             <img
               :src="technician.profileImage || '/images/default-tech.png'"
               alt=""
-              class="w-[80px] h-[80px] rounded-full border-4 border-white shadow-md mb-2 object-cover"
+              class="w-20 h-20 rounded-full border-4 border-white shadow-md mb-2 object-cover"
             />
             <p class="text-base font-semibold">
               {{ technician.name || "Technician" }}
             </p>
 
-            <div class="mt-2 text-center">
-              <p class="text-sm opacity-80 font-medium">My Earnings:</p>
-              <p class="text-lg font-bold">
-                {{ totalEarnings?.toLocaleString?.() || 0 }} EGP
-              </p>
-            </div>
+              <!-- Earnings -->
+        <div class="flex items-center gap-2 text-sm opacity-90 mb-3">
+          <p class="font-medium">My Earnings:</p>
+          <p class="font-bold text-xl text-green-600 ">
+            {{ totalEarnings?.toLocaleString?.() || 0 }} 
+            <span class="text-sm font-semibold ">EGP</span>
+          </p>
+        </div>
           </div>
         </div>
 
@@ -135,7 +136,7 @@ const handleLogout = async () => {
                 ? 'bg-[#1b5383]'
                 : 'hover:bg-[#1b5383]/60',
             ]"
-            class="flex items-center gap-2 py-3 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
+            class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
           >
             <i class="fa-solid fa-clipboard-list text-white text-lg"></i>
             Orders
@@ -148,7 +149,7 @@ const handleLogout = async () => {
                 ? 'bg-[#1b5383]'
                 : 'hover:bg-[#1b5383]/60',
             ]"
-            class="flex items-center gap-2 py-3 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
+            class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
           >
             <i class="fa-solid fa-calendar-days text-white text-lg"></i>
             Appointments
@@ -161,7 +162,7 @@ const handleLogout = async () => {
                 ? 'bg-[#1b5383]'
                 : 'hover:bg-[#1b5383]/60',
             ]"
-            class="flex items-center gap-2 py-3 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
+            class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
           >
             <i class="fa-solid fa-screwdriver-wrench text-white text-lg"></i>
             My Services
@@ -174,7 +175,7 @@ const handleLogout = async () => {
                 ? 'bg-[#1b5383]'
                 : 'hover:bg-[#1b5383]/60',
             ]"
-            class="flex items-center gap-2 py-3 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
+            class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
           >
             <i class="fa-solid fa-image text-white text-lg"></i>
             Work Gallery
@@ -187,7 +188,7 @@ const handleLogout = async () => {
                 ? 'bg-[#1b5383]'
                 : 'hover:bg-[#1b5383]/60',
             ]"
-            class="flex items-center gap-2 py-3 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
+            class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
           >
             <i class="fa-solid fa-coins text-white text-lg"></i>
             My Earnings
@@ -200,11 +201,24 @@ const handleLogout = async () => {
                 ? 'bg-[#1b5383]'
                 : 'hover:bg-[#1b5383]/60',
             ]"
-            class="flex items-center gap-2 py-3 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
+            class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
           >
             <i class="fa-solid fa-comments text-white text-lg"></i>
             Chat
           </button>
+          <button
+          @click="emit('changeTab', 'reviews')"
+        :class="[
+          props.active === 'reviews'
+          ? 'bg-[#1b5383]'
+        : 'hover:bg-[#1b5383]/60',
+      ]"
+    class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
+    >
+        <i class="fa-solid fa-star text-white text-lg"></i>
+      Reviews
+    </button>
+
 
           <button
             @click="emit('changeTab', 'Techsettings')"
@@ -213,7 +227,7 @@ const handleLogout = async () => {
                 ? 'bg-[#1b5383]'
                 : 'hover:bg-[#1b5383]/60',
             ]"
-            class="flex items-center gap-2 py-3 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
+            class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
           >
             <i class="fa-solid fa-gear text-white text-lg"></i>
             Settings
