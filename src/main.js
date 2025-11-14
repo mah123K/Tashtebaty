@@ -1,5 +1,5 @@
 // ================================
-// src/main.js (FINAL FIXED VERSION)
+// src/main.js (FINAL FIXED VERSION — STATIC i18n)
 // ================================
 
 // 🔥 Firebase Imports
@@ -18,8 +18,8 @@ import "./assets/main.css";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 
-// NEW FIXED i18n loader (IMPORTANT)
-import { createI18nInstance } from "./i18n";
+// STATIC i18n (no fetch, no errors, works on Vercel 100%)
+import { i18n } from "./i18n";
 
 // ================================
 // Component Imports
@@ -148,29 +148,22 @@ router.afterEach((to) => {
 });
 
 // ================================
-// 🚀 START APP ONLY AFTER i18n IS LOADED
+// 🚀 Start App
 // ================================
-async function startApp() {
-  const app = createApp(App);
+const app = createApp(App);
 
-  // LOAD i18n before ANY component renders
-  const i18n = await createI18nInstance();
-  app.use(i18n);
+app.use(router);
+app.use(i18n);
 
-  app.use(router);
+app.use(Toast, {
+  position: "top-center",
+  timeout: 5000,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+});
 
-  app.use(Toast, {
-    position: "top-center",
-    timeout: 5000,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-  });
-
-  app.mount("#app");
-}
-
-startApp();
+app.mount("#app");
 
 // ================================
 // Firebase Auth Listener
