@@ -14,7 +14,6 @@ const i18n = createI18n({
   messages: {},
 });
 
-const base = import.meta.env.BASE_URL || "/";
 
 const getCurrentLocale = () => {
   const loc = i18n.global.locale;
@@ -41,8 +40,8 @@ const setLocale = (l) => {
 async function loadLocaleFiles() {
   try {
     const paths = {
-      en: `${base}locals/en.json`,
-      ar: `${base}locals/ar.json`,
+      en: "/locals/en.json",
+      ar: "/locals/ar.json",
     };
 
     await Promise.all(
