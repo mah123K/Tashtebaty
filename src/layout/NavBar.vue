@@ -131,7 +131,7 @@
             <div
               v-if="isUserMenuOpen"
               ref="dropdown"
-              class="absolute mt-2 top-15 left-1 rounded-2xl shadow-lg border w-60 bg-white dark:bg-(--surface) transition-all duration-300"
+              class="absolute mt-2 top-15 right-0 rtl:-right-22 rounded-2xl shadow-lg border w-60 bg-white dark:bg-(--surface) transition-all duration-300"
               :style="{ borderColor: 'var(--nav-border)' }"
             >
               <div class="flex flex-col">
