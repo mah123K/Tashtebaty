@@ -115,7 +115,7 @@
 
         <!-- User Menu -->
         <div v-else-if="user" class="relative flex items-center">
-          <span class="font-medium text-black dark:text-white hidden sm:block me-5">{{ texts[lang].navbar.hello + ' ' + firstName }}</span>
+          <span class="font-medium text-black dark:text-white hidden sm:block me-5">{{ texts[lang].navbar.hello.replace('{name}', firstName) }}</span>
 
           <div
             ref="profileButton"

@@ -128,6 +128,7 @@
 </template>
 
 <script>
+import { useTestLang } from "@/langTest/useTestLang";
 import { ref, onMounted, onUnmounted } from "vue";
 import { collection, getDocs, query, where, Timestamp, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
@@ -135,6 +136,7 @@ import Chart from "chart.js/auto";
 
 export default {
   setup() {
+    const { lang, texts } = useTestLang();
     // Counts
     const totalUsers = ref(0);
     const totalCompanies = ref(0);
@@ -155,11 +157,11 @@ export default {
   let revenueChart = null;
   let paymentsUnsub = null;
     const defaultAvatar = 'data:image/svg+xml;utf8,\
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">\
-  <circle cx="32" cy="32" r="32" fill="%23e5e7eb"/>\
-  <circle cx="32" cy="24" r="12" fill="%239ca3af"/>\
-  <path d="M12 54c4-10 12-16 20-16s16 6 20 16" fill="%239ca3af"/>\
-</svg>';
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">\
+      <circle cx="32" cy="32" r="32" fill="%23e5e7eb"/>\
+      <circle cx="32" cy="24" r="12" fill="%239ca3af"/>\
+      <path d="M12 54c4-10 12-16 20-16s16 6 20 16" fill="%239ca3af"/>\
+    </svg>';
 
     // حساب نسبة التغير
     const calculateChange = (current, last) => {
@@ -421,6 +423,8 @@ export default {
     });
 
     return {
+      lang,
+      texts,
       totalUsers,
       totalCompanies,
       totalCraftsmen,

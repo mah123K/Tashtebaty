@@ -1,7 +1,8 @@
 <template>
   <div class="profiles-page">
     <h1 class="main-header mt-20">
-      {{ $t(translatedServiceName) }} {{ $t("profilesPage.titleSuffix") }}
+      {{ texts[lang][translatedServiceName.section][translatedServiceName.key] }}
+      {{ texts[lang].profilesPage.titleSuffix }}
     </h1>
 
     <TopBar
@@ -46,6 +47,7 @@
 </template>
 
 <script>
+import { useTestLang } from "@/langTest/useTestLang";
 import ProfileCard from "./ProfileCard.vue";
 import TopBar from "./topBar.vue";
 import { db } from "@/firebase/firebase";
@@ -55,6 +57,10 @@ import defaultAvatar from "@/images/defaultAvatar.jpeg";
 
 
 export default {
+  setup() {
+    const { lang, texts } = useTestLang();
+    return { lang, texts };
+  },
   name: "ProfilesPage",
   components: { ProfileCard, TopBar },
   data() {
@@ -74,24 +80,29 @@ export default {
   computed: {
     // UPDATED: New computed property to translate the service name
     translatedServiceName() {
-      if (!this.serviceName || this.serviceName === "all") {
-        return "profilesPage.allProfiles";
-      }
-      const key = this.serviceName;
+  const key = this.serviceName;
 
-      // Map route param to your existing navbar translation keys
-      if (key === "plumbing") return "navbar.plumbing";
-      if (key === "electrical") return "navbar.electrical";
-      if (key === "finishing") return "navbar.finishing";
-      if (key === "carpentry") return "navbar.carpentry";
+  const map = {
+    plumbing:  { section: "navbar", key: "plumbing" },
+    electrical:{ section: "navbar", key: "electrical" },
+    finishing: { section: "navbar", key: "finishing" },
+    carpentry: { section: "navbar", key: "carpentry" },
+  };
 
-      return this.serviceName; // Fallback if no match
-    },
+  // لو النوع موجود
+  if (map[key]) return map[key];
+
+  // غير كده هيرجع All Profiles
+  return { section: "profilesPage", key: "allProfiles" };
+}
+
+,
     profilesInCategory() {
       if (!this.serviceName || this.serviceName === "All") {
         return this.profiles;
       }
-      return this.profiles.filter((p) => p.service === this.serviceName);
+      return this.profiles.filter((p) => p.service?.toLowerCase() === this.serviceName
+);
     },
 
     filteredProfiles() {
@@ -99,7 +110,8 @@ export default {
 
       // Filter by service name
       if (this.serviceName && this.serviceName !== "All") {
-        results = results.filter((p) => p.service === this.serviceName);
+        results = results.filter((p) => p.service?.toLowerCase() === this.serviceName
+);
       }
 
       // Filter by search keyword (case-insensitive)
@@ -245,7 +257,7 @@ export default {
 
         // --- Fetch companies only if serviceName is finishing ---
         // --- Fetch companies only if serviceName is finishing ---
-        if (this.serviceName === "Finishing") {
+        if (this.serviceName === "finishing") {
           const companiesCol = collection(db, "companies");
           // console.log("companiesCol:", companiesCol);
           const companiesSnap = await getDocs(companiesCol);
@@ -276,7 +288,7 @@ export default {
     },
   },
   mounted() {
-    this.serviceName = this.$route.params.service || "All";
+    this.serviceName = (this.$route.params.service || "all").toLowerCase();
     console.log("serviceName from route =", this.serviceName);
 
 
@@ -301,7 +313,7 @@ export default {
   },
   watch: {
     $route(to) {
-      this.serviceName = to.params.service || "All";
+      this.serviceName = (to.params.service || "all").toLowerCase();
     },
   },
 };
