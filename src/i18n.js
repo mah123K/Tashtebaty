@@ -2,8 +2,8 @@
 import { createI18n } from 'vue-i18n'
 
 // استيراد ملفات JSON مباشرة (Static Import)
-import en from '../public/locals/en.json'
-import ar from '../public/locals/ar.json'
+import en from './locals/en.json'
+import ar from './locals/ar.json'
 
 // تحديد اللغة المحفوظة أو استخدام الإنجليزية
 let savedLang = 'en'
@@ -14,10 +14,11 @@ try {
 
 export const i18n = createI18n({
   legacy: false,
+  globalInjection: true,
   locale: savedLang,
   fallbackLocale: 'en',
   messages: {
-    en,
-    ar
-  }
+    en:en,
+    ar:ar
+  }
 })
