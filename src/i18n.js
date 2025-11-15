@@ -4,7 +4,7 @@ import ar from "./locales/ar.json";
 import en from "./locales/en.json";
 
 const i18n = createI18n({
-  legacy: false,
+  legacy: true,
   locale: localStorage.getItem("lang") || "ar",
   fallbackLocale: "en",
   messages: {
