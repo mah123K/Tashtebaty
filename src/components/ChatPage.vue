@@ -1,11 +1,16 @@
 <template>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
     <div v-if="initializing" class="text-center">
       <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto mb-4"></div>
       <p class="text-indigo-900">Initializing Chat...</p>
     </div>
 
-<div v-else-if="user" class="bg-white rounded-2xl shadow-xl w-full h-[calc(100vh-10rem)] flex">      <!-- Sidebar (Chat list) -->
+<div v-else-if="user" class="bg-white rounded-2xl shadow-xl w-full h-[calc(100vh-10rem)] flex">
       <div class="w-64 border-r border-gray-200 flex flex-col">
         <div class="bg-indigo-600 text-white p-4 rounded-tl-2xl">
           <h3 class="font-semibold">Chats</h3>
@@ -41,11 +46,19 @@
                 </div>
               </div>
             </button>
+            
+            <button
+              @click.stop="deleteChat(chatUser.id)"
+              title="Delete Chat"
+              class="absolute top-1/2 right-3 transform -translate-y-1/2 p-2 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <i class="fas fa-trash-alt fa-sm"></i>
+            </button>
           </div>
+          
         </div>
       </div>
 
-      <!-- Chat area -->
       <div class="flex-1 flex flex-col">
         <div class="bg-indigo-600 text-white p-4 rounded-tr-2xl">
           <h2 class="text-lg font-bold">
@@ -67,7 +80,6 @@
           </div>
         </div>
 
-        <!-- Send box -->
         <div class="p-4 border-t border-gray-200 flex gap-2 bg-white rounded-br-2xl">
           <input
             v-model="newMessage"
@@ -92,11 +104,9 @@
 
 <script setup>
 import { ref, onMounted, nextTick, onUnmounted } from "vue"
-import { useRoute } from "vue-router"
+import { useRoute, useRouter } from "vue-router"
 import {
-  signInAnonymously,
   onAuthStateChanged,
-  signOut,
 } from "firebase/auth"
 import {
   collection,
@@ -108,13 +118,13 @@ import {
   setDoc,
   doc,
   getDoc,
-  deleteDoc,
-  getDocs,
+  deleteDoc, // <-- 3. IMPORTED deleteDoc
 } from "firebase/firestore"
 import { auth, db } from "@/firebase/firebase"
 
 const route = useRoute()
-const technicianId = route.query.uid || null // technician id from URL
+const router = useRouter()
+const technicianId = route.query.uid || null
 
 // State
 const user = ref(null)
@@ -136,27 +146,37 @@ const defaultAvatar = "https://via.placeholder.com/150/808080/FFFFFF?text=G"
 // Utility
 const getRoomId = (uid1, uid2) => [uid1, uid2].sort().join("_")
 
+const findUserDocument = async (uid) => {
+  const collectionsToSearch = ["clients", "technicians", "companies", "admin"];
+  for (const collectionName of collectionsToSearch) {
+    const docRef = doc(db, collectionName, uid);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data();
+    }
+  }
+  return null;
+}
+
 // Auth setup
 onMounted(() => {
   unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
     if (currentUser) {
       user.value = currentUser
-      const userDocRef = doc(db, "users", currentUser.uid)
-      const snap = await getDoc(userDocRef)
-      if (!snap.exists()) {
-        await setDoc(userDocRef, {
-          uid: currentUser.uid,
-          name: "Guest User",
-          email: `guest_${currentUser.uid.substring(0, 6)}@chat.com`,
-          avatar: defaultAvatar,
-          createdAt: serverTimestamp(),
-        })
+      const userProfile = await findUserDocument(currentUser.uid)
+
+      if (userProfile) {
+        currentUserDoc.value = userProfile 
+        listenToUsers()
+        initializing.value = false
+      } else {
+        console.error("User is authenticated but has no profile in Firestore.")
+        router.push("/login")
       }
-      currentUserDoc.value = (await getDoc(userDocRef)).data()
-      listenToUsers()
-      initializing.value = false
+      
     } else {
-      await signInAnonymously(auth)
+      initializing.value = false
+      router.push("/login")
     }
   })
 })
@@ -170,15 +190,26 @@ onUnmounted(() => {
 // Load chat list
 const listenToUsers = async () => {
   if (unsubscribeUsers) unsubscribeUsers()
+  if (!user.value) return; 
 
   const chatsRef = collection(db, "users", user.value.uid, "active_chats")
   unsubscribeUsers = onSnapshot(chatsRef, async (snap) => {
     const active = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
 
     if (technicianId && !active.some((u) => u.id === technicianId)) {
-      const techSnap = await getDoc(doc(db, "users", technicianId))
+      let techProfile = null;
+      const techSnap = await getDoc(doc(db, "technicians", technicianId));
       if (techSnap.exists()) {
-        active.unshift({ id: techSnap.id, ...techSnap.data() })
+        techProfile = techSnap.data();
+      } else {
+        const compSnap = await getDoc(doc(db, "companies", technicianId));
+        if (compSnap.exists()) {
+          techProfile = compSnap.data();
+        }
+      }
+
+      if (techProfile) {
+        active.unshift({ id: technicianId, ...techProfile })
       }
     }
 
@@ -244,12 +275,44 @@ const sendMessage = async () => {
       lastMessage: msgText,
       updatedAt: serverTimestamp(),
     })
-  } catch (err) {
+  } catch (err)
+ {
     console.error("Error sending message:", err)
   } finally {
     sending.value = false
   }
 }
+
+// --- 3. NEW FUNCTION TO DELETE CHAT ---
+const deleteChat = async (chatUserId) => {
+  if (!chatUserId || !user.value) return;
+
+  // 1. Confirm deletion
+  if (!confirm("Are you sure you want to remove this chat from your list?")) {
+    return;
+  }
+
+  try {
+    // 2. Get the reference to the document in *your* active_chats
+    const chatDocRef = doc(db, "users", user.value.uid, "active_chats", chatUserId);
+
+    // 3. Delete the document
+    await deleteDoc(chatDocRef);
+
+    // 4. Clear selection if the active chat was deleted
+    if (selectedUser.value?.id === chatUserId) {
+      selectedUser.value = null;
+      messages.value = [];
+      currentRoomId.value = null;
+    }
+    // The onSnapshot listener will automatically update the allUsers list
+    
+  } catch (err) {
+    console.error("Error deleting chat:", err);
+    alert("Failed to delete chat. Please try again.");
+  }
+};
+
 
 // Helpers
 const scrollToBottom = () => {
@@ -267,6 +330,7 @@ const stringToColor = (str) => {
   if (!str) return "#999"
   let hash = 0
   for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash)
-  return "#" + ((hash >> 24) & 0xffffff).toString(16).padStart(6, "0")
+  hash = (hash & 0x00FFFFFF) | (Math.floor(Math.random() * 128 + 64) << 24);
+  return "#" + (hash & 0x00FFFFFF).toString(16).padStart(6, "0");
 }
 </script>
