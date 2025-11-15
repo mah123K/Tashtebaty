@@ -19,7 +19,7 @@ import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 
 // STATIC i18n (no fetch, no errors, works on Vercel 100%)
-import  i18n from "./i18n.js";
+import  i18n from "./i18n";
 
 // ================================
 // Component Imports
