@@ -1,10 +1,10 @@
 import { createI18n } from "vue-i18n";
 
-import ar from "./locals/ar.json";
-import en from "./locals/en.json";
+import ar from "./locales/ar.json";
+import en from "./locales/en.json";
 
 const i18n = createI18n({
-  legacy: false,
+  legacy: true,
   locale: localStorage.getItem("lang") || "ar",
   fallbackLocale: "en",
   messages: {

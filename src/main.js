@@ -151,9 +151,10 @@ router.afterEach((to) => {
 // 🚀 Start App
 // ================================
 const app = createApp(App);
-
-app.use(router);
 app.use(i18n);
+app.use(router);
+
+
 
 app.use(Toast, {
   position: "top-center",
