@@ -31,6 +31,12 @@
 
     <h2 class="text-center main-header">{{ $t("home.services.title") }}</h2>
     <div class="flex justify-center mb-10 p-5 items-center mx-auto">
+      <div>
+        <p>{{ lang.messages.test }}</p>
+
+        <button @click="loadLang('ar')">AR</button>
+        <button @click="loadLang('en')">EN</button>
+      </div>
       <div class="grid grid-cols-1 md:gap-20 gap-8 md:grid-cols-4">
         <div
           class="card cursor-pointer bg-(--surface) image-full w-60 rounded-2xl shadow-lg h-70 hover:scale-102 hover:shadow-xl transition duration-600"
@@ -472,6 +478,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { lang, loadLang } from "@/useSimpleLang.js";
 import { db } from '@/firebase/firebase';
 import { collection, getDocs, query, limit } from 'firebase/firestore';
 import ChatBot from './chatbot/ChatBot.vue';
