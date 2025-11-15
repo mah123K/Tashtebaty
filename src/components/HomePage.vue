@@ -29,7 +29,7 @@
       </div>
     </section>
 
-    <h2 class="text-center main-header">{{ $t("home.services.title") }}</h2>
+    <h2 class="text-center main-header">{{ texts[lang].home.services.title }}</h2>
     <div class="flex justify-center mb-10 p-5 items-center mx-auto">
        <div>
           <h1>{{ texts[lang].test }}</h1>
@@ -45,7 +45,8 @@
             <div>
               <img :src="isDark ? plumbingDark : plumbingLight" alt="Plumbing service" />
               <span class="text-center block text-accent-color text-xl font-medium">
-                {{ $t("home.services.plumbing") }}
+                {{ texts[lang].home.services.plumbing }}
+
               </span>
             </div>
           </router-link>
@@ -62,7 +63,7 @@
                 class="w-full"
               />
               <span class="text-center block text-accent-color text-xl font-medium">
-                {{ $t("home.services.finishing") }}
+                {{ texts[lang].home.services.finishing }}
               </span>
             </div>
           </router-link>
@@ -75,7 +76,7 @@
             <div>
               <img :src="isDark ? electricalDark : electricalLight" alt="Electrical service" />
               <span class="text-center block text-accent-color text-xl font-medium">
-                {{ $t("home.services.electrical") }}
+                {{ texts[lang].home.services.electrical }}
               </span>
             </div>
           </router-link>
@@ -88,7 +89,7 @@
             <div>
               <img :src="isDark ? carpentryDark : carpentryLight" alt="Carpentry service" />
               <span class="text-center block text-accent-color text-xl font-medium">
-                {{ $t("home.services.carpentry") }}
+                {{ texts[lang].home.services.carpentry }}
               </span>
             </div>
           </router-link>
@@ -101,10 +102,10 @@
         <!-- Header -->
         <header class="text-center">
           <h2 class="main-header text-accent-color">
-            {{ $t("home.howItWorks.title") }}
+            {{ texts[lang].home.howItWorks.title }}
           </h2>
           <p class="mt-3 text-base sm:text-lg text-(--text-muted)">
-            {{ $t("home.howItWorks.subtitle") }}
+            {{ texts[lang].home.howItWorks.subtitle }}
           </p>
         </header>
 
@@ -115,10 +116,10 @@
           >
             <img :src="isDark ? firstDark : firstLight" class="w-32 h-36 object-contain mb-4" />
             <h3 class="text-xl font-semibold text-(--accent)">
-              {{ $t("home.howItWorks.step1.title") }}
+              {{ texts[lang].home.howItWorks.step1.title }}
             </h3>
             <p class="mt-2 text-sm text-(--text-muted)">
-              {{ $t("home.howItWorks.step1.text") }}
+              {{ texts[lang].home.howItWorks.step1.text }}
             </p>
           </div>
 
@@ -142,10 +143,10 @@
           >
             <img :src="isDark ? secondDark : secondLight" class="w-32 h-36 object-contain mb-4" />
             <h3 class="text-xl font-semibold text-(--accent)">
-              {{ $t("home.howItWorks.step2.title") }}
+              {{ texts[lang].home.howItWorks.step2.title }}
             </h3>
             <p class="mt-2 text-sm text-(--text-muted)">
-              {{ $t("home.howItWorks.step2.text") }}
+              {{ texts[lang].home.howItWorks.step2.text }}
             </p>
           </div>
 
@@ -169,10 +170,10 @@
           >
             <img :src="isDark ? thirdDark : thirdLight" class="w-32 h-36 object-contain mb-4" />
             <h3 class="text-xl font-semibold text-(--accent)">
-              {{ $t("home.howItWorks.step3.title") }}
+              {{ texts[lang].home.howItWorks.step3.title }}
             </h3>
             <p class="mt-2 text-sm text-(--text-muted)">
-              {{ $t("home.howItWorks.step3.text") }}
+              {{ texts[lang].home.howItWorks.step3.text }}
             </p>
           </div>
 
@@ -196,10 +197,10 @@
           >
             <img :src="isDark ? fourthDark : fourthLight" class="w-32 h-36 object-contain mb-4" />
             <h3 class="text-xl font-semibold text-(--accent)">
-              {{ $t("home.howItWorks.step4.title") }}
+              {{ texts[lang].home.howItWorks.step4.title }}
             </h3>
             <p class="mt-2 text-sm text-(--text-muted)">
-              {{ $t("home.howItWorks.step4.text") }}
+              {{ texts[lang].home.howItWorks.step4.text }}
             </p>
           </div>
         </div>
@@ -208,7 +209,7 @@
 
     <section class="why choose us">
       <div>
-        <h2 class="main-header">{{ $t("home.whyUs.title") }}</h2>
+        <h2 class="main-header">{{ texts[lang].home.whyUs.title }}</h2>
       </div>
       <div class="flex justify-center">
         <div class="grid grid-cols-1 md:grid-cols-[40%_60%] w-[80%] gap-3 items-center">
@@ -234,7 +235,7 @@
                 />
               </div>
               <p class="text-lg md:text-LG text-(--text-primary) leading-relaxed">
-                {{ $t("home.whyUs.point1") }}
+                {{ texts[lang].home.whyUs.point1 }}
               </p>
             </li>
 
@@ -243,7 +244,7 @@
             >
               <i class="fa-solid fa-people-group text-accent-color text-3xl shrink-0"></i>
               <p class="text-lg md:text-LG text-(--text-primary) leading-relaxed">
-                {{ $t("home.whyUs.point2") }}
+                {{ texts[lang].home.whyUs.point2 }}
               </p>
             </li>
 
@@ -252,7 +253,7 @@
             >
               <i class="fa-solid fa-address-card text-accent-color text-3xl shrink-0"></i>
               <p class="text-lg md:text-LG text-(--text-primary) leading-relaxed">
-                {{ $t("home.whyUs.point3") }}
+                {{ texts[lang].home.whyUs.point3 }}
               </p>
             </li>
 
@@ -261,7 +262,7 @@
             >
               <i class="fa-solid fa-headphones text-accent-color text-3xl shrink-0"></i>
               <p class="text-lg md:text-LG text-(--text-primary) leading-relaxed">
-                {{ $t("home.whyUs.point4") }}
+                {{ texts[lang].home.whyUs.point4 }}
               </p>
             </li>
           </ul>
@@ -271,15 +272,15 @@
 
     <section class="offers">
       <div v-if="loading" class="flex justify-center mt-10">
-        <p class="text-lg">{{ $t("home.offers.loading") }}</p>
+        <p class="text-lg">{{ texts[lang].home.offers.loading }}</p>
       </div>
 
       <div>
-        <h2 class="text-center main-header">{{ $t("home.offers.title") }}</h2>
+        <h2 class="text-center main-header">{{ texts[lang].home.offers.title }}</h2>
       </div>
    
       <div v-if="loading" class="flex justify-center mt-10">
-        <p class="text-lg">{{ $t("home.offers.loading") }}</p>
+        <p class="text-lg">{{ texts[lang].home.offers.loading }}</p>
       </div>
 
       <div v-else-if="offers.length > 0" class="flex justify-center mt-5">
@@ -308,7 +309,7 @@
                 <button
                   class="cursor-pointer btn border-none mt-2 text-white px-3 bg-accent-color rounded-[10px] text-lg"
                 >
-                  {{ $t("home.offers.claim") }}
+                  {{ texts[lang].home.offers.claim }}
                 </button>
               </div>
             </div>
@@ -317,18 +318,18 @@
       </div>
 
       <div v-else class="flex justify-center mt-10">
-        <p class="text-lg">{{ $t("home.offers.noOffers") }}</p>
+        <p class="text-lg">{{ texts[lang].home.offers.noOffers }}</p>
       </div>
          <div
         class="text-accent-color flex justify-end rtl:justify-end me-20 font-semibold text-xl rtl:ms-10 rtl:me-60"
       >
-        <router-link to="/offers">{{ $t("home.offers.seeMore") }}</router-link>
+        <router-link to="/offers">{{ texts[lang].home.offers.seeMore }}</router-link>
       </div>
     </section>
 
     <section class="feedback">
       <div class="relative w-[80%] mx-auto">
-        <h2 class="main-header">{{ $t("home.feedback.title") }}</h2>
+        <h2 class="main-header">{{ texts[lang].home.feedback.title }}</h2>
 
         <div class="relative h-80 overflow-hidden rounded-lg">
           <div
@@ -387,10 +388,10 @@
     <section class="work-gallery py-16 bg-(--section)">
       <div class="text-center mb-10">
         <h2 class="text-3xl md:text-4xl font-semibold text-accent-color mb-2">
-          {{ $t("home.gallery.title") }}
+          {{ texts[lang].home.gallery.title }}
         </h2>
         <p class="text-(--text-muted) max-w-2xl mx-auto text-base">
-          {{ $t("home.gallery.description") }}
+          {{ texts[lang].home.gallery.description }}
         </p>
       </div>
 
@@ -432,7 +433,7 @@
           </div>
           <div>
             <h3 class="text-lg font-semibold text-(--text-primary)">
-              {{ $t("home.contactInfo.phone") }}
+              {{ texts[lang].home.contactInfo.phone }}
             </h3>
             <span class="text-(--text-muted) text-sm">+2025895623</span>
           </div>
@@ -448,7 +449,7 @@
           </div>
           <div>
             <h3 class="text-lg font-semibold text-(--text-primary)">
-              {{ $t("home.contactInfo.email") }}
+              {{ texts[lang].home.contactInfo.email }}
             </h3>
             <span class="text-(--text-muted) text-sm">tashtebaty12@gmail.com</span>
           </div>
@@ -464,7 +465,7 @@
           </div>
           <div>
             <h3 class="text-lg font-semibold text-(--text-primary)">
-              {{ $t("home.contactInfo.address") }}
+              {{ texts[lang].home.contactInfo.address }}
             </h3>
             <span class="text-(--text-muted) text-sm">XYZ Street</span>
           </div>
