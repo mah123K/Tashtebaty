@@ -23,7 +23,7 @@
         >
           <li>
             <router-link to="/" active-class="font-semibold" class="hover:text-(--nav-hover)">
-              {{ $t('navbar.home') }}
+              {{ $t('home') }}
             </router-link>
           </li>
 
