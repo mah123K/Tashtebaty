@@ -5,11 +5,11 @@ import en from "./locals/en.json";
 
 const i18n = createI18n({
   legacy: false,
-  locale: localStorage.getItem("locale") || "en",
+  locale: localStorage.getItem("lang") || "ar",
   fallbackLocale: "en",
   messages: {
-    en,
-    ar
+    en:en,
+    ar:ar
   }
 });
 
