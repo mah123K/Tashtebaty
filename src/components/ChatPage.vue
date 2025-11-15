@@ -7,12 +7,12 @@
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
     <div v-if="initializing" class="text-center">
       <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto mb-4"></div>
-      <p class="text-indigo-900">Initializing Chat...</p>
+      <p class="text-accent-color">Initializing Chat...</p>
     </div>
 
 <div v-else-if="user" class="bg-white rounded-2xl shadow-xl w-full h-[calc(100vh-10rem)] flex">
       <div class="w-64 border-r border-gray-200 flex flex-col">
-        <div class="bg-indigo-600 text-white p-4 rounded-tl-2xl">
+        <div class="bg-accent-color dark:bg-dark-blue text-white p-4 rounded-tl-2xl">
           <h3 class="font-semibold">Chats</h3>
         </div>
 
@@ -60,7 +60,7 @@
       </div>
 
       <div class="flex-1 flex flex-col">
-        <div class="bg-indigo-600 text-white p-4 rounded-tr-2xl">
+        <div class="bg-accent-color dark:bg-dark-blue text-white p-4 rounded-tr-2xl">
           <h2 class="text-lg font-bold">
             {{ selectedUser ? (selectedUser.name || selectedUser.email.split('@')[0]) : 'Select a chat' }}
           </h2>
@@ -72,7 +72,7 @@
           </div>
 
           <div v-else v-for="msg in messages" :key="msg.id" class="flex" :class="msg.userId === user.uid ? 'justify-end' : 'justify-start'">
-            <div :class="['max-w-xs px-4 py-3 rounded-2xl', msg.userId === user.uid ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white text-gray-800 rounded-bl-none shadow-md']">
+            <div :class="['max-w-xs px-4 py-3 rounded-2xl', msg.userId === user.uid ? 'bg-accent-color dark:bg-dark-blue text-white rounded-br-none' : 'bg-white text-gray-800 rounded-bl-none shadow-md']">
               <p class="text-sm mb-1 font-semibold">{{ msg.userName }}</p>
               <p>{{ msg.text }}</p>
               <p class="text-xs mt-1 opacity-75">{{ formatTime(msg.timestamp) }}</p>
@@ -87,12 +87,12 @@
             type="text"
             placeholder="Type a message..."
             :disabled="sending || !selectedUser"
-            class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+            class="flex-1 px-4 py-3 border dark:text-dark-blue border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
           />
           <button
             @click="sendMessage"
             :disabled="!newMessage.trim() || sending || !selectedUser"
-            class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            class="bg-accent-color dark:bg-dark-blue text-white px-6 py-3 rounded-lg hover:bg-accent-color transition-colors disabled:opacity-50"
           >
             Send
           </button>
