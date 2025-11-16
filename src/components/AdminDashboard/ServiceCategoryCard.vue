@@ -1,104 +1,104 @@
 <template>
-  <div class="bg-white dark:bg-[#1f2937] dark:text-gray-100 rounded-lg shadow-md p-5 flex flex-col items-center text-center relative">
+  <div class="bg-white dark:bg-[#1f2937] dark:text-gray-100 rounded-lg shadow-md p-4 sm:p-5 flex flex-col items-center text-center relative">
     <!-- Status Badge -->
     <span
       :class="{
         'bg-green-100 text-green-700': category.status === 'Active',
         'bg-gray-100 text-gray-500': category.status !== 'Active'
       }"
-      class="absolute top-4 right-4 text-xs font-semibold px-2 py-1 rounded-full"
+      class="absolute top-3 sm:top-4 right-3 sm:right-4 text-xs font-semibold px-2 py-1 rounded-full"
     >
-      {{ category.status === 'Active' ? $t('adminDashboard.serviceCategoryCard.active') : $t('adminDashboard.serviceCategoryCard.inactive') }}
+      {{ category.status === 'Active' ? texts[lang].adminDashboard.serviceCategoryCard.active : texts[lang].adminDashboard.serviceCategoryCard.inactive }}
     </span>
 
     <!-- Action Buttons -->
-    <div class="absolute top-4 left-4 flex gap-2">
+    <div class="absolute top-3 sm:top-4 left-3 sm:left-4 flex gap-2">
       <button
         @click="openEditModal(category)"
-        class="text-blue-500 hover:text-blue-700"
-        :title="$t('adminDashboard.serviceCategoryCard.edit')"
+        class="text-blue-500 hover:text-blue-700 text-sm sm:text-base"
+        :title="texts[lang].adminDashboard.serviceCategoryCard.edit"
       >
-        <i class="fas fa-edit"></i>
+        <i class="fas fa-edit text-sm sm:text-base"></i>
       </button>
 
       <button
         @click="openDeleteModal(category)"
-        class="text-red-500 hover:text-red-700"
-        :title="$t('adminDashboard.serviceCategoryCard.delete')"
+        class="text-red-500 hover:text-red-700 text-sm sm:text-base"
+        :title="texts[lang].adminDashboard.serviceCategoryCard.delete"
       >
-        <i class="fas fa-trash"></i>
+        <i class="fas fa-trash text-sm sm:text-base"></i>
       </button>
     </div>
 
     <!-- Icon/Image -->
-    <div class="mb-3 mt-6">
-      <img v-if="isImage(category.icon)" :src="category.icon" alt="category icon" class="w-12 h-12 object-contain rounded" />
-      <div v-else class="text-4xl">{{ category.icon }}</div>
+    <div class="mb-3 mt-4 sm:mt-6">
+      <img v-if="isImage(category.icon)" :src="category.icon" alt="category icon" class="w-10 sm:w-12 h-10 sm:h-12 object-contain rounded" />
+      <div v-else class="text-3xl sm:text-4xl">{{ category.icon }}</div>
     </div>
 
   <!-- Category Name -->
-  <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">{{ $t(`home.services.${category.name.toLowerCase()}`) }}</h3>
+  <h3 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">{{ texts[lang][`home.services.${category.name.toLowerCase()}`] || category.name }}</h3>
 
     <!-- Provider Count -->
-    <p class="text-sm text-gray-500 dark:text-gray-300 mb-4">
-      {{ category.providers > 0 ? category.providers + ' ' + $t('adminDashboard.serviceCategoryCard.providersCount') : $t('adminDashboard.serviceCategoryCard.noProvidersYet') }}
+    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-300 mb-3 sm:mb-4">
+      {{ category.providers > 0 ? category.providers + ' ' + texts[lang].adminDashboard.serviceCategoryCard.providersCount : texts[lang].adminDashboard.serviceCategoryCard.noProvidersYet }}
     </p>
 
     <!-- View Providers Button -->
     <button
       @click="showProviders = true"
-      class="bg-[#5984C6] text-white px-4 py-2 rounded-lg hover:bg-[#4968a0] transition-colors duration-200 flex items-center gap-2"
+      class="bg-[#5984C6] text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-[#4968a0] transition-colors duration-200 flex items-center gap-2 text-sm sm:text-base"
     >
-      <i class="fas fa-eye"></i>
-      {{ $t('adminDashboard.serviceCategoryCard.viewProviders') }}
+      <i class="fas fa-eye text-sm sm:text-base"></i>
+      {{ texts[lang].adminDashboard.serviceCategoryCard.viewProviders }}
     </button>
 
     <!-- Providers Modal -->
     <div v-if="showProviders" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div class="bg-white dark:bg-[#111827] dark:text-gray-100 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
-        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
           <div class="flex justify-between items-center">
-            <h2 class="text-2xl font-semibold text-gray-800">
-              {{ $t(`home.services.${category.name.toLowerCase()}`) }} {{ $t('adminDashboard.serviceCategoryCard.providersTitle') }}
+            <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100">
+              {{ texts[lang][`home.services.${category.name.toLowerCase()}`] || category.name }} {{ texts[lang].adminDashboard.serviceCategoryCard.providersTitle }}
             </h2>
-            <button @click="showProviders = false" class="text-gray-500 hover:text-gray-700">
-              <i class="fas fa-times text-xl"></i>
+            <button @click="showProviders = false" class="text-gray-500 hover:text-gray-700 text-lg sm:text-xl">
+              <i class="fas fa-times"></i>
             </button>
           </div>
         </div>
 
-        <div class="p-6 overflow-y-auto max-h-[calc(90vh-8rem)]">
+        <div class="p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-8rem)]">
           <div v-if="loading" class="text-center py-8">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5984C6] mx-auto"></div>
-            <p class="mt-4 text-gray-600 dark:text-gray-300">{{ $t('adminDashboard.serviceCategoryCard.loadingProviders') }}</p>
+            <p class="mt-4 text-gray-600 dark:text-gray-300">{{ texts[lang].adminDashboard.serviceCategoryCard.loadingProviders }}</p>
           </div>
 
           <div v-else-if="!providers.length" class="text-center py-8">
             <i class="fas fa-user-slash text-4xl text-gray-400 mb-4"></i>
-            <p class="text-gray-600 dark:text-gray-300">{{ $t('adminDashboard.serviceCategoryCard.noProviders') }}</p>
+            <p class="text-gray-600 dark:text-gray-300">{{ texts[lang].adminDashboard.serviceCategoryCard.noProviders }}</p>
           </div>
 
-          <div v-else class="grid gap-6">
+          <div v-else class="grid gap-4 sm:gap-6">
             <div v-for="provider in providers" :key="provider.id"
-                class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex items-center gap-4 hover:bg-[#dedede] dark:hover:bg-gray-700 transition-colors">
+                class="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 hover:bg-[#dedede] dark:hover:bg-gray-700 transition-colors">
               <img
                 :src="provider.profileImage || provider.logoImage || defaultAvatar"
                 :alt="provider.userType === 'company' ? (provider.companyName || provider.name) : provider.name"
-                :class="provider.userType === 'company' ? 'w-10 h-10 object-contain' : 'w-12 h-12 object-cover'"
-                class="rounded-full bg-gray-300"
+                :class="provider.userType === 'company' ? 'w-8 sm:w-10 h-8 sm:h-10 object-contain' : 'w-10 sm:w-12 h-10 sm:h-12 object-cover'"
+                class="rounded-full bg-gray-300 flex-shrink-0"
                 @error="onImgError"
               >
-              <div class="flex-1">
-                <h3 class="font-semibold text-gray-800 dark:text-gray-100">{{ provider.userType === 'company' ? (provider.companyName || provider.name) : provider.name }}</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-300">
-                  {{ provider.userType === 'company' ? $t('adminDashboard.services.company') : $t('adminDashboard.services.technician') }}
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-gray-800 dark:text-gray-100 text-sm sm:text-base truncate">{{ provider.userType === 'company' ? (provider.companyName || provider.name) : provider.name }}</h3>
+                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                  {{ provider.userType === 'company' ? texts[lang].adminDashboard.services.company : texts[lang].adminDashboard.services.technician }}
                 </p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
+                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
                   <i class="fas fa-map-marker-alt text-xs mr-1"></i>
                   {{ formatAddress(provider) }}
                 </p>
               </div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-shrink-0">
                 <span :class="{
                   'bg-green-100 text-green-700': provider.status === 'active',
                   'bg-red-100 text-red-700': provider.status === 'suspended',
@@ -106,9 +106,9 @@
                 }" class="px-2 py-1 rounded-full text-xs font-semibold capitalize">
                   {{ provider.status || 'Active' }}
                 </span>
-                <button 
+                <button
                   @click="viewProviderDetails(provider)"
-                  class="text-[#5984C6] hover:text-[#4968a0]"
+                  class="text-[#5984C6] hover:text-[#4968a0] text-sm sm:text-base"
                 >
                   <i class="fas fa-chevron-right"></i>
                 </button>
@@ -122,68 +122,68 @@
     <!-- Provider Details Modal -->
     <div v-if="selectedProvider" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div class="bg-white dark:bg-[#111827] dark:text-gray-100 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden">
-        <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">{{ $t('adminDashboard.serviceCategoryCard.providerDetails') }}</h2>
-          <button @click="selectedProvider = null" class="text-gray-500 hover:text-gray-700">
-            <i class="fas fa-times text-xl"></i>
+        <div class="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100">{{ texts[lang].adminDashboard.serviceCategoryCard.providerDetails }}</h2>
+          <button @click="selectedProvider = null" class="text-gray-500 hover:text-gray-700 text-lg sm:text-xl">
+            <i class="fas fa-times"></i>
           </button>
         </div>
 
-        <div class="p-6 overflow-y-auto">
-          <div class="flex items-center gap-4 mb-6">
+        <div class="p-4 sm:p-6 overflow-y-auto">
+          <div class="flex flex-col sm:flex-row items-center gap-4 mb-4 sm:mb-6">
             <img
               :src="selectedProvider.profileImage || selectedProvider.logoImage || defaultAvatar"
               :alt="selectedProvider.name"
-              :class="selectedProvider.userType === 'company' ? 'w-16 h-16 object-contain' : 'w-12 h-12 object-cover'"
-              class="rounded-full bg-gray-300"
+              :class="selectedProvider.userType === 'company' ? 'w-12 sm:w-16 h-12 sm:h-16 object-contain' : 'w-10 sm:w-12 h-10 sm:h-12 object-cover'"
+              class="rounded-full bg-gray-300 flex-shrink-0"
               @error="onImgError"
             >
-            <div>
-              <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">
+            <div class="text-center sm:text-left">
+              <h3 class="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">
                 {{ selectedProvider.userType === 'company' ? (selectedProvider.companyName || selectedProvider.name) : selectedProvider.name }}
               </h3>
-              <p class="text-gray-600 dark:text-gray-300">{{ selectedProvider.userType === 'company' ? $t('adminDashboard.services.company') : $t('adminDashboard.services.technician') }}</p>
+              <p class="text-sm sm:text-base text-gray-600 dark:text-gray-300">{{ selectedProvider.userType === 'company' ? texts[lang].adminDashboard.services.company : texts[lang].adminDashboard.services.technician }}</p>
             </div>
           </div>
 
           <div class="grid gap-4">
             <div v-if="selectedProvider.description" class="space-y-2">
-              <h4 class="font-semibold text-gray-700 dark:text-gray-200">{{ $t('adminDashboard.serviceCategoryCard.about') }}</h4>
+              <h4 class="font-semibold text-gray-700 dark:text-gray-200">{{ texts[lang].adminDashboard.serviceCategoryCard.about }}</h4>
               <p class="text-gray-600 dark:text-gray-300">{{ selectedProvider.description }}</p>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="space-y-2">
-                <h4 class="font-semibold text-gray-700 dark:text-gray-200">{{ $t('adminDashboard.serviceCategoryCard.contact') }}</h4>
-                <p class="text-gray-600 dark:text-gray-300">
+                <h4 class="font-semibold text-gray-700 dark:text-gray-200 text-sm sm:text-base">{{ texts[lang].adminDashboard.serviceCategoryCard.contact }}</h4>
+                <p class="text-gray-600 dark:text-gray-300 text-sm sm:text-base">
                   <i class="fas fa-envelope mr-2"></i>{{ selectedProvider.email }}
                 </p>
-                <p v-if="selectedProvider.phone" class="text-gray-600 dark:text-gray-300">
+                <p v-if="selectedProvider.phone" class="text-gray-600 dark:text-gray-300 text-sm sm:text-base">
                   <i class="fas fa-phone mr-2"></i>{{ selectedProvider.phone }}
                 </p>
               </div>
 
               <div class="space-y-2">
-                <h4 class="font-semibold text-gray-700 dark:text-gray-200">
-                  <i class="fas fa-map-marker-alt mr-2"></i>{{ $t('adminDashboard.serviceCategoryCard.location') }}
+                <h4 class="font-semibold text-gray-700 dark:text-gray-200 text-sm sm:text-base">
+                  <i class="fas fa-map-marker-alt mr-2"></i>{{ texts[lang].adminDashboard.serviceCategoryCard.location }}
                 </h4>
                 <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
-                  <p class="text-gray-600 dark:text-gray-300">{{ formatAddress(selectedProvider) }}</p>
+                  <p class="text-gray-600 dark:text-gray-300 text-sm sm:text-base">{{ formatAddress(selectedProvider) }}</p>
                 </div>
               </div>
             </div>
 
             <div v-if="selectedProvider.userType !== 'company'" class="space-y-2">
-              <h4 class="font-semibold text-gray-700 dark:text-gray-200">{{ $t('adminDashboard.serviceCategoryCard.experience') }}</h4>
-              <p class="text-gray-600 dark:text-gray-300">{{ selectedProvider.experience }} years</p>
+              <h4 class="font-semibold text-gray-700 dark:text-gray-200 text-sm sm:text-base">{{ texts[lang].adminDashboard.serviceCategoryCard.experience }}</h4>
+              <p class="text-gray-600 dark:text-gray-300 text-sm sm:text-base">{{ selectedProvider.experience }} years</p>
             </div>
 
             <div v-if="selectedProvider.portfolio" class="space-y-2">
-              <h4 class="font-semibold text-gray-700 dark:text-gray-200">{{ $t('adminDashboard.serviceCategoryCard.portfolio') }}</h4>
+              <h4 class="font-semibold text-gray-700 dark:text-gray-200 text-sm sm:text-base">{{ texts[lang].adminDashboard.serviceCategoryCard.portfolio }}</h4>
               <a :href="selectedProvider.portfolio" target="_blank"
-                class="text-[#5984C6] hover:text-[#4968a0] inline-flex items-center gap-2">
+                class="text-[#5984C6] hover:text-[#4968a0] inline-flex items-center gap-2 text-sm sm:text-base">
                 <i class="fas fa-external-link-alt"></i>
-                {{ $t('adminDashboard.serviceCategoryCard.viewPortfolio') }}
+                {{ texts[lang].adminDashboard.serviceCategoryCard.viewPortfolio }}
               </a>
             </div>
           </div>
@@ -196,25 +196,25 @@
       v-if="editModal"
       class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     >
-      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 rounded-lg max-w-md w-full p-6">
-        <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">{{ $t('adminDashboard.serviceCategoryCard.editService') }}</h2>
+      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 rounded-lg max-w-md w-full p-4 sm:p-6">
+        <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">{{ texts[lang].adminDashboard.serviceCategoryCard.editService }}</h2>
 
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $t('adminDashboard.serviceCategoryCard.name') }}</label>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">{{ texts[lang].adminDashboard.serviceCategoryCard.name }}</label>
             <input v-model="editableService.name" type="text" class="w-full border dark:border-gray-600 rounded-md p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
           </div>
 
           <div>
-            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $t('adminDashboard.serviceCategoryCard.status') }}</label>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">{{ texts[lang].adminDashboard.serviceCategoryCard.status }}</label>
             <select v-model="editableService.status" class="w-full border dark:border-gray-600 rounded-md p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-              <option value="Active">{{ $t('adminDashboard.serviceCategoryCard.active') }}</option>
-              <option value="Inactive">{{ $t('adminDashboard.serviceCategoryCard.inactive') }}</option>
+              <option value="Active">{{ texts[lang].adminDashboard.serviceCategoryCard.active }}</option>
+              <option value="Inactive">{{ texts[lang].adminDashboard.serviceCategoryCard.inactive }}</option>
             </select>
           </div>
 
           <div>
-            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $t('adminDashboard.serviceCategoryCard.image') }}</label>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">{{ texts[lang].adminDashboard.serviceCategoryCard.image }}</label>
             <div class="flex items-center gap-4">
               <div class="w-16 h-16 rounded-full p-1 flex items-center justify-center overflow-hidden cursor-pointer" @click="triggerCategoryFile">
                 <div class="w-full h-full rounded-full bg-white dark:bg-white/5 flex items-center justify-center overflow-hidden">
@@ -226,8 +226,8 @@
               <div class="flex-1">
                 <input ref="categoryFileInput" type="file" accept="image/*" class="hidden" @change="onCategoryFileChange" />
                 <div class="flex items-center gap-2">
-                  <button type="button" @click="triggerCategoryFile" class="px-3 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm">{{ $t('adminDashboard.serviceCategoryCard.chooseImage') }}</button>
-                  <p class="text-xs text-gray-500 dark:text-gray-300"> <span v-if="uploading" class="text-[#5984C6] ml-1">{{ $t('adminDashboard.serviceCategoryCard.uploading') }}</span></p>
+                  <button type="button" @click="triggerCategoryFile" class="px-3 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm">{{ texts[lang].adminDashboard.serviceCategoryCard.chooseImage }}</button>
+                  <p class="text-xs text-gray-500 dark:text-gray-300"> <span v-if="uploading" class="text-[#5984C6] ml-1">{{ texts[lang].adminDashboard.serviceCategoryCard.uploading }}</span></p>
                 </div>
                 <p v-if="uploadError" class="text-xs text-red-600 mt-1">{{ uploadError }}</p>
               </div>
@@ -235,12 +235,12 @@
           </div>
         </div>
 
-        <div class="flex justify-end mt-6 gap-3">
-          <button @click="editModal = false" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600">
-            {{ $t('adminDashboard.serviceCategoryCard.cancel') }}
+        <div class="flex flex-col sm:flex-row justify-end mt-4 sm:mt-6 gap-2 sm:gap-3">
+          <button @click="editModal = false" class="px-3 sm:px-4 py-2 bg-gray-200 dark:bg-gray-700 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 text-sm sm:text-base">
+            {{ texts[lang].adminDashboard.serviceCategoryCard.cancel }}
           </button>
-          <button @click="updateService" class="px-4 py-2 bg-[#5984C6] text-white rounded-lg hover:bg-[#4968a0]">
-            {{ $t('adminDashboard.serviceCategoryCard.saveChanges') }}
+          <button @click="updateService" class="px-3 sm:px-4 py-2 bg-[#5984C6] text-white rounded-lg hover:bg-[#4968a0] text-sm sm:text-base">
+            {{ texts[lang].adminDashboard.serviceCategoryCard.saveChanges }}
           </button>
         </div>
       </div>
@@ -251,14 +251,14 @@
       v-if="showDeleteModal"
       class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn"
     >
-      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 rounded-2xl shadow-xl w-full max-w-sm p-6 text-center">
-        <h3 class="text-xl font-semibold text-red-600 mb-4">{{ $t('adminDashboard.serviceCategoryCard.deleteService') }}</h3>
-        <p class="text-gray-600 dark:text-gray-300 mb-6">
-          {{ $t('adminDashboard.serviceCategoryCard.deleteConfirm') }} "<strong>{{ selectedDeleteService?.name }}</strong>"?
+      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 rounded-2xl shadow-xl w-full max-w-sm p-4 sm:p-6 text-center">
+        <h3 class="text-lg sm:text-xl font-semibold text-red-600 mb-4">{{ texts[lang].adminDashboard.serviceCategoryCard.deleteService }}</h3>
+        <p class="text-gray-600 dark:text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base">
+          {{ texts[lang].adminDashboard.serviceCategoryCard.deleteConfirm }} "<strong>{{ selectedDeleteService?.name }}</strong>"?
         </p>
-        <div class="flex justify-center space-x-4">
-          <button @click="confirmDelete" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">{{ $t('adminDashboard.serviceCategoryCard.delete') }}</button>
-          <button @click="closeDeleteModal" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600">{{ $t('adminDashboard.serviceCategoryCard.cancel') }}</button>
+        <div class="flex flex-col sm:flex-row justify-center gap-3 sm:space-x-4">
+          <button @click="confirmDelete" class="px-3 sm:px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm sm:text-base">{{ texts[lang].adminDashboard.serviceCategoryCard.delete }}</button>
+          <button @click="closeDeleteModal" class="px-3 sm:px-4 py-2 bg-gray-200 dark:bg-gray-700 dark:text-gray-100 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 text-sm sm:text-base">{{ texts[lang].adminDashboard.serviceCategoryCard.cancel }}</button>
         </div>
       </div>
     </div>
@@ -269,11 +269,13 @@
 import { ref, watch } from 'vue';
 import { db } from '@/firebase/firebase';
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { useTestLang } from "@/langTest/useTestLang";
 
 export default {
   name: 'ServiceCategoryCard',
   props: { category: Object },
   setup(props, { emit }) {
+    const { lang, texts } = useTestLang();
     const isImage = (value) => {
       if (typeof value !== 'string') return false;
       if (!/^https?:\/\//i.test(value)) return false;
@@ -431,6 +433,8 @@ export default {
     };
 
     return {
+      lang,
+      texts,
       showProviders,
       providers,
       loading,

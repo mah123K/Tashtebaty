@@ -1,13 +1,13 @@
 <template>
-  <div class="services-page p-6 text-gray-900 dark:text-gray-100">
+  <div class="services-page p-4 sm:p-6 text-gray-900 dark:text-gray-100">
 
     <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-4">
       <div>
-        <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+        <h1 class="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100">
           {{ texts[lang].adminDashboard.services.title }}
         </h1>
-        <p class="text-gray-500 dark:text-gray-300">
+        <p class="text-gray-500 dark:text-gray-300 text-sm sm:text-base">
           {{ texts[lang].adminDashboard.services.subtitle }}
         </p>
       </div>
@@ -15,7 +15,7 @@
       <!-- Add Category Button -->
       <button
         @click="showModal = true"
-        class="bg-[#5984C6] hover:bg-[#4968a0] text-white font-semibold px-5 py-2.5 rounded-lg shadow-md transition-colors duration-200 flex items-center"
+        class="bg-[#5984C6] hover:bg-[#4968a0] text-white font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg shadow-md transition-colors duration-200 flex items-center text-sm sm:text-base"
       >
         {{ texts[lang].adminDashboard.services.addCategory }}
         <i class="fas fa-plus ml-2"></i>
@@ -25,7 +25,7 @@
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-8">
       <p class="text-gray-500">
-        {{ texts[lang].adminDashboard.services.loadingProviders }}
+        {{ texts[lang].adminDashboard.services.loadingservices }}
       </p>
     </div>
 
@@ -42,10 +42,10 @@
     <!-- Add Category Modal -->
     <div
       v-if="showModal"
-      class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
+      class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     >
-      <div class="bg-white dark:bg-[#1f2937] rounded-lg shadow-lg p-6 w-full max-w-md">
-        <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
+      <div class="bg-white dark:bg-[#1f2937] rounded-lg shadow-lg p-4 sm:p-6 w-full max-w-md mx-auto">
+        <h2 class="text-lg sm:text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
           {{ texts[lang].adminDashboard.services.addNewCategory }}
         </h2>
 
@@ -111,17 +111,17 @@
           </div>
         </div>
 
-        <div class="flex justify-end space-x-3">
+        <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
           <button
             @click="showModal = false"
-            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700"
+            class="px-3 sm:px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700 text-sm sm:text-base"
           >
             {{ texts[lang].adminDashboard.services.cancel }}
           </button>
 
           <button
             @click="saveCategory"
-            class="px-4 py-2 bg-[#5984C6] hover:bg-[#4968a0] text-white rounded-lg font-semibold"
+            class="px-3 sm:px-4 py-2 bg-[#5984C6] hover:bg-[#4968a0] text-white rounded-lg font-semibold text-sm sm:text-base"
           >
             {{ texts[lang].adminDashboard.services.save }}
           </button>
@@ -216,8 +216,32 @@ export default {
         return;
       }
 
-      this.categoryFile = file;
+      // Check image dimensions
+      const img = new Image();
+      const self = this;
+      img.onload = function() {
+        const maxWidth = 800;
+        const maxHeight = 800;
+        if (this.width > maxWidth || this.height > maxHeight) {
+          self.uploadError = `Image dimensions should be ${maxWidth}x${maxHeight} pixels or smaller. Current: ${this.width}x${this.height}`;
+          e.target.value = '';
+          return;
+        }
+        // Continue with existing logic if dimensions are OK
+        self.processFileAfterValidation(file, tempURL);
+      };
+
+      img.onerror = () => {
+        this.uploadError = 'Failed to load image. Please choose another file.';
+        e.target.value = '';
+      };
+
       const tempURL = URL.createObjectURL(file);
+      img.src = tempURL;
+    },
+
+    processFileAfterValidation(file, tempURL) {
+      this.categoryFile = file;
       this.newCategoryPreview = tempURL;
 
       const img = new Image();
@@ -246,6 +270,48 @@ export default {
         URL.revokeObjectURL(tempURL);
       };
 
+      img.src = tempURL;
+    },
+
+    async onCategoryFileChange(e) {
+      const file = e.target.files && e.target.files[0];
+      this.uploadError = '';
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        this.uploadError = 'Please select a valid image file.';
+        e.target.value = '';
+        return;
+      }
+
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        this.uploadError = 'Image size should be less than 5MB.';
+        e.target.value = '';
+        return;
+      }
+
+      // Check image dimensions
+      const img = new Image();
+      const self = this;
+      img.onload = function() {
+        const maxWidth = 800;
+        const maxHeight = 800;
+        if (this.width > maxWidth || this.height > maxHeight) {
+          self.uploadError = `Image dimensions should be ${maxWidth}x${maxHeight} pixels or smaller. Current: ${this.width}x${this.height}`;
+          e.target.value = '';
+          return;
+        }
+        // Continue with existing logic if dimensions are OK
+        self.processFileAfterValidation(file, URL.createObjectURL(file));
+      };
+
+      img.onerror = () => {
+        this.uploadError = 'Failed to load image. Please choose another file.';
+        e.target.value = '';
+      };
+
+      const tempURL = URL.createObjectURL(file);
       img.src = tempURL;
     },
 
@@ -330,4 +396,5 @@ export default {
 
 
 <style scoped>
-</style>
+</style
+

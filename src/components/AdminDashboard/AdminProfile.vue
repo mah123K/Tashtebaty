@@ -83,9 +83,9 @@
             {{ saving ? $t('adminDashboard.adminProfile.saving') : $t('adminDashboard.adminProfile.saveChanges') }}
           </button>
         </div>
-        
+
         <div class="mt-3">
-          
+          <p v-if="successMessage" class="text-green-600 text-sm">{{ successMessage }}</p>
           <p v-if="errorMessage" class="text-red-600 text-sm">{{ errorMessage }}</p>
         </div>
       </div>
@@ -223,7 +223,7 @@ export default {
     },
 
     // 🔹 Handle image selection
-    async onFileChange(e) {
+    onFileChange(e) {
       const file = e.target.files[0];
       if (!file) {
         this.errorMessage = this.$t('adminDashboard.adminProfile.noFileSelected');
@@ -247,70 +247,10 @@ export default {
 
       try {
         this.file = file;
-        const tempURL = URL.createObjectURL(file);
-        
-        // Create an image element to check if it loads correctly
-        const img = new Image();
-        img.onload = async () => {
-          // After successful load, start the upload process immediately
-          try {
-            const { uploadImageOnly } = await import("../../composables/useImageUpload");
-            const uploadResult = await uploadImageOnly(file);
-            
-            if (uploadResult && uploadResult.url) {
-              const user = auth.currentUser;
-              if (user) {
-                // Update Firebase Auth
-                await updateProfile(user, {
-                  photoURL: uploadResult.url
-                });
-
-                // Update Firestore
-                const refDoc = doc(db, "admin", user.uid);
-                await setDoc(refDoc, {
-                  photoURL: uploadResult.url,
-                  photoPublicId: uploadResult.publicId || null,
-                  lastImageUpdate: Date.now()
-                }, { merge: true });
-
-                // Update local state and storage
-                this.photoURL = uploadResult.url;
-                this.photoPublicId = uploadResult.publicId;
-                localStorage.setItem("adminPhoto", uploadResult.url);
-
-                // Dispatch event for immediate header update
-                const event = new CustomEvent("adminProfileChanged", {
-                  detail: {
-                    photoURL: uploadResult.url,
-                    timestamp: Date.now()
-                  }
-                });
-                window.dispatchEvent(event);
-
-        this.successMessage = this.$t('adminDashboard.adminProfile.success');
-              }
-            }
-          } catch (uploadError) {
-            console.error("Error uploading image:", uploadError);
-            this.errorMessage = this.$t('adminDashboard.adminProfile.error');
-          } finally {
-            URL.revokeObjectURL(tempURL);
-          }
-        };
-
-        img.onerror = () => {
-          this.errorMessage = this.$t('adminDashboard.adminProfile.errorProcessingImage');
-          this.file = null;
-          this.photoURL = null;
-          URL.revokeObjectURL(tempURL);
-          this.$refs.fileInput.value = '';
-        };
-
-        // Show the temporary URL while uploading
-        this.photoURL = tempURL;
-        img.src = tempURL;
+        // Show temporary preview
+        this.photoURL = URL.createObjectURL(file);
         this.errorMessage = "";
-        
+        this.successMessage = this.$t('adminDashboard.adminProfile.imageSelected');
       } catch (error) {
         console.error("Error handling file:", error);
         this.errorMessage = "Error processing image. Please try again.";
@@ -335,23 +275,34 @@ export default {
 
         const timestamp = Date.now();
 
+        // Delete from Cloudinary if public ID exists
+        if (this.photoPublicId) {
+          try {
+            const { deleteImage } = await import("../../composables/useImageUpload");
+            await deleteImage(this.photoPublicId);
+          } catch (deleteError) {
+            console.error("Error deleting from Cloudinary:", deleteError);
+            // Continue with local deletion even if Cloudinary delete fails
+          }
+        }
+
         // Immediately clear local state and UI
         this.photoURL = null;
         this.photoPublicId = null;
         this.file = null;
-        
+
         // Immediately clear storages
         localStorage.removeItem('adminPhoto');
         sessionStorage.removeItem('adminPhoto');
 
         // Force immediate UI update in all components
-        window.dispatchEvent(new CustomEvent('adminProfileChanged', { 
-          detail: { 
+        window.dispatchEvent(new CustomEvent('adminProfileChanged', {
+          detail: {
             name: this.name,
             photoURL: null,
             timestamp,
             forceUpdate: true
-          } 
+          }
         }));
 
         // Clear any blob URLs and force image updates
@@ -370,14 +321,14 @@ export default {
 
         try {
           // Update Firebase Auth first
-          await updateProfile(user, { 
+          await updateProfile(user, {
             photoURL: null
           });
 
           // Then update Firestore
           const refDoc = doc(db, 'admin', user.uid);
-          await setDoc(refDoc, { 
-            photoURL: null, 
+          await setDoc(refDoc, {
+            photoURL: null,
             photoPublicId: null,
             lastImageUpdate: timestamp
           }, { merge: true });
@@ -386,13 +337,13 @@ export default {
           await reload(user);
 
           // Dispatch another event after backend update
-          window.dispatchEvent(new CustomEvent('adminProfileChanged', { 
-            detail: { 
+          window.dispatchEvent(new CustomEvent('adminProfileChanged', {
+            detail: {
               name: this.name,
               photoURL: null,
               timestamp: Date.now(),
               forceUpdate: true
-            } 
+            }
           }));
 
           this.successMessage = this.$t('adminDashboard.adminProfile.success');
@@ -402,19 +353,19 @@ export default {
       } catch (error) {
         console.error('Error removing profile picture:', error);
         this.errorMessage = this.$t('adminDashboard.adminProfile.error');
-        
+
         // Try to revert changes if backend operations fail
         try {
           const storedPhoto = localStorage.getItem('adminPhoto');
           if (storedPhoto) {
             this.photoURL = storedPhoto;
-            window.dispatchEvent(new CustomEvent('adminProfileChanged', { 
-              detail: { 
+            window.dispatchEvent(new CustomEvent('adminProfileChanged', {
+              detail: {
                 name: this.name,
                 photoURL: storedPhoto,
                 timestamp: Date.now(),
                 forceUpdate: true
-              } 
+              }
             }));
           }
         } catch (e) {
@@ -444,21 +395,25 @@ export default {
         // Upload new image if selected
         if (this.file) {
           try {
+            console.log("File to upload:", this.file);
             const { uploadImageOnly } = await import("../../composables/useImageUpload");
             console.log("Starting image upload...");
             const uploadResult = await uploadImageOnly(this.file);
             console.log("Upload result:", uploadResult);
-            
+
             if (uploadResult && uploadResult.url) {
               newPhotoURL = uploadResult.url;
               newPhotoPublicId = uploadResult.publicId || null;
               console.log("New photo URL:", newPhotoURL);
+              console.log("New photo public ID:", newPhotoPublicId);
             } else {
+              console.error("Upload result is invalid:", uploadResult);
               throw new Error("Invalid upload result");
             }
           } catch (uploadError) {
             console.error("Error uploading to Cloudinary:", uploadError);
-            this.errorMessage = this.$t('adminDashboard.adminProfile.errorProcessingImage');
+            console.error("Error details:", uploadError.response ? uploadError.response.data : uploadError.message);
+            this.errorMessage = `Upload failed: ${uploadError.message || 'Unknown error'}`;
             this.saving = false;
             return;
           }
@@ -472,14 +427,15 @@ export default {
 
         // Update Firestore with both URL and public ID
         const refDoc = doc(db, "admin", user.uid);
-        await setDoc(refDoc, { 
-          name: this.name, 
+        await setDoc(refDoc, {
+          name: this.name,
           photoURL: newPhotoURL,
-          photoPublicId: newPhotoPublicId 
+          photoPublicId: newPhotoPublicId
         }, { merge: true });
 
         // Update local storage
         this.photoURL = newPhotoURL;
+        this.photoPublicId = newPhotoPublicId;
         localStorage.setItem("adminPhoto", newPhotoURL);
         localStorage.setItem("adminName", this.name);
 
@@ -496,6 +452,13 @@ export default {
         }
 
         this.successMessage = this.$t('adminDashboard.adminProfile.changesSaved');
+
+        // Clear file input after successful save
+        if (this.$refs.fileInput) {
+          this.$refs.fileInput.value = '';
+        }
+        this.file = null;
+
       } catch (err) {
         console.error("Error updating profile:", err);
         this.errorMessage = this.$t('adminDashboard.adminProfile.saveError');

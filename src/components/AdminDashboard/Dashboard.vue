@@ -12,7 +12,7 @@
     </div>
 
     <!-- Cards -->
-    <div class="grid grid-cols-4 gap-6 mt-8 max-w-6xl">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8 max-w-6xl">
 
       <!-- Users -->
       <div class="bg-white dark:bg-[#111827] dark:text-gray-100 shadow-md rounded-2xl p-5 cursor-pointer hover:-translate-y-1 transition-all duration-300">
@@ -95,30 +95,30 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-10 max-w-6xl">
 
       <!-- Monthly Revenue -->
-      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 p-6 rounded-2xl shadow-md lg:col-span-2">
+      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 p-4 sm:p-6 rounded-2xl shadow-md lg:col-span-2">
         <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
           {{ texts[lang].adminDashboard.dashboard.monthlyRevenue }}
         </h2>
 
-        <div class="w-full h-120">
+        <div class="w-full h-64 sm:h-80 lg:h-120">
           <canvas id="revenueChart" class="w-full h-full"></canvas>
         </div>
       </div>
 
       <!-- Top Providers -->
-      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 p-6 rounded-2xl shadow-md lg:col-span-1">
+      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 p-4 sm:p-6 rounded-2xl shadow-md lg:col-span-1">
 
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+          <h2 class="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">
             {{ texts[lang].adminDashboard.dashboard.topRatedProviders }}
           </h2>
-          <span class="text-sm text-gray-500 dark:text-gray-300">
+          <span class="text-sm text-gray-500 dark:text-gray-300 mt-1 sm:mt-0">
             {{ texts[lang].adminDashboard.dashboard.top5 }}
           </span>
         </div>
 
         <!-- Top Craftsmen -->
-        <div class="mb-6">
+        <div class="mb-6 ">
           <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">
             {{ texts[lang].adminDashboard.providers.craftsmen }}
           </h3>
@@ -133,18 +133,18 @@
               :key="p.id"
               class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
             >
-              <div class="h-12 w-12 rounded-full overflow-hidden flex items-center justify-center">
+              <div class="h-12 w-12 rounded-full overflow-hidden flex items-center justify-center bg-[#dedede] dark:bg-gray-800 border-2 border-[#5984C6] dark:border-[#8db4ff]">
                 <img :src="p.image || defaultAvatar" @error="(e)=>e.target.src=defaultAvatar" class="w-full h-full object-cover" />
               </div>
 
               <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <div class="truncate">
-                    <p class="font-semibold">{{ p.name }}</p>
+                    <p class="font-semibold text-sm sm:text-base">{{ p.name }}</p>
                     <p class="text-xs text-gray-500 dark:text-gray-300">{{ p.type }}</p>
                   </div>
 
-                  <div class="text-right">
+                  <div class="text-right mt-1 sm:mt-0">
                     <p class="font-semibold text-sm">{{ p.rating?.toFixed(2) || '0.00' }}</p>
                     <div class="text-yellow-400 text-xs">★</div>
                   </div>
@@ -171,18 +171,18 @@
               :key="p.id"
               class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
             >
-              <div class="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center">
+              <div class="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center bg-[#dedede] dark:bg-gray-800 border-2 border-[#5984C6] dark:border-[#8db4ff]">
                 <img :src="p.image || defaultAvatar" @error="(e)=>e.target.src=defaultAvatar" class="w-full h-full object-contain" />
               </div>
 
               <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <div class="truncate">
-                    <p class="font-semibold">{{ p.name }}</p>
+                    <p class="font-semibold text-sm sm:text-base">{{ p.name }}</p>
                     <p class="text-xs text-gray-500 dark:text-gray-300">{{ p.type }}</p>
                   </div>
 
-                  <div class="text-right">
+                  <div class="text-right mt-1 sm:mt-0">
                     <p class="font-semibold text-sm">{{ p.rating?.toFixed(2) || '0.00' }}</p>
                     <div class="text-yellow-400 text-xs">★</div>
                   </div>
@@ -425,12 +425,11 @@ export default {
                 type: 'Technician'
               });
             });
-            // merge with companies later by reading current comp snapshot if available
-            // store technicians temporarily on topProviders as base; companies snapshot will merge
+            // Sort technicians by rating and take top 3
+            const topTechs = list.sort((a,b) => (b.rating || 0) - (a.rating || 0)).slice(0, 3);
+            // Merge with top companies
             const comps = topProviders._companiesCache || [];
-            const merged = list.concat(comps);
-            merged.sort((a,b) => (b.rating || 0) - (a.rating || 0));
-            topProviders.value = merged.slice(0,5);
+            topProviders.value = topTechs.concat(comps);
             // cache technicians
             topProviders._techCache = list;
           } catch (e) { console.error('tech snapshot error:', e); }
@@ -449,10 +448,11 @@ export default {
                 type: 'Company'
               });
             });
-            const techs = topProviders._techCache || [];
-            const merged = techs.concat(list);
-            merged.sort((a,b) => (b.rating || 0) - (a.rating || 0));
-            topProviders.value = merged.slice(0,5);
+            // Sort companies by rating and take top 2
+            const topComps = list.sort((a,b) => (b.rating || 0) - (a.rating || 0)).slice(0, 2);
+            // Merge with top technicians
+            const techs = topProviders._techCache?.sort((a,b) => (b.rating || 0) - (a.rating || 0)).slice(0, 3) || [];
+            topProviders.value = techs.concat(topComps);
             // cache companies
             topProviders._companiesCache = list;
           } catch (e) { console.error('company snapshot error:', e); }

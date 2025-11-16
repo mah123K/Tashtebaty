@@ -12,10 +12,10 @@
       </p>
     </div>
 
-    <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+    <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 w-full">
 
-      <!-- Header Row (Title + Search + Filter) -->
-      <div class="flex justify-between items-center mb-4 px-4 pt-4">
+        <!-- Header Row (Title + Search + Filter) -->
+      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 px-4 pt-4 gap-4">
         <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">
           {{ texts[lang].adminDashboard.payments.allTransactions }}
         </h3>
@@ -23,7 +23,7 @@
         <div class="flex items-center gap-4">
 
           <!-- Search -->
-          <div class="relative w-64">
+          <div class="relative w-full sm:w-64">
             <input
               v-model="searchQuery"
               type="text"
@@ -70,7 +70,7 @@
       </div>
 
       <!-- TABLE -->
-      <table v-else class="min-w-full text-sm text-gray-700 dark:text-gray-200">
+      <table v-else class="min-w-full text-xs sm:text-sm text-gray-700 dark:text-gray-200">
         <thead class="bg-[#5984C6] text-white">
           <tr>
             <th class="py-3 px-4">{{ texts[lang].adminDashboard.payments.paymentId }}</th>
@@ -126,9 +126,11 @@
               <button @click="openModal('view', payment)" class="p-2 text-blue-500 hover:bg-blue-100 rounded-lg">
                 <i class="bi bi-eye"></i>
               </button>
+                    <div class="h-3 border-l border-gray-300 mt-3"></div>
               <button @click="openModal('edit', payment)" class="p-2 text-yellow-500 hover:bg-yellow-100 rounded-lg">
                 <i class="bi bi-pencil"></i>
               </button>
+                    <div class="h-3 border-l border-gray-300 mt-3"></div>
               <button @click="openModal('delete', payment)" class="p-2 text-red-500 hover:bg-red-100 rounded-lg">
                 <i class="bi bi-trash"></i>
               </button>
@@ -142,7 +144,7 @@
         v-if="showModal"
         class="fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center z-50"
       >
-        <div class="bg-white dark:bg-[#111827] dark:text-gray-100 w-96 rounded-xl shadow-xl p-6 relative">
+        <div class="bg-white dark:bg-[#111827] dark:text-gray-100 w-full max-w-md mx-4 sm:mx-auto rounded-xl shadow-xl p-4 sm:p-6 relative">
           <button @click="closeModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800">
             <i class="bi bi-x-lg"></i>
           </button>

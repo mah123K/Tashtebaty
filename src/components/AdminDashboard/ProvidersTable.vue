@@ -702,9 +702,12 @@
       >
         <button
           @click="closeEditModal"
-          class="absolute top-1 right-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+          class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100 transition-colors duration-200"
+          :title="texts[lang].adminDashboard.providers.close || 'Close'"
         >
-          ✖
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
         </button>
 
         <h3
@@ -765,15 +768,15 @@
 
             <select
               v-model="editForm.status"
-              class="border border-gray-300 dark:border-gray-600 bg:white dark:bg-gray-800 text-gray-900 dark:text(gray-100) rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#5984C6]"
+              class="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#5984C6]"
             >
-              <option value="active">
+              <option value="active" class="text-green-600 dark:text-green-400">
                 {{ texts[lang].adminDashboard.providers.active }}
               </option>
-              <option value="banned">
+              <option value="banned" class="text-red-600 dark:text-red-400">
                 {{ texts[lang].adminDashboard.providers.banned }}
               </option>
-              <option value="pending">
+              <option value="pending" class="text-yellow-600 dark:text-yellow-400">
                 {{ texts[lang].adminDashboard.providers.pending }}
               </option>
             </select>
@@ -781,7 +784,7 @@
 
           <button
             type="submit"
-            class="w-full bg-[#5984C6] text:white py-2 rounded-lg hover:bg-[#4968a0] transition"
+            class="w-full bg-[#5984C6] text-white py-2 rounded-lg hover:bg-[#4968a0] dark:hover:bg-[#7ba3d6] transition-colors duration-200"
           >
             {{ texts[lang].adminDashboard.providers.saveChanges }}
           </button>

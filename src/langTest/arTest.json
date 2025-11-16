@@ -594,7 +594,7 @@
       "deleteService": "حذف الخدمة",
       "deleteConfirm": "هل أنت متأكد من أنك تريد حذف هذه الخدمة؟",
       "providersTitle": "مقدمي الخدمات",
-      "loadingProviders": "جار تحميل مقدمي الخدمات...",
+      "loadingservices": "...جار تحميل الخدمات",
       "noProviders": "لم يتم العثور على مقدمي خدمات لهذه الخدمة",
       "technician": "فني",
       "company": "شركة",

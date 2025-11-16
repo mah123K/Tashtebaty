@@ -2,7 +2,7 @@
   <div class="flex bg-gray-100 dark:bg-[#0f172a] text-gray-900 dark:text-gray-100 h-screen">
 
     <!-- Sidebar -->
-    <aside class="w-64 bg-[#344767] text-white flex flex-col p-5 justify-between">
+    <aside class="flex-shrink-0 w-64 bg-[#344767] text-white flex flex-col p-5 justify-between">
       <div>
         <div class="flex flex-col items-center mb-6">
           <img
@@ -155,14 +155,14 @@
           @click.stop="toggleUserMenu"
           class="w-10 h-10 flex items-center justify-center bg-gray-200 rounded-full hover:bg-[#5984C6] transition-all duration-300 cursor-pointer overflow-hidden"
         >
-          <img 
-            v-if="userPhoto && userPhoto !== 'null' && !userPhoto.startsWith('undefined')" 
-            :src="userPhoto" 
-            alt="profile" 
+          <img
+            v-if="userPhoto && userPhoto !== 'null' && !userPhoto.startsWith('undefined')"
+            :src="userPhoto"
+            alt="profile"
             class="w-full h-full object-cover"
-            @error="handleImageError" 
+            @error="handleImageError"
           />
-          <i v-else class="bi bi-person text-2xl text-gray-700 hover:text-white"></i>
+          <i v-else class="bi bi-person text-2xl text-gray-500"></i>
         </div>
 
         <!-- Dropdown -->
@@ -179,12 +179,12 @@
               <div
                 class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center border border-gray-300 dark:border-gray-600 overflow-hidden"
               >
-                <img 
-                  v-if="userPhoto && userPhoto !== 'null' && !userPhoto.startsWith('undefined')" 
-                  :src="userPhoto" 
-                  alt="profile" 
+                <img
+                  v-if="userPhoto && userPhoto !== 'null' && !userPhoto.startsWith('undefined')"
+                  :src="userPhoto"
+                  alt="profile"
                   class="w-full h-full object-cover"
-                  @error="handleImageError" 
+                  @error="handleImageError"
                 />
                 <i v-else class="bi bi-person text-2xl text-gray-500"></i>
               </div>
