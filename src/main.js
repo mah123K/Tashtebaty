@@ -195,18 +195,21 @@ onAuthStateChanged(auth, async (user) => {
 
     if (techDoc.exists()) {
       if (!lastRoute || !lastRoute.startsWith("/technician-dashboard")) {
+        localStorage.setItem("lastDashboardRoute", "/technician-dashboard");
         lastRoute = "/technician-dashboard";
         localStorage.setItem("lastDashboardRoute", lastRoute);
       }
       if (["/", "/login", "/signup"].includes(currentPath)) router.replace(lastRoute);
     } else if (adminDoc.exists()) {
       if (!lastRoute || !lastRoute.startsWith("/dashboard")) {
+        localStorage.setItem("lastDashboardRoute", "/dashboard");
         lastRoute = "/dashboard";
         localStorage.setItem("lastDashboardRoute", lastRoute);
       }
       if (["/", "/login", "/signup"].includes(currentPath)) router.replace(lastRoute);
     } else if (companyDoc.exists()) {
       if (!lastRoute || !lastRoute.startsWith("/company-dashboard")) {
+        localStorage.setItem("lastDashboardRoute", "/company-dashboard");
         lastRoute = "/company-dashboard";
         localStorage.setItem("lastDashboardRoute", lastRoute);
       }

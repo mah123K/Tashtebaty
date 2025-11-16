@@ -1,5 +1,5 @@
 <script setup>
-import { getAuth, signOut } from "firebase/auth";
+import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "vue-router";
 import { ref, onMounted, computed } from "vue";
 import { db } from "@/firebase/firebase";
@@ -46,14 +46,17 @@ const toggleDarkMode = () => {
   }
 };
 
-onMounted(async () => {
+onMounted(() => {
   const auth = getAuth();
-  const user = auth.currentUser;
-  if (user) {
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) return;
+
     technicianId.value = user.uid;
 
     const docRef = doc(db, "technicians", user.uid);
     const docSnap = await getDoc(docRef);
+
     if (docSnap.exists()) {
       technician.value = docSnap.data();
     }
@@ -63,17 +66,9 @@ onMounted(async () => {
     onSnapshot(q, (snapshot) => {
       orders.value = snapshot.docs.map((d) => d.data());
     });
-    window.history.pushState(null, "", window.location.href);
-    window.addEventListener("popstate", () => {
-      window.history.pushState(null, "", window.location.href);
-    });
-  }
-  window.addEventListener("profile-updated", (event) => {
-    if (event.detail?.image) {
-      technician.value.profileImage = event.detail.image;
-    }
   });
 });
+
 
 const handleLogout = async () => {
   try {
