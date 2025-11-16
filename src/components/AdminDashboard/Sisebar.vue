@@ -2,7 +2,13 @@
   <div class="flex bg-gray-100 dark:bg-[#0f172a] text-gray-900 dark:text-gray-100 h-screen">
 
     <!-- Sidebar -->
-    <aside class="flex-shrink-0 w-64 bg-[#344767] text-white flex flex-col p-5 justify-between">
+    <aside
+      class="flex-shrink-0 w-64 bg-[#344767] text-white flex flex-col p-5 justify-between fixed lg:static lg:translate-x-0 z-40 transition-transform duration-300 ease-in-out h-screen"
+      :class="{
+        'translate-x-0': isSidebarOpen,
+        '-translate-x-full': !isSidebarOpen
+      }"
+    >
       <div>
         <div class="flex flex-col items-center mb-6">
           <img
@@ -92,77 +98,92 @@
       </div>
 
       <!-- Logout Button -->
-      <div class="flex justify-center mb-4">
-        <button
-          @click="handleLogout"
-          class="flex items-center justify-center space-x-1 text-white font-medium text-sm py-1 px-3 rounded-xl transition-all duration-500 border border-white hover:bg-white hover:text-[#133B5D]"
-        >
-          <i class="bi bi-box-arrow-right text-lg"></i>
-          <span>{{ texts[lang].adminDashboard.sidebar.logout }}</span>
-        </button>
+        <!-- Logout Button -->
+     
+<div class="flex justify-center mt-auto mb-6">
+         <button
+           @click="handleLogout"
+       
+         class="flex items-center justify-center space-x-1 text-white font-medium text-sm py-1 px-3 rounded-xl transition-all duration-500 border border-white hover:bg-white hover:text-[#133B5D]"
+         >
+           <i class="bi bi-box-arrow-right text-lg"></i>
+           <span>{{ texts[lang].adminDashboard.sidebar.logout }}</span>
+         </button>
       </div>
     </aside>
 
     <!-- Main layout -->
-    <div class="flex-1 flex flex-col">
-      <header class="flex justify-end items-center bg-white dark:bg-[#111827] shadow-sm p-4 space-x-4 relative">
+    <div class="flex-1 flex flex-col lg:ml-0">
+      <header class="flex justify-between lg:justify-end items-center bg-white dark:bg-[#111827] shadow-sm p-4 relative">
 
-        <!-- Language Switch -->
+        <!-- Hamburger Menu Button for Mobile/Tablet -->
         <button
-          ref="langButton"
-          @click="toggleLanguage"
-          class="group relative h-9 w-9 rounded-full border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-[#5984C6] dark:hover:border-[#5984C6] transition-colors duration-200 language-switch-button"
-          :title="texts[lang].adminDashboard.sidebar.switchToEnglish"
+          @click="toggleSidebar"
+          class="lg:hidden flex items-center justify-center w-10 h-10 rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200"
+          :title="texts[lang].adminDashboard.sidebar.menu"
         >
-          <i
-            class="fa-solid fa-language absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-600 transition-all duration-500 dark:text-gray-100 group-hover:text-[#5984C6] dark:group-hover:text-white"
-          ></i>
-          <span class="sr-only">Toggle language</span>
+          <i class="bi bi-list text-xl text-gray-700 dark:text-gray-200"></i>
         </button>
 
-        <!-- Dark Mode Switch -->
-        <button
-          @click="toggleDarkMode"
-          class="group relative h-9 w-9 rounded-full border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-[#5984C6] dark:hover:border-[#5984C6] transition-colors duration-200"
-          :title="isDark ? texts[lang].adminDashboard.sidebar.lightMode : texts[lang].adminDashboard.sidebar.darkMode"
-        >
-          <!-- Sun -->
-          <svg
-            id="sunIcon"
-            xmlns="http://www.w3.org/2000/svg"
-            class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-6 w-6 transition-all duration-500"
-            :class="{
-              'rotate-0 scale-100 text-yellow-500 group-hover:text-yellow-600': !isDark,
-              'rotate-90 scale-0 text-gray-600 group-hover:text-yellow-400': isDark
-            }"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        <!-- Controls Group -->
+        <div class="flex items-center space-x-4">
+          <!-- Language Switch -->
+          <button
+            ref="langButton"
+            @click="toggleLanguage"
+            class="group relative h-9 w-9 rounded-full border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-[#5984C6] dark:hover:border-[#5984C6] transition-colors duration-200 language-switch-button"
+            :title="texts[lang].adminDashboard.sidebar.switchToEnglish"
           >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 3v1m0 16v1m8.66-12.34l-.7.7M5.05 18.95l-.7.7M21 12h1M2 12H1m16.95 6.95l.7.7M5.05 5.05l.7.7" />
-          </svg>
+            <i
+              class="fa-solid fa-language absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-600 transition-all duration-500 dark:text-gray-100 group-hover:text-[#5984C6] dark:group-hover:text-white"
+            ></i>
+            <span class="sr-only">Toggle language</span>
+          </button>
 
-          <!-- Moon -->
-          <i
-            class="fa-solid fa-moon absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-100 transition-all duration-500 -rotate-90 scale-0 dark:rotate-0 dark:scale-100 group-hover:text-[#5984C6] dark:group-hover:text-white"
-          ></i>
-          <span class="sr-only">Toggle theme</span>
-        </button>
+          <!-- Dark Mode Switch -->
+          <button
+            @click="toggleDarkMode"
+            class="group relative h-9 w-9 rounded-full border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-[#5984C6] dark:hover:border-[#5984C6] transition-colors duration-200"
+            :title="isDark ? texts[lang].adminDashboard.sidebar.lightMode : texts[lang].adminDashboard.sidebar.darkMode"
+          >
+            <!-- Sun -->
+            <svg
+              id="sunIcon"
+              xmlns="http://www.w3.org/2000/svg"
+              class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-6 w-6 transition-all duration-500"
+              :class="{
+                'rotate-0 scale-100 text-yellow-500 group-hover:text-yellow-600': !isDark,
+                'rotate-90 scale-0 text-gray-600 group-hover:text-yellow-400': isDark
+              }"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 3v1m0 16v1m8.66-12.34l-.7.7M5.05 18.95l-.7.7M21 12h1M2 12H1m16.95 6.95l.7.7M5.05 5.05l.7.7" />
+            </svg>
 
-        <!-- Profile button -->
-        <div
-          @click.stop="toggleUserMenu"
-          class="w-10 h-10 flex items-center justify-center bg-gray-200 rounded-full hover:bg-[#5984C6] transition-all duration-300 cursor-pointer overflow-hidden"
-        >
-          <img
-            v-if="userPhoto && userPhoto !== 'null' && !userPhoto.startsWith('undefined')"
-            :src="userPhoto"
-            alt="profile"
-            class="w-full h-full object-cover"
-            @error="handleImageError"
-          />
-          <i v-else class="bi bi-person text-2xl text-gray-500"></i>
+            <!-- Moon -->
+            <i
+              class="fa-solid fa-moon absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-100 transition-all duration-500 -rotate-90 scale-0 dark:rotate-0 dark:scale-100 group-hover:text-[#5984C6] dark:group-hover:text-white"
+            ></i>
+            <span class="sr-only">Toggle theme</span>
+          </button>
+
+          <!-- Profile button -->
+          <div
+            @click.stop="toggleUserMenu"
+            class="w-10 h-10 flex items-center justify-center bg-gray-200 rounded-full hover:bg-[#5984C6] transition-all duration-300 cursor-pointer overflow-hidden"
+          >
+            <img
+              v-if="userPhoto && userPhoto !== 'null' && !userPhoto.startsWith('undefined')"
+              :src="userPhoto"
+              alt="profile"
+              class="w-full h-full object-cover"
+              @error="handleImageError"
+            />
+            <i v-else class="bi bi-person text-2xl text-gray-500"></i>
+          </div>
         </div>
 
         <!-- Dropdown -->
@@ -192,38 +213,23 @@
               <p class="text-gray-500 dark:text-gray-300 text-sm">{{ userEmail }}</p>
             </div>
 
-            <div class="flex flex-col py-2">
-              <div @click="goToProfile" class="flex items-center space-x-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer">
-                <i class="fa-solid fa-user-gear text-[#5984C6]"></i>
-                <span>{{ texts[lang].adminDashboard.sidebar.profileSettings }}</span>
-              </div>
-
-              <div
-                @click="switchAccount"
-                class="flex items-center space-x-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer"
-              >
-                <i class="fa-solid fa-repeat text-[#5984C6]"></i>
-                <span>{{ texts[lang].adminDashboard.sidebar.switchAccount }}</span>
-              </div>
-
-              <div
-                @click="handleLogout"
-                class="flex items-center space-x-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer"
-              >
-                <i class="fa-solid fa-arrow-right-from-bracket text-[#5984C6]"></i>
-                <span>{{ texts[lang].adminDashboard.sidebar.logout }}</span>
-              </div>
-            </div>
           </div>
         </transition>
 
       </header>
 
       <!-- Page content -->
-      <main class="flex-1 p-8 overflow-y-auto bg-gray-50 dark:bg-[#0b1220]">
+      <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto bg-gray-50 dark:bg-[#0b1220]">
         <router-view></router-view>
       </main>
     </div>
+
+    <!-- Overlay for mobile sidebar -->
+    <div
+      v-if="isSidebarOpen && windowWidth < 1024"
+      @click="closeSidebar"
+      class="fixed inset-0 bg-transparent z-30 lg:hidden"
+    ></div>
 
   </div>
 </template>
@@ -252,6 +258,8 @@ export default {
     const userName = ref('')
     const userPhoto = ref('')
     const isDark = ref(false)
+    const isSidebarOpen = ref(false)
+    const windowWidth = ref(window.innerWidth)
     const auth = getAuth()
 
     // 🟦 تحميل بيانات المستخدم
@@ -320,6 +328,7 @@ export default {
       })
 
       document.addEventListener('click', handleClickOutside)
+      window.addEventListener('resize', handleResize)
 
       // الثيم
       const savedTheme = localStorage.getItem('theme')
@@ -328,6 +337,7 @@ export default {
 
     onBeforeUnmount(() => {
       document.removeEventListener('click', handleClickOutside)
+      window.removeEventListener('resize', handleResize)
     })
 
     // 🟧 قائمة المستخدم
@@ -407,6 +417,23 @@ export default {
       event.target.style.display = "none"
     }
 
+    // Sidebar toggle functions
+    const toggleSidebar = () => {
+      isSidebarOpen.value = !isSidebarOpen.value
+    }
+
+    const closeSidebar = () => {
+      isSidebarOpen.value = false
+    }
+
+    const handleResize = () => {
+      windowWidth.value = window.innerWidth
+      // Auto-close sidebar on desktop resize
+      if (windowWidth.value >= 1024) {
+        isSidebarOpen.value = false
+      }
+    }
+
     return {
       lang,
       texts,
@@ -429,6 +456,10 @@ export default {
       isDark,
       toggleDarkMode,
       langButton,
+      isSidebarOpen,
+      toggleSidebar,
+      closeSidebar,
+      windowWidth,
     }
   }
 }
