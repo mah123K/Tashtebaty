@@ -253,7 +253,7 @@ export default {
             service: data.skill,
             location: data.address?.city || ("not specified"),
             rating: data.ratingAverage || data.rating || 0,
-            bio: data.description || this.$t("profilesPage.fallbackBio"),
+            bio: data.description || ("no bio"),
             profileImage: data.profileImage || "/images/engineer2.png",
             completedOrders: completedOrders,
             type: "technician", // add type to distinguish

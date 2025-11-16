@@ -25,7 +25,7 @@
                 d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2l-7 7v6l-4-2v-4L3 6V4z"
               />
             </svg>
-            {{ $t("topBar.filterButton") }}
+            {{ texts[lang].topBar.filterButton }}
           </button>
 
           <div
@@ -35,11 +35,11 @@
           >
             <div class="flex justify-between items-center mb-2 text-left rtl:text-right">
               <h6 class="text-sm font-medium text-(--text-primary)">
-                {{ $t("topBar.filtersTitle") }}
+                {{ texts[lang].topBar.filtersTitle }}
               </h6>
               <div class="flex gap-3 text-xs">
                 <button class="text-(--text-muted) hover:text-red-500 transition" @click="clearAll">
-                  {{ $t("topBar.clearAll") }}
+                  {{ texts[lang].topBar.clearAll }}
                 </button>
               </div>
             </div>
@@ -47,7 +47,7 @@
             <input
               v-model="searchKeyword"
               type="text"
-              :placeholder="$t('topBar.searchPlaceholder')"
+              :placeholder="texts[lang].topBar.searchPlaceholder"
               class="w-full px-3 py-2 mb-3 text-sm border border-(--border) rounded-md focus:outline-none focus:ring-1 focus:ring-(--accent) text-(--text-primary) bg-(--bg) rtl:text-right"
               @input="emitFilters"
             />
@@ -57,7 +57,7 @@
             >
               <details class="rounded-md p-2" open>
                 <summary class="cursor-pointer font-medium text-(--text-primary)">
-                  {{ $t("topBar.categoryTitle") }}
+                  {{ texts[lang].topBar.categoryTitle }}
                 </summary>
                 <ul class="mt-2 space-y-1 pl-2 rtl:pl-0 rtl:pr-2">
                   <li v-for="cat in categories" :key="cat.id" class="flex items-center gap-2">
@@ -79,7 +79,7 @@
               <!-- Projects Filter -->
               <details class="rounded-md p-2">
                 <summary class="cursor-pointer font-medium text-(--text-primary)">
-                  {{ $t("topBar.projectsTitle") }}
+                  {{ texts[lang].topBar.projectsTitle }}
                 </summary>
 
                 <div class="mt-2 space-y-1 pl-2">
@@ -98,7 +98,7 @@
 
               <details class="rounded-md p-2">
                 <summary class="cursor-pointer font-medium text-(--text-primary)">
-                  {{ $t("topBar.ratingTitle") }}
+                  {{ texts[lang].topBar.ratingTitle }}
                 </summary>
                 <div class="mt-2 space-y-1 pl-2 rtl:pl-0 rtl:pr-2">
                   <label v-for="n in ratingOptions " :key="n.value" class="flex items-center gap-2">
@@ -130,12 +130,12 @@
           @change="emitSort"
           class="px-3 py-2 border rounded-lg border-(--border) text-(--text-primary) focus:outline-none text-sm md:text-base bg-(--bg) transition rtl:text-right"
         >
-          <option value="default">{{ $t("topBar.sort.default") }}</option>
-          <option value="rating-desc">{{ $t("topBar.sort.ratingDesc") }}</option>
+          <option value="default">{{ texts[lang].topBar.sort.default }}</option>
+          <option value="rating-desc">{{ texts[lang].topBar.sort.ratingDesc }}</option>
           <option value="rating-asc">
-            {{ $t("topBar.sort.ratingAsc") }}
+            {{ texts[lang].topBar.sort.ratingAsc }}
           </option>
-          <option value="location">{{ $t("topBar.sort.locationClosest") }}</option>
+          <option value="location">{{ texts[lang].topBar.sort.locationClosest }}</option>
         </select>
 
         <div
@@ -186,6 +186,7 @@
 </template>
 
 <script>
+import { useTestLang } from "@/langTest/useTestLang";
 export default {
   name: "TopBar",
   props: {
@@ -280,6 +281,13 @@ export default {
 beforeUnmount() {
   document.removeEventListener("click", this.handleDocumentClick);
 },
+setup() {
+    // استدعاء اللغة
+    const { lang, texts, switchLang } = useTestLang();
+
+    // لازم نرجعهم عشان نستخدمهم في template أو داخل methods
+    return { lang, texts, switchLang };
+  },
 };
 </script>
 
