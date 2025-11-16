@@ -12,76 +12,76 @@
     </div>
 
     <!-- Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8 max-w-6xl">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mt-8 max-w-6xl">
 
       <!-- Users -->
-      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 shadow-md rounded-2xl p-5 cursor-pointer hover:-translate-y-1 transition-all duration-300">
-        <p class="text-gray-500 dark:text-gray-300 text-sm font-medium">
+      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 shadow-md rounded-2xl p-4 sm:p-5 cursor-pointer hover:-translate-y-1 transition-all duration-300">
+        <p class="text-gray-500 dark:text-gray-300 text-xs sm:text-sm font-medium">
           {{ texts[lang].adminDashboard.dashboard.totalUsers }}
         </p>
 
-        <div class="flex justify-between items-center mt-4">
-          <p class="text-3xl font-bold">{{ totalUsers }}</p>
-          <div class="bg-blue-100 text-blue-500 w-12 h-12 flex items-center justify-center rounded-full">
-            <i class="bi bi-people-fill text-xl"></i>
+        <div class="flex justify-between items-center mt-3 sm:mt-4">
+          <p class="text-2xl sm:text-3xl font-bold">{{ totalUsers }}</p>
+          <div class="bg-blue-100 text-blue-500 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full">
+            <i class="bi bi-people-fill text-lg sm:text-xl"></i>
           </div>
         </div>
 
-        <p class="text-sm" :class="userChange >=0 ? 'text-green-500' : 'text-red-500'">
+        <p class="text-xs sm:text-sm" :class="userChange >=0 ? 'text-green-500' : 'text-red-500'">
           {{ userChange >=0 ? '+' : ''}}{{ userChange }}% {{ texts[lang].adminDashboard.dashboard.sinceLastWeek }}
         </p>
       </div>
 
       <!-- Companies -->
-      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 shadow-md rounded-2xl p-5 cursor-pointer hover:-translate-y-1 transition-all duration-300">
-        <p class="text-gray-500 dark:text-gray-300 text-sm font-medium">
+      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 shadow-md rounded-2xl p-4 sm:p-5 cursor-pointer hover:-translate-y-1 transition-all duration-300">
+        <p class="text-gray-500 dark:text-gray-300 text-xs sm:text-sm font-medium">
           {{ texts[lang].adminDashboard.dashboard.totalCompanies }}
         </p>
 
-        <div class="flex justify-between items-center mt-4">
-          <p class="text-3xl font-bold">{{ totalCompanies }}</p>
-          <div class="bg-green-100 text-green-500 w-12 h-12 flex items-center justify-center rounded-full">
-            <i class="bi bi-building text-xl"></i>
+        <div class="flex justify-between items-center mt-3 sm:mt-4">
+          <p class="text-2xl sm:text-3xl font-bold">{{ totalCompanies }}</p>
+          <div class="bg-green-100 text-green-500 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full">
+            <i class="bi bi-building text-lg sm:text-xl"></i>
           </div>
         </div>
 
-        <p class="text-sm" :class="companyChange >=0 ? 'text-green-500' : 'text-red-500'">
+        <p class="text-xs sm:text-sm" :class="companyChange >=0 ? 'text-green-500' : 'text-red-500'">
           {{ companyChange >=0 ? '+' : ''}}{{ companyChange }}% {{ texts[lang].adminDashboard.dashboard.sinceLastWeek }}
         </p>
       </div>
 
       <!-- Craftsmen -->
-      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 shadow-md rounded-2xl p-5 cursor-pointer hover:-translate-y-1 transition-all duration-300">
-        <p class="text-gray-500 dark:text-gray-300 text-sm font-medium">
+      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 shadow-md rounded-2xl p-4 sm:p-5 cursor-pointer hover:-translate-y-1 transition-all duration-300">
+        <p class="text-gray-500 dark:text-gray-300 text-xs sm:text-sm font-medium">
           {{ texts[lang].adminDashboard.dashboard.totalCraftsmen }}
         </p>
 
-        <div class="flex justify-between items-center mt-4">
-          <p class="text-3xl font-bold">{{ totalCraftsmen }}</p>
-          <div class="bg-yellow-100 text-yellow-500 w-12 h-12 flex items-center justify-center rounded-full">
-            <i class="bi bi-hammer text-xl"></i>
+        <div class="flex justify-between items-center mt-3 sm:mt-4">
+          <p class="text-2xl sm:text-3xl font-bold">{{ totalCraftsmen }}</p>
+          <div class="bg-yellow-100 text-yellow-500 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full">
+            <i class="bi bi-hammer text-lg sm:text-xl"></i>
           </div>
         </div>
 
-        <p class="text-sm" :class="craftsmenChange >=0 ? 'text-green-500' : 'text-red-500'">
+        <p class="text-xs sm:text-sm" :class="craftsmenChange >=0 ? 'text-green-500' : 'text-red-500'">
           {{ craftsmenChange >=0 ? '+' : ''}}{{ craftsmenChange }}% {{ texts[lang].adminDashboard.dashboard.sinceLastWeek }}
         </p>
       </div>
 
       <!-- Orders -->
-      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 shadow-md rounded-2xl p-5 cursor-pointer hover:-translate-y-1 transition-all duration-300">
-        <p class="text-gray-500 dark:text-gray-300 text-sm font-medium">
+      <div class="bg-white dark:bg-[#111827] dark:text-gray-100 shadow-md rounded-2xl p-4 sm:p-5 cursor-pointer hover:-translate-y-1 transition-all duration-300">
+        <p class="text-gray-500 dark:text-gray-300 text-xs sm:text-sm font-medium">
           {{ texts[lang].adminDashboard.dashboard.totalOrders }}
         </p>
 
-        <div class="flex justify-between items-center mt-4">
-          <p class="text-3xl font-bold">{{ totalOrders }}</p>
-          <div class="bg-red-100 text-red-500 w-12 h-12 flex items-center justify-center rounded-full">
-            <i class="bi bi-cart-fill text-xl"></i>
+        <div class="flex justify-between items-center mt-3 sm:mt-4">
+          <p class="text-2xl sm:text-3xl font-bold">{{ totalOrders }}</p>
+          <div class="bg-red-100 text-red-500 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full">
+            <i class="bi bi-cart-fill text-lg sm:text-xl"></i>
           </div>
         </div>
 
-        <p class="text-sm" :class="ordersChange >=0 ? 'text-green-500' : 'text-red-500'">
+        <p class="text-xs sm:text-sm" :class="ordersChange >=0 ? 'text-green-500' : 'text-red-500'">
           {{ ordersChange >=0 ? '+' : ''}}{{ ordersChange }}% {{ texts[lang].adminDashboard.dashboard.sinceLastWeek }}
         </p>
 
@@ -92,15 +92,15 @@
     </div>
 
     <!-- Monthly Revenue + Top Providers -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-10 max-w-6xl">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-8 sm:mt-10 max-w-6xl">
 
       <!-- Monthly Revenue -->
       <div class="bg-white dark:bg-[#111827] dark:text-gray-100 p-4 sm:p-6 rounded-2xl shadow-md lg:col-span-2">
-        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
+        <h2 class="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
           {{ texts[lang].adminDashboard.dashboard.monthlyRevenue }}
         </h2>
 
-        <div class="w-full h-64 sm:h-80 lg:h-120">
+        <div class="w-full h-48 sm:h-64 lg:h-80 xl:h-96">
           <canvas id="revenueChart" class="w-full h-full"></canvas>
         </div>
       </div>
@@ -109,43 +109,43 @@
       <div class="bg-white dark:bg-[#111827] dark:text-gray-100 p-4 sm:p-6 rounded-2xl shadow-md lg:col-span-1">
 
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-          <h2 class="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">
+          <h2 class="text-base sm:text-lg lg:text-xl font-semibold text-gray-800 dark:text-gray-100">
             {{ texts[lang].adminDashboard.dashboard.topRatedProviders }}
           </h2>
-          <span class="text-sm text-gray-500 dark:text-gray-300 mt-1 sm:mt-0">
+          <span class="text-xs sm:text-sm text-gray-500 dark:text-gray-300 mt-1 sm:mt-0">
             {{ texts[lang].adminDashboard.dashboard.top5 }}
           </span>
         </div>
 
         <!-- Top Craftsmen -->
-        <div class="mb-6 ">
-          <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">
+        <div class="mb-4 sm:mb-6">
+          <h3 class="text-sm sm:text-base lg:text-lg font-medium text-gray-800 dark:text-gray-200 mb-2 sm:mb-3">
             {{ texts[lang].adminDashboard.providers.craftsmen }}
           </h3>
 
-          <div class="space-y-3">
-            <div v-if="!topProviders.filter(p => p.type === 'Technician').length" class="text-gray-500 dark:text-gray-300">
+          <div class="space-y-2 sm:space-y-3">
+            <div v-if="!topProviders.filter(p => p.type === 'Technician').length" class="text-gray-500 dark:text-gray-300 text-sm">
               {{ texts[lang].adminDashboard.dashboard.noProviders }}
             </div>
 
             <div
               v-for="p in topProviders.filter(p => p.type === 'Technician')"
               :key="p.id"
-              class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              class="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
             >
-              <div class="h-12 w-12 rounded-full overflow-hidden flex items-center justify-center bg-[#dedede] dark:bg-gray-800 border-2 border-[#5984C6] dark:border-[#8db4ff]">
+              <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden flex items-center justify-center bg-[#dedede] dark:bg-gray-800 border-2 border-[#5984C6] dark:border-[#8db4ff]">
                 <img :src="p.image || defaultAvatar" @error="(e)=>e.target.src=defaultAvatar" class="w-full h-full object-cover" />
               </div>
 
               <div class="flex-1 min-w-0">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <div class="truncate">
-                    <p class="font-semibold text-sm sm:text-base">{{ p.name }}</p>
+                    <p class="font-semibold text-xs sm:text-sm lg:text-base">{{ p.name }}</p>
                     <p class="text-xs text-gray-500 dark:text-gray-300">{{ p.type }}</p>
                   </div>
 
                   <div class="text-right mt-1 sm:mt-0">
-                    <p class="font-semibold text-sm">{{ p.rating?.toFixed(2) || '0.00' }}</p>
+                    <p class="font-semibold text-xs sm:text-sm">{{ p.rating?.toFixed(2) || '0.00' }}</p>
                     <div class="text-yellow-400 text-xs">★</div>
                   </div>
                 </div>
@@ -157,33 +157,33 @@
 
         <!-- Top Companies -->
         <div>
-          <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">
+          <h3 class="text-sm sm:text-base lg:text-lg font-medium text-gray-800 dark:text-gray-200 mb-2 sm:mb-3">
             {{ texts[lang].adminDashboard.providers.company }}
           </h3>
 
-          <div class="space-y-3">
-            <div v-if="!topProviders.filter(p => p.type === 'Company').length" class="text-gray-500 dark:text-gray-300">
+          <div class="space-y-2 sm:space-y-3">
+            <div v-if="!topProviders.filter(p => p.type === 'Company').length" class="text-gray-500 dark:text-gray-300 text-sm">
               {{ texts[lang].adminDashboard.dashboard.noProviders }}
             </div>
 
             <div
               v-for="p in topProviders.filter(p => p.type === 'Company')"
               :key="p.id"
-              class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              class="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
             >
-              <div class="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center bg-[#dedede] dark:bg-gray-800 border-2 border-[#5984C6] dark:border-[#8db4ff]">
+              <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-full overflow-hidden flex items-center justify-center bg-[#dedede] dark:bg-gray-800 border-2 border-[#5984C6] dark:border-[#8db4ff]">
                 <img :src="p.image || defaultAvatar" @error="(e)=>e.target.src=defaultAvatar" class="w-full h-full object-contain" />
               </div>
 
               <div class="flex-1 min-w-0">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <div class="truncate">
-                    <p class="font-semibold text-sm sm:text-base">{{ p.name }}</p>
+                    <p class="font-semibold text-xs sm:text-sm lg:text-base">{{ p.name }}</p>
                     <p class="text-xs text-gray-500 dark:text-gray-300">{{ p.type }}</p>
                   </div>
 
                   <div class="text-right mt-1 sm:mt-0">
-                    <p class="font-semibold text-sm">{{ p.rating?.toFixed(2) || '0.00' }}</p>
+                    <p class="font-semibold text-xs sm:text-sm">{{ p.rating?.toFixed(2) || '0.00' }}</p>
                     <div class="text-yellow-400 text-xs">★</div>
                   </div>
                 </div>
