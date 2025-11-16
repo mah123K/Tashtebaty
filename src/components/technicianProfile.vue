@@ -694,8 +694,18 @@ watch(selectedDayInfo, () => {
           <div class="line w-full h-px bg-gray-300 my-4"></div>
         </div>
 
+        <!-- bio data -->
+         <div class="flex items-center gap-2">
+              <i class="fa-solid fa-file md:px-2 w-5 text-center text-accent-color"></i>
+              Bio
+            </div>
+        <p class="px-2 md:px-6 pb-4 text-sm md:text-base font-normal text-gray-600 dark:text-white">
+          {{ technician.bio || "No bio available." }}
+        </p>
+        <div class="line w-full h-px bg-gray-300 my-4"></div>
+
         <div
-          class="dataContainer flex justify-between px-2 md:px-6 pb-4 text-sm md:text-base font-medium text-gray-700 dark:text-white"
+          class="dataContainer flex justify-between px-2 md:px-1 pb-4 text-sm md:text-base font-medium text-gray-700 dark:text-white"
         >
           <div class="dataKey space-y-3">
             <div class="flex items-center gap-2">
