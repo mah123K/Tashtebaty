@@ -269,7 +269,7 @@
       </section>
     </main>
 
-   <div
+    <div
       v-if="showPopup"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     >
@@ -277,23 +277,14 @@
         class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-sm text-center"
       >
         <div
-          v-if="popupType === 'error'"
           class="w-12 h-12 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4"
         >
           <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
         </div>
 
-        <div
-          v-if="popupType === 'success'"
-          class="w-12 h-12 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4"
-        >
-          <i class="fa-solid fa-check text-2xl"></i>
-        </div>
-
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          {{ popupType === 'success' ? 'Changed' : 'Notice' }}
+          Notice
         </h3>
-        
         <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">
           {{ popupMessage }}
         </p>
@@ -469,7 +460,7 @@ const saveChanges = async () => {
       });
       window.dispatchEvent(event);
       // UPDATED
-      triggerPopup("Changes saved successfully!", "success");
+      triggerPopup("Changes saved successfully!");
     }
   } catch (error) {
     console.error("Error saving changes:", error);
@@ -611,4 +602,3 @@ const mapSrc = computed(() => {
   background-color: var(--accent);
 }
 </style>
-```
