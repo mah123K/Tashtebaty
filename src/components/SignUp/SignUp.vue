@@ -70,7 +70,7 @@ export default {
     return {
       tabs: ["Client", "Technician", "Company"],
       activeTab: "Client",
-      loginRoute: "/login",
+      loginRoute: "/",
       toast: { visible: false, message: "", type: "success" },
     };
   },
@@ -138,7 +138,7 @@ export default {
         await setDoc(doc(db, "clients", user.uid), payload);
 
         this.showToast("Client registered successfully!", "success");
-        setTimeout(() => this.$router.push("/login"), 1500);
+        setTimeout(() => this.$router.push("/"), 1500);
       } catch (err) {
         console.error("Client signup error:", err);
         const friendly = this.getFriendlyErrorMessage(err.code);
@@ -199,7 +199,7 @@ export default {
         await setDoc(doc(db, "technicians", user.uid), payload);
 
         this.showToast("Technician registered successfully!", "success");
-        setTimeout(() => this.$router.push("/login"), 1500);
+        setTimeout(() => this.$router.push("/technician-dashboard"), 1500);
       } catch (err) {
         console.error("Technician signup error:", err);
         const friendly = this.getFriendlyErrorMessage(err.code);
@@ -264,7 +264,7 @@ export default {
         await setDoc(doc(db, "companies", user.uid), payload);
 
         this.showToast("Company registered successfully!", "success");
-        setTimeout(() => this.$router.push("/login"), 1500);
+        setTimeout(() => this.$router.push("/company-dashboard"), 1500);
       } catch (err) {
         console.error("Company signup error:", err);
         const friendly = this.getFriendlyErrorMessage(err.code);

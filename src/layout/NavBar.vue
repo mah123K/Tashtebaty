@@ -57,7 +57,7 @@
         <div class="flex items-center me-4 gap-x-3">
           <!-- Notifications -->
           <div class="relative" v-if="user">
-            <button @click="toggleNotifications" class="relative cursor-pointer">
+              <button ref="notificationsButton" @click="toggleNotifications" class="relative cursor-pointer">
               <i class="fa-solid fa-bell text-xl" :style="{ color: 'var(--accent)' }"></i>
               <span
                 v-if="unreadCount > 0"
@@ -69,6 +69,7 @@
 
             <transition name="fade-slide">
               <div
+                ref="notificationsDropdown"
                 v-if="showNotifications"
                 class="absolute right-0 mt-2 w-80 rounded-lg shadow-xl border z-50"
                 :style="{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-primary)' }"
@@ -475,6 +476,19 @@ export default {
       ) {
         this.isUserMenuOpen = false;
       }
+
+      const notificationsButton = this.$refs.notificationsButton;
+      const notificationsDropdown = this.$refs.notificationsDropdown;
+      if (
+      this.showNotifications &&
+      notificationsDropdown &&
+      !notificationsDropdown.contains(e.target) &&
+      notificationsButton &&
+      !notificationsButton.contains(e.target)
+    ) {
+      this.showNotifications = false;
+}
+
     });
   },
 
