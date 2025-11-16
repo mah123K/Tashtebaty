@@ -244,7 +244,7 @@
     </div>
 
     <transition name="fade">
-      <div v-if="showPopup" class="fixed inset-0 bg-[#000000d0] flex items-center justify-center z-50">
+      <div v-if="showPopup" class="fixed inset-0 bg-black flex items-center justify-center z-50">
         <div class="bg-white rounded-2xl p-8 w-[90%] max-w-md shadow-lg text-center">
           <h2 class="text-2xl font-semibold text-[#133B5D] mb-4">Confirm Your Payment</h2>
 
