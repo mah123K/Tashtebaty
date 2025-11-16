@@ -94,7 +94,7 @@ const isConfirmed = computed(() => props.order.status === "upcoming");
 
 <template> 
   <div
-    class="order rounded-2xl shadow-md p-5 w-[31%] bg-white dark:bg-[#16222B] dark:text-white m-2 relative transition duration-200"
+    class="order rounded-2xl shadow-md p-5 md:w-[31%] bg-white dark:bg-[#16222B] dark:text-white m-2 relative transition duration-200"
   >
     <!-- Details button -->
     <button
@@ -196,7 +196,7 @@ const isConfirmed = computed(() => props.order.status === "upcoming");
         <span
           :class="isConfirmed ? 'text-green-600 font-semibold' : 'text-yellow-500 font-semibold'"
         >
-          {{ isConfirmed ? 'Confirmed (Paid)' : 'Unconfirmed (Awaiting Payment)' }}
+          {{ isConfirmed ? ' Confirmed (Paid)' : ' (waiting for Payment)' }}
         </span>
       </p>
     </div>

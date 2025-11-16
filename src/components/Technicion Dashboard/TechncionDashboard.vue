@@ -95,6 +95,14 @@ const handleTabChange = (tabName) => {
   mainTab.value = tabName;
 };
 
+// NEW: mobile sidebar visibility
+const showSidebar = ref(false);
+
+// close sidebar handler (passed to sidebar)
+const closeSidebarHandler = () => {
+  showSidebar.value = false;
+};
+
 const applyTheme = (mode) => {
   isDark.value = mode === "dark";
   document.documentElement.classList.toggle("dark", isDark.value);
@@ -511,20 +519,24 @@ watch(
 );
 </script>
 
-
-
-
-
-
-
-
-
 <template>
   <div class="min-h-screen bg-gray-100 dark:bg-[#0B1217] flex">
     <!-- 🟦 Fixed Top Mini Navbar -->
     <div
-      class="fixed top-0 left-[20%] w-[80%] h-[60px] bg-white/70 dark:bg-[#0b1822]/80 backdrop-blur-md flex justify-end items-center px-8 shadow-md z-40"
+      class="fixed top-0 left-0 md:left-[20%] w-full md:w-[80%] h-[60px]
+             bg-white/70 dark:bg-[#0b1822]/80 backdrop-blur-md
+             flex justify-end items-center px-8 shadow-md z-40"
     >
+      <!-- BURGER (mobile) -->
+      <button
+        @click="showSidebar = !showSidebar"
+        class="mr-4 cursor-pointer md:hidden absolute left-4 top-3 p-2 rounded-md bg-transparent"
+        :title="showSidebar ? 'Close menu' : 'Open menu'"
+      >
+        <i v-if="!showSidebar" class="fa-solid fa-bars text-2xl text-[#133B5D] dark:text-white"></i>
+        <i v-else class="fa-solid fa-xmark text-2xl text-[#133B5D] dark:text-white"></i>
+      </button>
+
       <!-- 🌙 Dark Mode -->
       <button @click="toggleDarkMode" class="mr-6 cursor-pointer" :title="isDark ? 'Light mode' : 'Dark mode'">
         <i v-if="isDark" class="fa-solid fa-sun text-yellow-400 text-xl"></i>
@@ -568,10 +580,24 @@ watch(
         </transition>
       </div>
     </div>
-    <TechnicionDashNav :active="mainTab" @changeTab="handleTabChange" />
 
+    <!-- Sidebar (component) -->
+    <TechnicionDashNav
+      :active="mainTab"
+      :mobile-open="showSidebar"
+      @changeTab="handleTabChange"
+      @closeSidebar="closeSidebarHandler"
+      class="z-50"  
+    />
 
-    <div class="myOrders ml-[20%] w-[80%] px-8 py-6 relative pt-[80px]">
+    <!-- Visual overlay (semi-transparent) for mobile — O2: visual only, pointer-events-none so clicks pass through -->
+    <div
+      v-if="showSidebar"
+      class="fixed inset-0 bg-black opacity-30 pointer-events-none z-30 md:hidden"
+      aria-hidden="true"
+    ></div>
+
+    <div class="myOrders  w-[80%] px-8 py-6 relative pt-[80px] md:ml-[20%]">
       <template v-if="mainTab === 'orders'">
         <h2 class="text-2xl font-semibold text-[#133B5D] dark:text-white mb-4">Orders</h2>
         <div
@@ -634,7 +660,7 @@ watch(
         >
           No orders found in this category.
         </div>
-        <div class="ordersContainer flex flex-wrap -mx-2">
+        <div class="ordersContainer flex flex-wrap justify-center -mx-2">
           <template v-if="orderTab === 'requests'">
             <ordersCard
               v-for="order in filteredOrders"
@@ -657,7 +683,7 @@ watch(
             <div
               v-for="order in filteredOrders"
               :key="order.id"
-              class="order rounded-2xl shadow-md p-5 w-[31%] bg-green-50 dark:bg-[#16222B] dark:text-white m-2 border border-green-300 relative transition duration-200"
+              class="order rounded-2xl shadow-md p-5 w-full md:w-[31%] bg-green-50 dark:bg-[#16222B] dark:text-white m-2 border border-green-300 relative transition duration-200"
             >
               <button
                 @click="order.showDetails = true"
@@ -761,7 +787,7 @@ watch(
             <div
               v-for="order in filteredOrders"
               :key="order.id"
-              class="order rounded-2xl shadow-md p-5 w-[31%] bg-red-50 dark:bg-[#16222B] dark:text-white m-2 border border-red-300 relative transition duration-200"
+              class="order rounded-2xl shadow-md p-5 w-full md:w-[31%] bg-red-50 dark:bg-[#16222B] dark:text-white m-2 border border-red-300 relative transition duration-200"
             >
               <button
                 @click="order.showDetails = true"
@@ -1300,5 +1326,10 @@ watch(
 .fade-fast-enter-from,
 .fade-fast-leave-to {
   opacity: 0;
+}
+
+/* Additional small helper to ensure the mobile burger doesn't overlap badly */
+@media (max-width: 767px) {
+  .myOrders { padding-left: 1rem; padding-right: 1rem; }
 }
 </style>
