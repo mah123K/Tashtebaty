@@ -1,5 +1,5 @@
 <script setup>
-import { getAuth, signOut } from "firebase/auth";
+import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "vue-router";
 import { ref, onMounted, computed } from "vue";
 import { db } from "@/firebase/firebase";
@@ -56,14 +56,45 @@ const toggleDarkMode = () => {
   }
 };
 
-onMounted(async () => {
+// onMounted(async () => {
+//   const auth = getAuth();
+//   const user = auth.currentUser;
+//   if (user) {
+//     companyId.value = user.uid;
+
+//     const docRef = doc(db, "companies", user.uid);
+//     const docSnap = await getDoc(docRef);
+//     if (docSnap.exists()) {
+//       company.value = docSnap.data();
+//     }
+
+//     const ordersRef = collection(db, "orders");
+//     const q = query(ordersRef, where("companyId", "==", user.uid));
+//     onSnapshot(q, (snapshot) => {
+//       orders.value = snapshot.docs.map((d) => d.data());
+//     });
+//     window.history.pushState(null, "", window.location.href);
+//     window.addEventListener("popstate", () => {
+//       window.history.pushState(null, "", window.location.href);
+//     });
+//   }
+//   window.addEventListener("profile-updated", (event) => {
+//     if (event.detail?.image) {
+//       company.value.profileImage = event.detail.image;
+//     }
+//   });
+// });
+onMounted(() => {
   const auth = getAuth();
-  const user = auth.currentUser;
-  if (user) {
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) return;
+
     companyId.value = user.uid;
 
     const docRef = doc(db, "companies", user.uid);
     const docSnap = await getDoc(docRef);
+
     if (docSnap.exists()) {
       company.value = docSnap.data();
     }
@@ -73,17 +104,9 @@ onMounted(async () => {
     onSnapshot(q, (snapshot) => {
       orders.value = snapshot.docs.map((d) => d.data());
     });
-    window.history.pushState(null, "", window.location.href);
-    window.addEventListener("popstate", () => {
-      window.history.pushState(null, "", window.location.href);
-    });
-  }
-  window.addEventListener("profile-updated", (event) => {
-    if (event.detail?.image) {
-      company.value.profileImage = event.detail.image;
-    }
   });
 });
+
 
 const handleLogout = async () => {
   try {

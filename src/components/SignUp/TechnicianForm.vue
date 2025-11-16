@@ -215,12 +215,12 @@
             required
             :class="inputClass(errors.skill)"
             @change="clearError('skill')"
+            class=" dark:bg-[#16222B] dark:text-white dark:border-gray-600 dark:placeholder:text-gray-400 dark:hover:"
           >
             <option value="" disabled>Select Work Type *</option>
             <option value="Plumbing">🔧 Plumbing</option>
             <option value="Electrical">⚡ Electrical</option>
             <option value="Carpentry">🔨 Carpentry</option>
-            <option value="Finishing">🛠️ Finishing</option>
           </select>
           <p v-if="errors.skill" class="text-red-500 text-sm mt-1">
             {{ errors.skill }}
@@ -268,6 +268,8 @@
 </template>
 
 <script>
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/firebase/firebase";
 export default {
   props: {
     loginRoute: { type: String, required: true },
@@ -302,6 +304,18 @@ export default {
     };
   },
   methods: {
+    async loadServices() {
+  try {
+    const querySnapshot = await getDocs(collection(db, "services"));
+    this.services = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  } catch (error) {
+    console.error("Error loading services: ", error);
+  }
+},
+
     inputClass(error, hasPadding = false) {
       return [
         "w-full p-4 border rounded-xl focus:outline-none focus:ring-1 transition-all duration-200",

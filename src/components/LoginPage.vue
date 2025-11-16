@@ -202,7 +202,7 @@ const handleSignIn = async () => {
       { name: "admin", route: "/dashboard" },
       { name: "clients", route: "/" },
       { name: "technicians", route: "/technician-dashboard" },
-      { name: "companies", route: "/technician-dashboard" },
+      { name: "companies", route: "/company-dashboard" },
     ];
 
     let found = false;
