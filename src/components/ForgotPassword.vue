@@ -1,9 +1,9 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-dark-blue px-4">
-    <div :class="['bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 w-full max-w-md', $i18n.locale === 'ar' ? 'text-right' : 'text-center']">
-      <h2 class="text-3xl font-bold text-[#5984C6] dark:text-[#5984C6] mb-2">{{ $t('forgotPassword.title') }}</h2>
+    <div :class="['bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 w-full max-w-md', lang === 'ar' ? 'text-right' : 'text-center']">
+      <h2 class="text-3xl font-bold text-[#5984C6] dark:text-[#5984C6] mb-2">{{ texts[lang].forgotPassword.title }}</h2>
       <p class="text-gray-600 dark:text-gray-300 mb-6">
-       {{ $t('forgotPassword.prompt') }}
+       {{ texts[lang].forgotPassword.prompt }}
       </p>
 
       <div v-if="message" :class="`mb-4 text-sm font-medium ${messageColor}`">
@@ -14,9 +14,9 @@
         <input
           type="email"
           v-model="email"
-          :placeholder="$t('forgotPassword.emailPlaceholder')"
+          :placeholder="texts[lang].forgotPassword.emailPlaceholder"
           required
-          :class="['w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-3 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[#5984C6]', $i18n.locale === 'ar' ? 'text-right' : 'text-left']"
+          :class="['w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-3 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[#5984C6]', lang === 'ar' ? 'text-right' : 'text-left']"
         />
 
         <button
@@ -24,8 +24,8 @@
           class="w-full bg-[#5984C6] text-white py-3 rounded-lg font-semibold hover:bg-[#4a73b1] transition duration-200"
           :disabled="loading"
         >
-          <span v-if="!loading">{{ $t('forgotPassword.button') }}</span>
-          <span v-else><i class="fa fa-spinner fa-spin"></i> {{ $t('forgotPassword.sending') }}</span>
+          <span v-if="!loading">{{ texts[lang].forgotPassword.button }}</span>
+          <span v-else><i class="fa fa-spinner fa-spin"></i> {{ texts[lang].forgotPassword.sending }}</span>
         </button>
       </form>
 
@@ -33,7 +33,7 @@
         to="/login"
         class="block mt-6 text-[#5984C6] hover:text-blue-500 dark:text-[#5984C6] dark:hover:text-blue-400 font-medium"
       >
-        {{ $t('forgotPassword.backToLogin') }}
+        {{ texts[lang].forgotPassword.backToLogin }}
       </router-link>
     </div>
   </div>
@@ -42,6 +42,9 @@
 <script setup>
 import { ref } from "vue";
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
+import { useTestLang } from "@/langTest/useTestLang";
+
+const { lang, texts } = useTestLang();
 
 const email = ref("");
 const message = ref("");
@@ -55,14 +58,15 @@ const handleReset = async () => {
     loading.value = true;
     const auth = getAuth();
     await sendPasswordResetEmail(auth, email.value);
-    message.value = "Password reset link sent! Check your inbox.";
+    // use texts
+    message.value = (texts[lang] && texts[lang].forgotPassword && texts[lang].forgotPassword.messages && texts[lang].forgotPassword.messages.sent) || "Password reset link sent! Check your inbox.";
     messageColor.value = "text-green-600";
   } catch (error) {
     console.error(error);
     if (error.code === "auth/user-not-found") {
-      message.value = "No account found with this email.";
+      message.value = (texts[lang] && texts[lang].forgotPassword && texts[lang].forgotPassword.messages && texts[lang].forgotPassword.messages.userNotFound) || "No account found with this email.";
     } else {
-      message.value = "Failed to send reset email.";
+      message.value = (texts[lang] && texts[lang].forgotPassword && texts[lang].forgotPassword.messages && texts[lang].forgotPassword.messages.failed) || "Failed to send reset email.";
     }
     messageColor.value = "text-red-600";
   } finally {
@@ -70,3 +74,6 @@ const handleReset = async () => {
   }
 };
 </script>
+
+<style scoped>
+</style>
