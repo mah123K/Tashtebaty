@@ -205,8 +205,12 @@ const claimOffer = async (offer) => {
     // 3. Save offer to user's subcollection
     const offerRef = doc(db, 'clients', user.uid, 'claimedOffers', offer.id);
     await setDoc(offerRef, { 
-      ...offer, 
-      claimedAt: new Date() 
+      id: offer.id,
+      title: offer.title,
+      discountType: offer.type || "flat",       // example: flat / percent
+      discountValue: offer.value || 100,        // example: 100 EGP or 20%
+      used: false,                              // << مهم جداً !!
+      claimedAt: new Date()
     });
 
     // 4. Update UI immediately

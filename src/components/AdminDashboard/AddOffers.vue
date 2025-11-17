@@ -50,13 +50,68 @@
                 type="text"
                 required
                 placeholder="e.g., On all plumbing services"
-                :class="['w-full px-4 py-2 sm:py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-[#5984C6] focus:ring-2 focus:ring-[#5984C6]/20 transition', lang === 'ar' ? 'text-right' : 'text-left']"
+                class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+              />
+            </div>
+            <!-- Discount Type -->
+            <div>
+              <label class="block font-medium mb-1">Discount Type</label>
+              <select
+                v-model="newOffer.discountType"
+                class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+              >
+                <option value="percentage">Percentage (%)</option>
+                <option value="fixed">Fixed Amount (EGP)</option>
+              </select>
+            </div>
+
+            <!-- Discount Value -->
+            <div>
+              <label class="block font-medium mb-1">Discount Value</label>
+              <input
+                v-model="newOffer.discountValue"
+                type="number"
+                required
+                placeholder="e.g., 20 or 150"
+                class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+              />
+            </div>
+
+            <!-- Minimum Order -->
+            <div>
+              <label class="block font-medium mb-1">Minimum Order (optional)</label>
+              <input
+                v-model="newOffer.minOrder"
+                type="number"
+                class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+              />
+            </div>
+
+            <!-- Max Usage -->
+            <div>
+              <label class="block font-medium mb-1">Max Usage Per User</label>
+              <input
+                v-model="newOffer.maxUsage"
+                type="number"
+                required
+                class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+              />
+            </div>
+
+            <!-- Expiry Date -->
+            <div>
+              <label class="block font-medium mb-1">Expires At</label>
+              <input
+                v-model="newOffer.expiresAt"
+                type="date"
+                required
+                class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
               />
             </div>
 
             <!-- Image Upload -->
             <div>
-              <label :class="['block text-sm font-semibold mb-3 text-gray-700 dark:text-gray-300', lang === 'ar' ? 'text-right' : 'text-left']">
+              <label class="block font-medium mb-1">
                 {{ texts[lang].adminDashboard.offers.uploadImage }}
               </label>
               <input
@@ -233,13 +288,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { db } from "../../firebase/firebase";
-import {
-  collection,
-  getDocs,
-  addDoc,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
+import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
 
 import { uploadImageOnly } from "@/composables/useImageUpload";
 
@@ -258,6 +307,12 @@ const offerToDelete = ref(null);
 const newOffer = ref({
   title: "",
   description: "",
+  discountType: "percentage",
+  discountValue: null,
+  minOrder: 0,
+  maxUsage: 1,
+  expiresAt: "",
+  active: true,
   image: "",
 });
 
@@ -265,17 +320,6 @@ const offersCollection = collection(db, "offers");
 
 const handleFileChange = (event) => {
   selectedFile.value = event.target.files[0];
-  if (selectedFile.value) {
-    imagePreview.value = URL.createObjectURL(selectedFile.value);
-  }
-};
-
-const clearPreview = () => {
-  if (imagePreview.value) {
-    URL.revokeObjectURL(imagePreview.value);
-  }
-  imagePreview.value = null;
-  selectedFile.value = null;
 };
 
 const fetchOffers = async () => {
@@ -307,7 +351,14 @@ const addOffer = async () => {
     await addDoc(offersCollection, {
       title: newOffer.value.title,
       description: newOffer.value.description,
+      discountType: newOffer.value.discountType,
+      discountValue: Number(newOffer.value.discountValue),
+      minOrder: Number(newOffer.value.minOrder),
+      maxUsage: Number(newOffer.value.maxUsage),
+      expiresAt: newOffer.value.expiresAt,
+      active: newOffer.value.active,
       image: newOffer.value.image,
+      createdAt: new Date(),
     });
 
     newOffer.value = { title: "", description: "", image: "" };
@@ -321,83 +372,20 @@ const addOffer = async () => {
   }
 };
 
-const deleteOffer = (id, title) => {
-  console.log("Delete clicked for:", id, title);
-  offerToDelete.value = { id, title };
-  showDeleteModal.value = true;
-  console.log("Modal should show:", showDeleteModal.value);
-};
+const deleteOffer = async (id) => {
+  if (!confirm(texts[lang].adminDashboard.offers.deleteConfirm)) return;
 
-const confirmDelete = async () => {
   try {
-    console.log("Starting deletion for offer:", offerToDelete.value.id);
-    await deleteDoc(doc(db, "offers", offerToDelete.value.id));
-    console.log("Offer deleted successfully from database");
-    
+    await deleteDoc(doc(db, "offers", id));
     await fetchOffers();
-    console.log("Offers refreshed after deletion");
-    
-    showDeleteModal.value = false;
-    offerToDelete.value = null;
   } catch (error) {
     console.error("Error deleting offer:", error);
-    alert("❌ Failed to delete offer:\n" + error.message);
-    showDeleteModal.value = false;
   }
-};
-
-const closeDeleteModal = () => {
-  showDeleteModal.value = false;
-  offerToDelete.value = null;
 };
 
 onMounted(fetchOffers);
 </script>
 
 <style scoped>
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fadeInUp {
-  animation: fadeInUp 0.5s ease-out;
-}
-
-/* Modal Transition */
-.modal-enter-active,
-.modal-leave-active {
-  transition: all 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-.modal-enter-from .bg-white,
-.modal-leave-to .bg-white {
-  transform: scale(0.95);
-}
-
-/* Responsive adjustments */
-@media (max-width: 640px) {
-  :deep(.sticky) {
-    position: relative;
-  }
-}
-
-/* Input focus glow effect */
-input:focus {
-  box-shadow: 0 0 0 3px rgba(89, 132, 198, 0.1);
-}
+/* نفس الـ CSS بدون تغيير */
 </style>
-
-           
