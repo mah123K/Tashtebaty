@@ -74,6 +74,8 @@ const serviceTitle = ref("");
 const servicePrice = ref("");
 const isPriceLocked = ref(false);
 const orderDescription = ref("");
+const availableOffers = ref([]);
+const selectedOffer = ref(null);
 
 // --- Live Feedbacks from Firestore Ratings ---
 const feedbacks = ref([]);
@@ -93,6 +95,78 @@ const chunkedServices = computed(() => {
     chunks.push(services.slice(i, i + chunkSize));
   }
   return chunks;
+});
+
+const formatCurrency = (amount) => {
+  if (amount === null || amount === undefined) return null;
+  const numeric = Number(amount);
+  if (!Number.isFinite(numeric)) return null;
+  const formatted = Number.isInteger(numeric)
+    ? numeric.toString()
+    : numeric.toFixed(2);
+  return `${formatted} EGP`;
+};
+
+const parsePriceInput = (value) => {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+  const numericString = String(value)
+    .replace(/,/g, "")
+    .replace(/[^\d.]/g, "");
+  if (!numericString) return null;
+  const parsed = parseFloat(numericString);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const offerTotals = computed(() => {
+  const basePrice = parsePriceInput(servicePrice.value);
+
+  if (basePrice === null) {
+    return { basePrice: null, discountAmount: 0, finalPrice: null };
+  }
+
+  if (!selectedOffer.value) {
+    return { basePrice, discountAmount: 0, finalPrice: basePrice };
+  }
+
+  const discountType = selectedOffer.value.discountType || "flat";
+  const discountValue = Number(selectedOffer.value.discountValue) || 0;
+
+  let discountAmount =
+    discountType === "percentage"
+      ? (basePrice * discountValue) / 100
+      : discountValue;
+
+  discountAmount = Math.min(Math.max(discountAmount, 0), basePrice);
+  const finalPrice = Number((basePrice - discountAmount).toFixed(2));
+
+  return {
+    basePrice,
+    discountAmount,
+    finalPrice,
+  };
+});
+
+const priceSummary = computed(() => {
+  const { basePrice, discountAmount, finalPrice } = offerTotals.value;
+
+  if (basePrice === null) {
+    return {
+      show: false,
+      originalLabel: null,
+      discountLabel: null,
+      finalLabel: null,
+    };
+  }
+
+  return {
+    show: true,
+    originalLabel: formatCurrency(basePrice),
+    discountLabel: discountAmount > 0 ? formatCurrency(discountAmount) : null,
+    finalLabel: formatCurrency(finalPrice ?? basePrice),
+  };
 });
 
 const nextSlide = () => {
@@ -312,6 +386,7 @@ const openPopup = (service = null, price = null) => {
   selectedTime.value = "";
   uploadedFiles.value = [];
   orderDescription.value = "";
+  selectedOffer.value = null;
 
   if (service && price) {
     // 🔹 Predefined technician service
@@ -333,6 +408,7 @@ const openPopup = (service = null, price = null) => {
 
 const closePopup = () => {
   showPopup.value = false;
+  selectedOffer.value = null;
 };
 
 // ✅ Add below your existing uploadedFiles ref
@@ -384,6 +460,91 @@ const uploadImagesToCloudinary = async (files) => {
   return urls;
 };
 
+const fetchAvailableOffers = async (uidParam) => {
+  const targetUid = uidParam || clientUser.value?.uid;
+  if (!targetUid) {
+    availableOffers.value = [];
+    return;
+  }
+
+  try {
+    const offersCol = collection(db, "clients", targetUid, "claimedOffers");
+    const snapshot = await getDocs(offersCol);
+
+    const list = [];
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      if (data.used === false) {
+        list.push({ docId: docSnap.id, ...data });
+      }
+    });
+
+    availableOffers.value = list;
+  } catch (error) {
+    console.error("Error fetching claimed offers:", error);
+    availableOffers.value = [];
+  }
+};
+
+const markOfferAsUsed = async ({
+  offer,
+  orderId,
+  priceBefore,
+  priceAfter,
+  discountAmount,
+}) => {
+  try {
+    const targetUid = clientUser.value?.uid;
+    if (!targetUid || !offer) return;
+
+    const offerDocId = offer.docId || offer.id;
+    if (!offerDocId) return;
+
+    const offerRef = doc(db, "clients", targetUid, "claimedOffers", offerDocId);
+    await updateDoc(offerRef, {
+      used: true,
+      usedAt: serverTimestamp(),
+      orderId,
+      priceBeforeDiscount: priceBefore ?? null,
+      finalPrice: priceAfter ?? null,
+      discountAmount: discountAmount ?? null,
+    });
+  } catch (error) {
+    console.error("Error marking offer as used:", error);
+  }
+};
+
+watch(
+  clientUser,
+  (user) => {
+    if (user?.uid) {
+      fetchAvailableOffers(user.uid);
+    } else {
+      availableOffers.value = [];
+      selectedOffer.value = null;
+    }
+  },
+  { immediate: true }
+);
+
+watch(
+  availableOffers,
+  (offers) => {
+    if (!selectedOffer.value) return;
+    const selectedId = selectedOffer.value.docId || selectedOffer.value.id;
+    if (!selectedId) {
+      selectedOffer.value = null;
+      return;
+    }
+    const stillExists = offers.some(
+      (offer) => (offer.docId || offer.id) === selectedId
+    );
+    if (!stillExists) {
+      selectedOffer.value = null;
+    }
+  },
+  { deep: true }
+);
 
 
 
@@ -405,6 +566,12 @@ const submitOrder = async () => {
     return;
   }
 } 
+  const totals = offerTotals.value;
+  if (selectedOffer.value && totals.basePrice === null) {
+    triggerAlert("Please enter a valid price before applying an offer.");
+    return;
+  }
+
   isSubmitting.value = true;
 
   try {
@@ -416,6 +583,20 @@ const submitOrder = async () => {
     if (period === "AM" && hours === 12) hours = 0;
     selectedDate.setHours(hours, minutes, 0, 0);
 
+    const fallbackPriceNumber = parsePriceInput(servicePrice.value);
+    const basePriceNumber = totals.basePrice ?? fallbackPriceNumber ?? null;
+    const finalPriceNumber =
+      totals.finalPrice !== null
+        ? totals.finalPrice
+        : basePriceNumber;
+    const orderPriceValue = finalPriceNumber ?? fallbackPriceNumber ?? null;
+    const discountAmountValue =
+      totals.discountAmount > 0
+        ? Number(totals.discountAmount.toFixed(2))
+        : null;
+    const storedPrice =
+      orderPriceValue ?? (servicePrice.value || "Pending Quote");
+
     const orderData = {
       clientId: clientUser.value.uid,
       clientName: clientData.value?.name || clientUser.value.email.split("@")[0],
@@ -425,7 +606,19 @@ const submitOrder = async () => {
       technicianSkill: technician.value.skill || "General",
       serviceTitle: serviceTitle.value || "Custom Service Request",
       description: orderDescription.value || serviceTitle.value || "",
-      price: servicePrice.value || "Pending Quote",
+      price: storedPrice,
+      priceBeforeDiscount: basePriceNumber,
+      discountAmount: discountAmountValue,
+      discountedPrice: finalPriceNumber ?? basePriceNumber,
+      appliedOffer: selectedOffer.value
+        ? {
+            docId: selectedOffer.value.docId || selectedOffer.value.id,
+            id: selectedOffer.value.id,
+            title: selectedOffer.value.title,
+            discountType: selectedOffer.value.discountType || "flat",
+            discountValue: selectedOffer.value.discountValue || 0,
+          }
+        : null,
       appointmentDate: selectedDate,
       appointmentDay: selectedDayInfo.value.display,
       appointmentTime: selectedTime.value,
@@ -448,6 +641,20 @@ const submitOrder = async () => {
     if (uploadedFiles.value.length > 0) {
       const imageUrls = await uploadImagesToCloudinary(uploadedFiles.value);
       await updateDoc(docRef, { imageUrls });
+    }
+
+    if (selectedOffer.value) {
+      await markOfferAsUsed({
+        offer: selectedOffer.value,
+        orderId: docRef.id,
+        priceBefore: basePriceNumber,
+        priceAfter: finalPriceNumber ?? basePriceNumber ?? orderPriceValue,
+        discountAmount: discountAmountValue,
+      });
+      if (clientUser.value?.uid) {
+        await fetchAvailableOffers(clientUser.value.uid);
+      }
+      selectedOffer.value = null;
     }
 
 
@@ -911,6 +1118,47 @@ watch(selectedDayInfo, () => {
               </button>
 
             </div>
+            <div v-if="availableOffers.length > 0" class="mt-4">
+              <label class="font-semibold text-gray-700 dark:text-white">Available Offers:</label>
+
+              <select v-model="selectedOffer" class="w-full p-2 rounded border mt-2 text-black">
+                <option :value="null">No offer</option>
+                <option
+                  v-for="offer in availableOffers"
+                  :key="offer.docId || offer.id"
+                  :value="offer"
+                >
+                  {{ offer.title }} - 
+                  {{
+                    offer.discountType === "percentage"
+                      ? `${offer.discountValue}% off`
+                      : `${offer.discountValue} EGP off`
+                  }}
+                </option>
+              </select>
+            </div>
+
+            <div
+              v-if="priceSummary.show && (selectedOffer || availableOffers.length > 0)"
+              class="mt-3 space-y-1 rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+            >
+              <div class="flex items-center justify-between">
+                <span>Original price</span>
+                <span>{{ priceSummary.originalLabel }}</span>
+              </div>
+              <div
+                v-if="selectedOffer && priceSummary.discountLabel"
+                class="flex items-center justify-between text-green-600 dark:text-green-400"
+              >
+                <span>Offer discount</span>
+                <span>- {{ priceSummary.discountLabel }}</span>
+              </div>
+              <div class="flex items-center justify-between font-semibold text-accent-color dark:text-accent-color">
+                <span>Total after offer</span>
+                <span>{{ priceSummary.finalLabel }}</span>
+              </div>
+            </div>
+
             <div>
               <label class="block text-left font-semibold text-gray-700 mb-1 dark:text-white">Price</label>
               <input
