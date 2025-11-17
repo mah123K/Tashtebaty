@@ -1,4 +1,4 @@
-<template>
+<template> 
   <div class="contact-page flex flex-col items-center text-center font-sans pt-18">
     <div class="w-full h-[300px] overflow-hidden">
       <img
@@ -130,14 +130,10 @@ const { lang, texts } = useTestLang();
 import { ref } from "vue";
 import { db } from "../firebase/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { useI18n } from "vue-i18n"; // 1. Import useI18n
 
 defineOptions({
   name: "ContactUs",
 });
-
-// 2. Initialize the 't' function
-const { t } = useI18n(); 
 
 // 🔹 Reactive form data
 const name = ref("");
@@ -150,11 +146,35 @@ const message = ref("");
 const successMessage = ref("");
 const errorMessage = ref("");
 
+// Helper to safely read texts[lang].a.b.c whether lang/texts are refs or plain
+const getText = (keyPath) => {
+  try {
+    const l = (lang && lang.value !== undefined) ? lang.value : lang;
+    const T = (texts && texts.value !== undefined) ? texts.value : texts;
+    if (!l || !T) return "";
+    const base = T[l];
+    if (!base) return "";
+    const parts = keyPath.split(".");
+    let node = base;
+    for (const p of parts) {
+      if (node && Object.prototype.hasOwnProperty.call(node, p)) {
+        node = node[p];
+      } else {
+        return "";
+      }
+    }
+    return typeof node === "string" ? node : "";
+  } catch (e) {
+    console.warn("getText error:", e);
+    return "";
+  }
+};
+
 // 🔹 Submit feedback function
 const submitFeedback = async () => {
   if (!name.value || !email.value || !message.value) {
-    // 4. Use the 't' function for messages
-    errorMessage.value = t('contactUs.form.errorRequired');
+    // Use texts from the same texts/lang object
+    errorMessage.value = getText("contactUs.form.errorRequired") || "Please fill required fields.";
     successMessage.value = "";
     return;
   }
@@ -169,7 +189,7 @@ const submitFeedback = async () => {
       createdAt: serverTimestamp(),
     });
 
-    successMessage.value = t('contactUs.form.success');
+    successMessage.value = getText("contactUs.form.success") || "Thank you! Your message has been sent.";
     errorMessage.value = "";
 
     // Reset form
@@ -180,7 +200,7 @@ const submitFeedback = async () => {
     message.value = "";
   } catch (err) {
     console.error(err);
-    errorMessage.value = t('contactUs.form.errorGeneral');
+    errorMessage.value = getText("contactUs.form.errorGeneral") || "Failed to send message. Please try again.";
   }
 };
 </script>

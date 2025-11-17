@@ -1,129 +1,5 @@
-<script>
-import { useTestLang } from "@/langTest/useTestLang";
-  export default{
-    name:"AboutUs",
-    data(){
-      return{
-        
-      numbersStarted: false,
-      animatedNumbers: {
-        services: 0,
-        users: 0,
-        orders: 0,
-        rating: 0,
-      },
-      targetNumbers: {
-        services: 2000,
-        users: 6000,
-        orders: 75,
-        rating: 4.9,
-      },
-        currentSlide:0,
-      interval: null,
-      
-      // --- MODIFIED ---
-      // We now store keys instead of hardcoded text.
-      // The images remain the same.
-      slides: [
-        {
-          image:
-            "https://res.cloudinary.com/dlrgf0myy/image/upload/v1760769725/Screenshot_2025-10-08_002515_zwynbi.png",
-          nameKey: "aboutUs.feedback.samir.name",
-          textKey: "aboutUs.feedback.samir.text"
-        },
-        {
-          image:
-            "https://res.cloudinary.com/dlrgf0myy/image/upload/v1760769725/Screenshot_2025-10-08_002635_ny2rnm.png",
-          nameKey: "aboutUs.feedback.mona.name",
-          textKey: "aboutUs.feedback.mona.text"
-        },
-        {
-          image:
-            "https://res.cloudinary.com/dlrgf0myy/image/upload/v1760769725/Screenshot_2025-10-08_002730_y0bkp5.png",
-          nameKey: "aboutUs.feedback.mai.name",
-          textKey: "aboutUs.feedback.mai.text"
-        },
-        {
-          image:
-            "https://res.cloudinary.com/dlrgf0myy/image/upload/v1760769725/Screenshot_2025-10-08_002515_zwynbi.png",
-          nameKey: "aboutUs.feedback.khaled.name",
-          textKey: "aboutUs.feedback.khaled.text"
-        },
-      ],
-      // --- END MODIFICATION ---
-      
-      }
-    },
-    methods: {
-       nextSlide() {
-      this.currentSlide = (this.currentSlide + 1) % this.slides.length;
-    },
-    prevSlide() {
-      this.currentSlide =
-        (this.currentSlide - 1 + this.slides.length) % this.slides.length;
-    },
-    goToSlide(index) {
-      this.currentSlide = index;
-    },
-      handleScroll() {
-      const section = this.$refs.numbersSection;
-      if (!section) return; // Guard clause
-      const rect = section.getBoundingClientRect();
-      const isVisible = rect.top < window.innerHeight && rect.bottom >= 0;
-
-      if (isVisible && !this.numbersStarted) {
-        this.numbersStarted = true;
-        this.startCountAnimation();
-      }
-    },
-    startCountAnimation() {
-      const duration = 2000; // total duration in ms
-      const startTime = performance.now();
-
-      const animate = (currentTime) => {
-        const progress = Math.min((currentTime - startTime) / duration, 1);
-
-        this.animatedNumbers.services = Math.floor(
-          this.targetNumbers.services * progress
-        );
-        this.animatedNumbers.users = Math.floor(
-          this.targetNumbers.users * progress
-        );
-        this.animatedNumbers.orders = Math.floor(
-          this.targetNumbers.orders * progress
-        );
-        this.animatedNumbers.rating = (this.targetNumbers.rating * progress).toFixed(1);
-
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        }
-      };
-
-      requestAnimationFrame(animate);
-    },
-    },
-    mounted() {
-    // Note: You had 'nextFeedback' here, but the method is 'nextSlide'
-    this.interval = setInterval(this.nextSlide, 5000); 
-     window.addEventListener("scroll", this.handleScroll);
-  },
-
-  beforeUnmount() {
-    clearInterval(this.interval);
-    window.removeEventListener("scroll", this.handleScroll);
-  },
-  setup() {
-    // استدعاء اللغة
-    const { lang, texts, switchLang } = useTestLang();
-
-    // لازم نرجعهم عشان نستخدمهم في template أو داخل methods
-    return { lang, texts, switchLang };
-  },
-  }
-</script>
-
 <template>
-    <div
+  <div
     class="heroSection mt-18 relative h-[70vh] flex flex-col justify-center items-center overflow-hidden text-white"
   >
     <img
@@ -248,8 +124,7 @@ import { useTestLang } from "@/langTest/useTestLang";
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"
             class="w-6 h-6 text-accent-color flex-shrink-0 mt-1 fill-current">
             <path d="M256 512a256 256 0 1 1 0-512 256 256 0 1 1 0 512zM374 145.7c-10.7-7.8-25.7-5.4-33.5 5.3L221.1 315.2 
-            169 263.1c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 
-            33.9l72 72c5 5 11.8 7.5 
+            169 263.1c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l72 72c5 5 11.8 7.5 
             18.8 7s13.4-4.1 17.5-9.8L379.3 
             179.2c7.8-10.7 
             5.4-25.7-5.3-33.5z"/>
@@ -261,8 +136,7 @@ import { useTestLang } from "@/langTest/useTestLang";
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"
             class="w-6 h-6 text-accent-color flex-shrink-0 mt-1 fill-current">
             <path d="M256 512a256 256 0 1 1 0-512 256 256 0 1 1 0 512zM374 145.7c-10.7-7.8-25.7-5.4-33.5 5.3L221.1 315.2 
-            169 263.1c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 
-            33.9l72 72c5 5 11.8 7.5 
+            169 263.1c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l72 72c5 5 11.8 7.5 
             18.8 7s13.4-4.1 17.5-9.8L379.3 
             179.2c7.8-10.7 
             5.4-25.7-5.3-33.5z"/>
@@ -274,8 +148,7 @@ import { useTestLang } from "@/langTest/useTestLang";
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"
             class="w-6 h-6 text-accent-color flex-shrink-0 mt-1 fill-current">
             <path d="M256 512a256 256 0 1 1 0-512 256 256 0 1 1 0 512zM374 145.7c-10.7-7.8-25.7-5.4-33.5 5.3L221.1 315.2 
-            169 263.1c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 
-            33.9l72 72c5 5 11.8 7.5 
+            169 263.1c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l72 72c5 5 11.8 7.5 
             18.8 7s13.4-4.1 17.5-9.8L379.3 
             179.2c7.8-10.7 
             5.4-25.7-5.3-33.5z"/>
@@ -310,13 +183,13 @@ import { useTestLang } from "@/langTest/useTestLang";
               alt="client"
             />
             <h2 class="text-accent-color text-2xl mb-2 font-medium">
-              {{ $t(item.nameKey) }}
+              {{ getText(item.nameKey) }}
             </h2>
             <div class="flex justify-center text-yellow-300 mb-2">
               <i v-for="n in 5" :key="n" class="fa-solid fa-star"></i>
             </div>
             <p class="text-(--text-muted) text-sm max-w-xl">
-              {{ $t(item.textKey) }}
+              {{ getText(item.textKey) }}
             </p>
           </div>
         </div>
@@ -371,6 +244,154 @@ import { useTestLang } from "@/langTest/useTestLang";
       </button>
     </div>
 </template>
+
+<script>
+import { useTestLang } from "@/langTest/useTestLang";
+export default{
+  name:"AboutUs",
+  data(){
+    return{
+      
+    numbersStarted: false,
+    animatedNumbers: {
+      services: 0,
+      users: 0,
+      orders: 0,
+      rating: 0,
+    },
+    targetNumbers: {
+      services: 2000,
+      users: 6000,
+      orders: 75,
+      rating: 4.9,
+    },
+      currentSlide:0,
+    interval: null,
+    
+    // --- MODIFIED ---
+    // We now store keys instead of hardcoded text.
+    // The images remain the same.
+    slides: [
+      {
+        image:
+          "https://res.cloudinary.com/dlrgf0myy/image/upload/v1760769725/Screenshot_2025-10-08_002515_zwynbi.png",
+        nameKey: "aboutUs.feedback.samir.name",
+        textKey: "aboutUs.feedback.samir.text"
+      },
+      {
+        image:
+          "https://res.cloudinary.com/dlrgf0myy/image/upload/v1760769725/Screenshot_2025-10-08_002635_ny2rnm.png",
+        nameKey: "aboutUs.feedback.mona.name",
+        textKey: "aboutUs.feedback.mona.text"
+      },
+      {
+        image:
+          "https://res.cloudinary.com/dlrgf0myy/image/upload/v1760769725/Screenshot_2025-10-08_002730_y0bkp5.png",
+        nameKey: "aboutUs.feedback.mai.name",
+        textKey: "aboutUs.feedback.mai.text"
+      },
+      {
+        image:
+          "https://res.cloudinary.com/dlrgf0myy/image/upload/v1760769725/Screenshot_2025-10-08_002515_zwynbi.png",
+        nameKey: "aboutUs.feedback.khaled.name",
+        textKey: "aboutUs.feedback.khaled.text"
+      },
+    ],
+    // --- END MODIFICATION ---
+    
+    }
+  },
+  methods: {
+     nextSlide() {
+    this.currentSlide = (this.currentSlide + 1) % this.slides.length;
+  },
+  prevSlide() {
+    this.currentSlide =
+      (this.currentSlide - 1 + this.slides.length) % this.slides.length;
+  },
+  goToSlide(index) {
+    this.currentSlide = index;
+  },
+    handleScroll() {
+    const section = this.$refs.numbersSection;
+    if (!section) return; // Guard clause
+    const rect = section.getBoundingClientRect();
+    const isVisible = rect.top < window.innerHeight && rect.bottom >= 0;
+
+    if (isVisible && !this.numbersStarted) {
+      this.numbersStarted = true;
+      this.startCountAnimation();
+    }
+  },
+  startCountAnimation() {
+    const duration = 2000; // total duration in ms
+    const startTime = performance.now();
+
+    const animate = (currentTime) => {
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+
+      this.animatedNumbers.services = Math.floor(
+        this.targetNumbers.services * progress
+      );
+      this.animatedNumbers.users = Math.floor(
+        this.targetNumbers.users * progress
+      );
+      this.animatedNumbers.orders = Math.floor(
+        this.targetNumbers.orders * progress
+      );
+      this.animatedNumbers.rating = (this.targetNumbers.rating * progress).toFixed(1);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  },
+
+  /**
+   * Safety translation getter.
+   * Accepts dot keys like "aboutUs.feedback.mona.name" and returns the string
+   * from texts for current language. Works if `lang` or `texts` are refs or plain.
+   */
+  getText(keyPath) {
+    // get current language value (supports ref or plain)
+    const l = (this.lang && this.lang.value) ? this.lang.value : this.lang || 'en';
+    // get texts object (support ref or plain)
+    const T = (this.texts && this.texts.value) ? this.texts.value : this.texts || {};
+    if (!keyPath) return "";
+    const parts = keyPath.split(".");
+    let node = T[l];
+    if (!node) return "";
+    for (const p of parts) {
+      if (node && Object.prototype.hasOwnProperty.call(node, p)) {
+        node = node[p];
+      } else {
+        return "";
+      }
+    }
+    return (typeof node === "string") ? node : "";
+  },
+  },
+  mounted() {
+  // Note: You had 'nextFeedback' here, but the method is 'nextSlide'
+  this.interval = setInterval(this.nextSlide, 5000); 
+   window.addEventListener("scroll", this.handleScroll);
+},
+
+beforeUnmount() {
+  clearInterval(this.interval);
+  window.removeEventListener("scroll", this.handleScroll);
+},
+setup() {
+  // استدعاء اللغة
+  const { lang, texts, switchLang } = useTestLang();
+
+  // لازم نرجعهم عشان نستخدمهم في template أو داخل methods
+  return { lang, texts, switchLang };
+},
+}
+</script>
 
 <style scoped>
 
