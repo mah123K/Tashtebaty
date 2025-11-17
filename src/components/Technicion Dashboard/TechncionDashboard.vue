@@ -540,12 +540,12 @@ watch(
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-100 dark:bg-[#0B1217] flex">
+  <div class="min-h-screen bg-gray-100 dark:bg-[#0B1217] flex justify-center">
     <!-- 🟦 Fixed Top Mini Navbar -->
     <div
       class="fixed top-0 left-0 md:left-[20%] w-full md:w-[80%] h-[60px]
-             bg-white/70 dark:bg-[#0b1822]/80 backdrop-blur-md
-             flex justify-end items-center px-8 shadow-md z-40"
+            bg-white/70 dark:bg-[#0b1822]/80 backdrop-blur-md
+            flex justify-end items-center px-8 shadow-md z-40"
     >
       <!-- BURGER (mobile) -->
       <button
@@ -555,6 +555,18 @@ watch(
       >
         <i v-if="!showSidebar" class="fa-solid fa-bars text-2xl text-[#133B5D] dark:text-white"></i>
         <i v-else class="fa-solid fa-xmark text-2xl text-[#133B5D] dark:text-white"></i>
+      </button>
+      <button
+        ref="langButton"
+        @click="toggleLanguage"
+        class="mr-6 cursor-pointer group relative h-9 w-9 rounded-full  border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-[#5984C6] dark:hover:border-[#5984C6] transition-colors duration-200 language-switch-button"
+        :title="texts[lang].adminDashboard.sidebar.switchToEnglish"
+      >
+        <i
+          ref="langIcon"
+          class="fa-solid fa-language absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-600 transition-all duration-500 dark:text-gray-100 group-hover:text-[#5984C6] dark:group-hover:text-white"
+        ></i>
+        <span class="sr-only">Toggle language</span>
       </button>
 
       <!-- 🌙 Dark Mode -->
@@ -574,7 +586,7 @@ watch(
             {{ unreadCount }}
           </span>
         </button>
-
+        
         <transition name="fade">
           <div
             v-if="showNotifications"
@@ -610,7 +622,6 @@ watch(
       class="z-50"  
     />
 
-    <!-- Visual overlay (semi-transparent) for mobile — O2: visual only, pointer-events-none so clicks pass through -->
     <div
       v-if="showSidebar"
       class="fixed inset-0 bg-black opacity-30 pointer-events-none z-30 md:hidden"
@@ -621,12 +632,12 @@ watch(
       <template v-if="mainTab === 'orders'">
         <h2 class="text-2xl font-semibold text-[#133B5D] dark:text-white mb-4">Orders</h2>
         <div
-          class="flex space-x-6 mb-6 border-b border-gray-300 text-lg font-medium"
+          class="flex md:space-x-6 space-x-2 mb-6 border-b border-gray-300 text-lg font-medium"
         >
           <button
             @click="orderTab = 'requests'"
             :class="[
-              'pb-2 border-b-2 transition-colors duration-200 cursor-pointer',
+              'md:text-sm text-[12px] pb-2 border-b-2 transition-colors duration-200 cursor-pointer',
               orderTab === 'requests'
                 ? 'border-[#133B5D] text-[#133B5D] dark:border-white dark:text-white'
                 : 'border-transparent text-gray-500 dark:text-white hover:text-[#133B5D] dark:hover:text-white cursor-pointer',
@@ -637,7 +648,7 @@ watch(
           <button
             @click="orderTab = 'upcoming'"
             :class="[
-              'pb-2 border-b-2 transition-colors duration-200',
+              'md:text-sm text-[12px] pb-2 border-b-2 transition-colors duration-200',
               orderTab === 'upcoming'
                 ? 'border-[#133B5D] text-[#133B5D] dark:border-white dark:text-white'
                 : 'border-transparent text-gray-500 dark:text-white hover:text-[#133B5D] dark:hover:text-white cursor-pointer',
@@ -648,7 +659,7 @@ watch(
           <button
             @click="orderTab = 'completed'"
             :class="[
-              'pb-2 border-b-2 transition-colors duration-200',
+              'md:text-sm text-[12px] pb-2 border-b-2 transition-colors duration-200',
               orderTab === 'completed'
                 ? 'border-[#133B5D] text-[#133B5D] dark:border-white dark:text-white'
                 : 'border-transparent text-gray-500 dark:text-white hover:text-[#133B5D] dark:hover:text-white cursor-pointer',
@@ -665,7 +676,7 @@ watch(
           <button
             @click="orderTab = 'cancelled'"
             :class="[
-              'pb-2 border-b-2 transition-colors duration-200',
+              'md:text-sm text-[12px] pb-2 border-b-2 transition-colors duration-200',
               orderTab === 'cancelled'
                 ? 'border-[#133B5D] text-[#133B5D] dark:border-white dark:text-white'
                 : 'border-transparent text-gray-500 dark:text-white hover:text-[#133B5D] dark:hover:text-white cursor-pointer',
@@ -680,7 +691,7 @@ watch(
         >
           No orders found in this category.
         </div>
-        <div class="ordersContainer flex flex-wrap justify-center -mx-2">
+        <div class="ordersContainer flex flex-wrap  -mx-2">
           <template v-if="orderTab === 'requests'">
             <ordersCard
               v-for="order in filteredOrders"
