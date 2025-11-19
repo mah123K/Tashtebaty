@@ -30,6 +30,41 @@ const handleMarkCompleted = () => {
   showCodePopup.value = true;
 };
 
+const openDirections = () => {
+  // prefer the explicit clientLocation stored on the order
+  const loc = props.order.clientLocation || props.order.location || null;
+
+  // If we have numeric lat/lng
+  if (loc && loc.lat != null && loc.lng != null) {
+    const lat = loc.lat;
+    const lng = loc.lng;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+    window.open(url, "_blank");
+    return;
+  }
+
+  // If we only have address parts (object) or a string
+  let addressStr = "";
+  if (loc) {
+    if (typeof loc === "string") addressStr = loc;
+    else if (typeof loc === "object")
+      addressStr = [loc.street, loc.city, loc.country].filter(Boolean).join(", ");
+  } else {
+    // fallback to the order.location formatted helper
+    addressStr = formatLocation(props.order.location);
+  }
+
+  if (addressStr && addressStr !== "—") {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addressStr)}&travelmode=driving`;
+    window.open(url, "_blank");
+    return;
+  }
+
+  // No location available — show alert
+  alertMessage.value = texts[lang].technicianDashboard.messages?.noLocation || "Client location not available.";
+  showAlert.value = true;
+};
+
 // 🟦 Confirm entered code
 const confirmCode = () => {
   if (enteredCode.value.trim() === props.order.orderCode) {
@@ -236,10 +271,18 @@ const isConfirmed = computed(() => props.order.status === "upcoming");
       </button>
 
       <button
+      v-if="!isConfirmed"
         @click="handleCancelOrder"
         class="ml-1 cursor-pointer bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-xl transition"
       >
         {{ texts[lang].technicianDashboard.buttons?.cancel || "Cancel" }}
+      </button>
+      <button
+        v-if="isConfirmed"
+        @click="openDirections"
+        class="cursor-pointer ml-1 font-semibold px-2 py-2 rounded-xl transition bg-blue-600 hover:bg-blue-700 text-white"
+      >
+        {{ texts[lang].technicianDashboard.buttons?.getDirections || "Get Directions" }}
       </button>
     </div>
   </div>

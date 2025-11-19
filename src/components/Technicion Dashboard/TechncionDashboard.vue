@@ -287,6 +287,27 @@ const updateOrderStatus = async (id, status, reason = "") => {
     const orderData = orderSnap.data();
 
     await updateDoc(orderRef, { status });
+    // ── Attach clientLocation to the order when it becomes upcoming ──
+    if (status === "upcoming" && orderData?.clientId) {
+      try {
+        const clientRef = doc(db, "clients", orderData.clientId);
+        const clientSnap = await getDoc(clientRef);
+        const clientData = clientSnap.exists() ? clientSnap.data() : null;
+
+        const clientLocation = {
+          street: clientData?.address?.street || clientData?.address?.city || "",
+          city: clientData?.address?.city || "",
+          country: clientData?.address?.country || "",
+          lat: clientData?.address?.lat ?? null,
+          lng: clientData?.address?.lng ?? null,
+        };
+
+        // merge / write clientLocation to orders doc
+        await updateDoc(orderRef, { clientLocation });
+      } catch (err) {
+        console.warn("attach clientLocation error:", err);
+      }
+    }
 
     if (orderData?.clientId) {
       const notifCol = collection(db, "users", orderData.clientId, "notifications");
