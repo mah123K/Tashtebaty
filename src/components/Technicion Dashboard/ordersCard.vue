@@ -1,4 +1,3 @@
-```vue
 <script setup> 
 import { ref, computed } from "vue"
 import { useTestLang } from "@/langTest/useTestLang";
@@ -48,6 +47,17 @@ const formatLocation = (loc) => {
   return "—";
 };
 
+const locationShortDescription = computed(() => {
+  const full = formatLocation(props.order.location);
+  if (!full) return "";
+
+  const maxLen = 20; // <= adjust this number to control visible length
+  const trimmed = full.trim();
+
+  if (trimmed.length <= maxLen) return trimmed;
+  return trimmed.slice(0, maxLen - 3).trimEnd() + "...";
+});
+
 const shortDescription = computed(() => {
   const desc = props.order.descreption || ""
   return desc.length > 15 ? desc.slice(0, 15) + "..." : desc
@@ -55,7 +65,7 @@ const shortDescription = computed(() => {
 </script>
 
 <template>
-  <div class="order rounded-2xl shadow-md p-5 md:w-[31%] bg-white dark:bg-[#16222B] m-2 relative">
+  <div class="order rounded-2xl shadow-md p-5 md:w-[31%] bg-white dark:bg-[#16222B] m-2 relative ">
     <button @click="showDetails = true" class="cursor-pointer absolute right-4 top-3 bg-[#133B5D] text-white rounded-lg p-1 px-2">
       {{ texts[lang].technicianDashboard.buttons?.details || 'Details' }}
     </button>
@@ -136,7 +146,7 @@ const shortDescription = computed(() => {
         <span class="font-bold text-[#133B5D] dark:text-white">
           {{ texts[lang].technicianDashboard.ordersCard?.locationLabel || 'Location' }}:
         </span>
-        {{ formatLocation(order.location) }}
+        {{ locationShortDescription }}
       </p>
     </div>
 
@@ -248,4 +258,3 @@ const shortDescription = computed(() => {
     </div>
   </div>
 </template>
-```

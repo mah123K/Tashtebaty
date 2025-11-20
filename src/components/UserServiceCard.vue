@@ -11,13 +11,13 @@ const emit = defineEmits(["order"])
 </script>
 <template>
   <div
-    class="serviceCard rounded-2xl shadow-lg text-center p-6 bg-white dark:bg-[#16222B]  flex flex-col items-center justify-between hover:shadow-xl transition-shadow"
+    class="serviceCard  text-center bg-white dark:bg-[#16222B]"
   >
     <div class="serviceImg mb-4">
       <img
         :src="service.image"
         :alt="service.descreption"
-        class="w-28 h-28 md:w-32 md:h-32 object-contain"
+        class=" w-full h-40 rounded-2xl"
       />
     </div>
 

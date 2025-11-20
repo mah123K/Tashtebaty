@@ -30,6 +30,41 @@ const handleMarkCompleted = () => {
   showCodePopup.value = true;
 };
 
+const openDirections = () => {
+  // prefer the explicit clientLocation stored on the order
+  const loc = props.order.clientLocation || props.order.location || null;
+
+  // If we have numeric lat/lng
+  if (loc && loc.lat != null && loc.lng != null) {
+    const lat = loc.lat;
+    const lng = loc.lng;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+    window.open(url, "_blank");
+    return;
+  }
+
+  // If we only have address parts (object) or a string
+  let addressStr = "";
+  if (loc) {
+    if (typeof loc === "string") addressStr = loc;
+    else if (typeof loc === "object")
+      addressStr = [loc.street, loc.city, loc.country].filter(Boolean).join(", ");
+  } else {
+    // fallback to the order.location formatted helper
+    addressStr = formatLocation(props.order.location);
+  }
+
+  if (addressStr && addressStr !== "—") {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addressStr)}&travelmode=driving`;
+    window.open(url, "_blank");
+    return;
+  }
+
+  // No location available — show alert
+  alertMessage.value = texts[lang].technicianDashboard.messages?.noLocation || "Client location not available.";
+  showAlert.value = true;
+};
+
 // 🟦 Confirm entered code
 const confirmCode = () => {
   if (enteredCode.value.trim() === props.order.orderCode) {
@@ -87,6 +122,21 @@ const shortDescription = computed(() => {
   if (words.length === 1 && desc.length > 60) return desc.slice(0, 60) + "...";
   return desc;
 });
+// 🟦 Short description logic
+// Short, safe location string derived from order.location (object or string)
+// Truncate by characters (maxLen) to avoid long single-word overflow
+const locationShortDescription = computed(() => {
+  const full = formatLocation(props.order.location);
+  if (!full) return "";
+
+  const maxLen = 20; // <= adjust this number to control visible length
+  const trimmed = full.trim();
+
+  if (trimmed.length <= maxLen) return trimmed;
+  return trimmed.slice(0, maxLen - 3).trimEnd() + "...";
+});
+
+
 
 // 🟦 Full details modal toggle
 const showDetails = ref(false);
@@ -179,11 +229,11 @@ const isConfirmed = computed(() => props.order.status === "upcoming");
           d="M0 188.6C0 84.4 86 0 192 0S384 84.4 384 188.6c0 119.3-120.2 262.3-170.4 316.8-11.8 12.8-31.5 12.8-43.3 0-50.2-54.5-170.4-197.5-170.4-316.8zM192 256a64 64 0 1 0 0-128 64 64 0 1 0 0 128z"
         />
       </svg>
-      <p class="mx-1 text-[#133B5D] dark:text-white">
+      <p class="mx-1 break-words text-[#133B5D] dark:text-white">
         <span class="font-bold text-[#133B5D] dark:text-white">
           {{ texts[lang].technicianDashboard.ordersCard?.locationLabel || "Location" }}:
         </span>
-        {{ formatLocation(order.location) }}
+        {{ locationShortDescription }}
       </p>
     </div>
 
@@ -221,12 +271,12 @@ const isConfirmed = computed(() => props.order.status === "upcoming");
     </div>
 
     <!-- Actions -->
-    <div class="flex justify-center mt-6">
+    <div class="flex flex-col md:flex-row justify-center mt-4">
       <button
         @click="handleMarkCompleted"
         :disabled="!isConfirmed"
         :class="[
-          'font-semibold px-6 py-2 rounded-xl transition',
+          'font-semibold px-2 py-2 rounded-xl transition mb-1',
           isConfirmed
             ? 'cursor-pointer bg-[#133B5D] hover:bg-[#0f2d47] text-white'
             : 'cursor-not-allowed bg-gray-300 text-gray-500'
@@ -236,10 +286,18 @@ const isConfirmed = computed(() => props.order.status === "upcoming");
       </button>
 
       <button
+      v-if="!isConfirmed"
         @click="handleCancelOrder"
-        class="ml-1 cursor-pointer bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-xl transition"
+        class="md:ml-1 cursor-pointer bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-xl transition"
       >
         {{ texts[lang].technicianDashboard.buttons?.cancel || "Cancel" }}
+      </button>
+      <button
+        v-if="isConfirmed"
+        @click="openDirections"
+        class="cursor-pointer md:ml-1 font-semibold px-2 py-2 rounded-xl transition bg-blue-600 hover:bg-blue-700 text-white"
+      >
+        {{ texts[lang].technicianDashboard.buttons?.getDirections || "Get Directions" }}
       </button>
     </div>
   </div>

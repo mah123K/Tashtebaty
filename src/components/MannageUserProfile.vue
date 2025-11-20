@@ -225,7 +225,7 @@
             class="flex-1 h-56 sm:h-64 w-full rounded-2xl overflow-hidden border border-(--border) shadow-md relative"
           >
             <div
-              vf-if="isUpdatingMap"
+              v-if="isUpdatingMap"
               class="absolute inset-0 bg-(--bg)/80 flex items-center justify-center z-10"
             >
               <div class="text-accent-color flex flex-col items-center">
@@ -276,11 +276,6 @@
       <div
         class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-sm text-center"
       >
-        <div
-          class="w-12 h-12 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4"
-        >
-          <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
-        </div>
 
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
           Notice
