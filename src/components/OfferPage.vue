@@ -56,58 +56,120 @@
     </div>
 
     <div class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-14">
-      
       <div v-if="isLoading" class="text-center py-20">
-        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-accent-color mx-auto"></div>
+        <div
+          class="animate-spin rounded-full h-10 w-10 border-b-2 border-accent-color mx-auto"
+        ></div>
         <p class="mt-3 text-(--text-muted)">{{ texts[lang].offersPage.grid.loading }}</p>
       </div>
 
       <div v-else-if="offers.length === 0" class="text-center py-20">
         <i class="fa-solid fa-tags text-4xl text-(--text-muted) mb-4"></i>
-        <h3 class="text-xl font-semibold text-(--text-primary)">{{ texts[lang].offersPage.grid.emptyTitle }}</h3>
+        <h3 class="text-xl font-semibold text-(--text-primary)">
+          {{ texts[lang].offersPage.grid.emptyTitle }}
+        </h3>
         <p class="text-(--text-muted) mt-2">{{ texts[lang].offersPage.grid.emptyText }}</p>
       </div>
 
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
-        <div
-          v-for="offer in offers"
-          :key="offer.id" 
-          class="relative bg-(--surface) rounded-2xl w-full max-w-xs sm:max-w-none shadow-md hover:shadow-xl transition transform hover:scale-105"
+      <div class="pb-16">
+        <!-- Toast Message -->
+        <!-- <div
+          v-if="showMessage"
+          class="fixed top-5 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-xl shadow-lg z-50"
         >
-          <div class="absolute top-0 left-0 rtl:left-auto rtl:right-0">
-            <img
-              src="../images/offerdisc.png"
-              class="w-15"
-              alt=""
-            />
+          {{ showMessage }}
+        </div> -->
+
+        <!-- Offers Grid -->
+        <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-14">
+          <!-- Loading -->
+          <div v-if="isLoading" class="text-center py-20">
+            <div
+              class="animate-spin rounded-full h-10 w-10 border-b-2 border-accent-color mx-auto"
+            ></div>
+            <p class="mt-3 text-(--text-muted)">{{ texts[lang].offersPage.grid.loading }}</p>
           </div>
 
-          <img
-            :src="offer.image"
-            alt="offer image"
-            class="w-full rounded-t-2xl h-70 object-cover"
-          />
+          <!-- Empty -->
+          <div v-else-if="offers.length === 0" class="text-center py-20">
+            <i class="fa-solid fa-tags text-4xl text-(--text-muted) mb-4"></i>
+            <h3 class="text-xl font-semibold text-(--text-primary)">
+              {{ texts[lang].offersPage.grid.emptyTitle }}
+            </h3>
+            <p class="text-(--text-muted) mt-2">{{ texts[lang].offersPage.grid.emptyText }}</p>
+          </div>
 
-          <div class="card-body mt-2 items-center text-center p-3">
-            <h2 class="text-(--accent) font-bold text-xl">{{ offer.title }} {{ texts[lang].offersPage.grid.suffix }}</h2>
-            <p class="text-(--text-muted) text-sm">{{ offer.description }}</p>
-            <div class="mt-4">
-              <button
-                @click="claimOffer(offer)"
-                :disabled="isClaiming === offer.id || claimedOfferIds.has(offer.id)"
-                class="text-white font-semibold py-2 transition rounded-[10px] px-3 text-lg"
-                :class="[
-                  { 'bg-green-600 hover:bg-green-700 cursor-default': claimedOfferIds.has(offer.id) },
-                  { 'bg-accent-color hover:bg-(--accent)': !claimedOfferIds.has(offer.id) },
-                  { 'opacity-50 cursor-not-allowed': isClaiming === offer.id }
-                ]"
-              >
-                {{ 
-                  isClaiming === offer.id 
-                    ? texts[lang].offersPage.grid.buttonClaiming 
-                    : (claimedOfferIds.has(offer.id) ? texts[lang].offersPage.grid.buttonClaimed : texts[lang].offersPage.grid.buttonClaim) 
-                }}
-              </button>
+          <!-- Offers -->
+          <div
+            v-else
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center"
+          >
+            <div
+              v-for="offer in offers"
+              :key="offer.id"
+              class="relative bg-(--surface) rounded-2xl w-full max-w-xs sm:max-w-none shadow-md hover:shadow-xl transition transform hover:scale-105"
+            >
+              <div class="absolute top-0 left-0 rtl:left-auto rtl:right-0">
+                <img src="../images/offerdisc.png" class="w-15" alt="" />
+              </div>
+
+              <img
+                :src="offer.image"
+                alt="offer image"
+                class="w-full rounded-t-2xl h-70 object-cover"
+              />
+
+              <div class="card-body mt-2 items-center text-center p-3">
+                <h2 class="text-(--accent) font-bold text-xl">
+                  {{ offer.title }} {{ texts[lang].offersPage.grid.suffix }}
+                </h2>
+                <p class="text-(--text-muted) text-sm">{{ offer.description }}</p>
+
+                <!-- Offer Status -->
+                <p v-if="claimedOfferIds.has(offer.id)" class="text-green-600 mt-2 font-semibold">
+                  {{ texts[lang].offersPage.grid.messageClaimed }}
+                </p>
+                <p
+                  v-else-if="isExpired(offer) || !offer.active"
+                  class="text-red-500 mt-2 font-semibold"
+                >
+                  {{ texts[lang].offersPage.grid.messageExpired }}
+                </p>
+
+                <!-- Button -->
+                <div class="mt-4">
+                  <button
+                    @click="claimOffer(offer)"
+                    :disabled="
+                      isClaiming === offer.id ||
+                      claimedOfferIds.has(offer.id) ||
+                      isExpired(offer) ||
+                      !offer.active
+                    "
+                    class="text-white font-semibold py-2 transition rounded-[10px] px-3 text-lg"
+                    :class="[
+                      claimedOfferIds.has(offer.id) ? 'bg-green-600 cursor-default' : '',
+                      isExpired(offer) || !offer.active
+                        ? 'bg-gray-500 text-white cursor-not-allowed'
+                        : '',
+                      !claimedOfferIds.has(offer.id) && !isExpired(offer) && offer.active
+                        ? 'bg-accent-color hover:bg-(--accent)'
+                        : '',
+                      isClaiming === offer.id ? 'opacity-50 cursor-not-allowed' : '',
+                    ]"
+                  >
+                    {{
+                      isClaiming === offer.id
+                        ? texts[lang].offersPage.grid.buttonClaiming
+                        : claimedOfferIds.has(offer.id)
+                        ? texts[lang].offersPage.grid.buttonClaimed
+                        : isExpired(offer) || !offer.active
+                        ? "Not Available"
+                        : texts[lang].offersPage.grid.buttonClaim
+                    }}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -117,129 +179,113 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import { useTestLang } from "@/langTest/useTestLang";
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { db } from '@/firebase/firebase'; // Adjust this path based on your project structure
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { db } from "@/firebase/firebase";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { collection, getDocs, doc, setDoc } from "firebase/firestore";
 
-// --- Reactive State ---
 const { lang, texts } = useTestLang();
 const offers = ref([]);
 const isLoading = ref(true);
 const userId = ref(null);
 const claimedOfferIds = ref(new Set());
-const isClaiming = ref(null); // Stores the ID of the offer being claimed
+const isClaiming = ref(null);
 
 // --- Composables ---
 const router = useRouter();
 const auth = getAuth();
 
-/**
- * Fetches all available offers from the main 'offers' collection.
- */
+/** Fetch all offers from Firestore */
 const fetchOffers = async () => {
   try {
-    const offersCollection = collection(db, 'offers');
-    const querySnapshot = await getDocs(offersCollection);
-
-    const fetchedOffers = [];
-    querySnapshot.forEach((doc) => {
-      fetchedOffers.push({ 
-        id: doc.id, 
-        ...doc.data() 
-      });
-    });
-    
-    offers.value = fetchedOffers;
-    
-  } catch (error) {
-    console.error("Error fetching offers: ", error);
+    const snapshot = await getDocs(collection(db, "offers"));
+    offers.value = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  } catch (err) {
+    console.error(err);
   } finally {
     isLoading.value = false;
   }
 };
 
-/**
- * Fetches the IDs of offers the current user has already claimed.
- */
+/** Fetch claimed offers for current user */
 const fetchClaimedOffers = async (uid) => {
   if (!uid) {
     claimedOfferIds.value = new Set();
     return;
   }
   try {
-    const claimedOffersCol = collection(db, 'clients', uid, 'claimedOffers');
-    const snapshot = await getDocs(claimedOffersCol);
+    const snapshot = await getDocs(collection(db, "clients", uid, "claimedOffers"));
     const ids = new Set();
-    snapshot.forEach(doc => ids.add(doc.id));
+    snapshot.forEach((doc) => ids.add(doc.id));
     claimedOfferIds.value = ids;
-  } catch (error) {
-    console.error("Error fetching claimed offers: ", error);
+  } catch (err) {
+    console.error(err);
   }
 };
 
-/**
- * Handles the "Claim Offer" button click.
- * If not logged in, redirects to /login.
- * If logged in, saves the offer to the user's profile.
- */
+/** Check if offer expired */
+const isExpired = (offer) => {
+  return offer.expiresAt && new Date(offer.expiresAt) < new Date();
+};
+
+/** Claim an offer */
 const claimOffer = async (offer) => {
   const user = auth.currentUser;
+  if (!user) return router.push("/login");
 
-  // 1. Check if logged in
-  if (!user) {
-    router.push('/login');
-    return;
-  }
+  // // If expired
+  // if (isExpired(offer)) {
+  //   notify(texts[lang].offersPage.grid.messageExpired);
+  //   return;
+  // }
 
-  // 2. Check if already claimed
-  if (claimedOfferIds.value.has(offer.id)) {
-    return; // Already claimed, do nothing
-  }
+  // // If not active
+  // if (!offer.active) {
+  //   notify(texts[lang].offersPage.grid.messageNotActive || "This offer is not active.");
+  //   return;
+  // }
 
-  isClaiming.value = offer.id; // Set loading state for this specific button
+  // // If already claimed
+  // if (claimedOfferIds.value.has(offer.id)) {
+  //   notify(texts[lang].offersPage.grid.messageClaimed);
+  //   return;
+  // }
+
+  isClaiming.value = offer.id;
 
   try {
-    // 3. Save offer to user's subcollection
-    const offerRef = doc(db, 'clients', user.uid, 'claimedOffers', offer.id);
-    await setDoc(offerRef, { 
-      id: offer.id,
-      title: offer.title,
-      discountType: offer.type || "flat",       // example: flat / percent
-      discountValue: offer.value || 100,        // example: 100 EGP or 20%
-      used: false,                              // << مهم جداً !!
-      claimedAt: new Date()
+    let value = offer.discountValue;
+    if (offer.discountType === "percentage") {
+      value = Math.min(Math.max(Number(value), 0), 100);
+    }
+
+    await setDoc(doc(db, "clients", user.uid, "claimedOffers", offer.id), {
+      ...offer,
+      discountValue: value,
+      used: false,
+      claimedAt: new Date(),
     });
 
-    // 4. Update UI immediately
     claimedOfferIds.value.add(offer.id);
-    
-    // In a real app, you'd show a success toast here
-    console.log("Offer claimed!", offer.title);
-
-  } catch (error) {
-    console.error("Error claiming offer: ", error);
-    // In a real app, you'd show an error toast here
+  } catch (err) {
+    console.error(err);
   } finally {
-    isClaiming.value = null; // Remove loading state
+    isClaiming.value = null;
   }
 };
 
-// --- Lifecycle Hook ---
 onMounted(() => {
-  fetchOffers(); // Fetch all public offers
+  fetchOffers();
 
-  // Listen for auth changes to fetch user-specific data
   onAuthStateChanged(auth, (user) => {
     if (user) {
       userId.value = user.uid;
-      fetchClaimedOffers(user.uid); // Fetch user's claimed offers
+      fetchClaimedOffers(user.uid);
     } else {
-      // User logged out
       userId.value = null;
-      claimedOfferIds.value = new Set(); // Clear claimed offers
+      claimedOfferIds.value = new Set();
     }
   });
 });
@@ -248,4 +294,3 @@ onMounted(() => {
 <style scoped>
 /* Scoped styles remain the same */
 </style>
-
