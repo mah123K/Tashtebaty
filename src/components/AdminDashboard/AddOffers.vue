@@ -23,78 +23,26 @@
 
           <form @submit.prevent="handleSubmit" class="p-4 sm:p-6 space-y-4">
 
-            <!-- Title -->
+            <!-- Discount Value (percentage only) -->
             <div>
-              <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                {{ texts[lang].adminDashboard.offers.titleLabel }}
-              </label>
-              <input
-                v-model="form.title"
-                type="text"
-                required
-                placeholder="e.g., 20% OFF"
-                class="w-full px-4 py-2 sm:py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-[#5984C6] focus:ring-2 focus:ring-[#5984C6]/20 transition"
-              />
-            </div>
-
-            <!-- Description -->
-            <div>
-              <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                {{ texts[lang].adminDashboard.offers.descriptionLabel }}
-              </label>
-              <input
-                v-model="form.description"
-                type="text"
-                required
-                placeholder="e.g., On all plumbing services"
-                class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
-              />
-            </div>
-
-            <!-- Discount Type -->
-            <div>
-              <label class="block font-medium mb-1">Discount Type</label>
-              <select
-                v-model="form.discountType"
-                class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
-              >
-                <option value="percentage">Percentage (%)</option>
-                <option value="fixed">Fixed Amount (EGP)</option>
-              </select>
-            </div>
-
-            <!-- Discount Value with dynamic unit/placeholder -->
-            <div>
-              <label class="block font-medium mb-1">Discount Value</label>
+              <label class="block font-medium mb-1">Discount Value:</label>
               <div class="flex gap-2">
                 <input
                   v-model.number="form.discountValue"
                   type="number"
                   required
-                  :placeholder="form.discountType === 'percentage' ? 'e.g., 20 (means 20%)' : 'e.g., 150 (EGP)'"
+                  placeholder=""
                   class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
                 />
                 <div class="shrink-0 flex items-center px-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900">
-                  <span v-if="form.discountType === 'percentage'">%</span>
-                  <span v-else>EGP</span>
+                  <span>%</span>
                 </div>
               </div>
             </div>
 
-            <!-- Minimum Order -->
-            <div>
-              <label class="block font-medium mb-1">Minimum Order (optional)</label>
-              <input
-                v-model.number="form.minOrder"
-                type="number"
-                min="0"
-                class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
-              />
-            </div>
-
             <!-- Max Usage -->
             <div>
-              <label class="block font-medium mb-1">Max Usage Per User</label>
+              <label class="block font-medium mb-1">valid to use for:</label>
               <input
                 v-model.number="form.maxUsage"
                 type="number"
@@ -115,24 +63,20 @@
               <p class="text-xs text-gray-500 mt-1">If empty, offer will be considered 'no expiry' unless you toggle inactive.</p>
             </div>
 
-            <!-- Active Toggle -->
-            <div class="flex items-center gap-3">
-              <input type="checkbox" id="activeToggle" v-model="form.active" class="h-4 w-4" />
-              <label for="activeToggle" class="text-sm font-medium">Active (offer available)</label>
-            </div>
+            <!-- NOTE: Active checkbox removed (admin cannot directly toggle here) -->
 
-            <!-- Targeting (Option B: multiple-categories, technicians, companies, both, all) -->
+            <!-- Targeting: only 4 categories dropdown -->
             <div>
-              <label class="block font-medium mb-1">Target</label>
+              <label class="block font-medium mb-1">section</label>
               <select v-model="form.targetType" class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                <option value="all">All Sections</option>
-                <option value="multiple-categories">Specific Categories (multi-select)</option>
-                <option value="technicians-only">Technicians Only</option>
-                <option value="companies-only">Companies Only</option>
-                <option value="both">Technicians + Companies</option>
+                <!-- only the four categories -->
+                <option value="plumbing">Plumbing</option>
+                <option value="carpentry">Carpentry</option>
+                <option value="finishing">finishing</option>
+                <option value="electrical">electrical</option>
               </select>
 
-              <!-- Categories multi-select (shown only for multiple-categories) -->
+              <!-- Categories multi-select (kept but won't show since targetType no longer equals 'multiple-categories') -->
               <div v-if="form.targetType === 'multiple-categories'" class="mt-3">
                 <p class="text-xs text-gray-500 mb-2">Choose one or more categories:</p>
                 <div class="grid grid-cols-2 gap-2 max-h-40 overflow-auto p-2 border rounded-lg bg-white dark:bg-gray-900">
@@ -256,7 +200,20 @@
                     <i class="fa-solid fa-pen-to-square text-sm"></i>
                   </button>
 
-                  <button @click="confirmSoftDelete(offer)" class="shrink-0 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-2 sm:px-3 rounded-lg transition-colors flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10" :title="texts[lang].adminDashboard.offers.delete">
+                  <!-- Toggle Active/Inactive button -->
+                  <button
+                    @click="confirmToggle(offer)"
+                    :class="[
+                      'shrink-0 text-white font-semibold py-2 px-2 sm:px-3 rounded-lg transition-colors flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10',
+                      offer.active ? 'bg-gray-500 hover:bg-gray-600' : 'bg-green-600 hover:bg-green-700'
+                    ]"
+                    :title="offer.active ? 'Deactivate' : 'Activate'"
+                  >
+                    <i :class="offer.active ? 'fa-solid fa-ban text-sm' : 'fa-solid fa-toggle-on text-sm'"></i>
+                  </button>
+
+                  <!-- Updated: Trash now performs permanent delete -->
+                  <button @click="confirmPermanentDelete(offer)" class="shrink-0 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-2 sm:px-3 rounded-lg transition-colors flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10" :title="texts[lang].adminDashboard.offers.delete">
                     <i class="fa-solid fa-trash-can text-sm"></i>
                   </button>
                 </div>
@@ -269,20 +226,49 @@
 
     </div>
 
-    <!-- Delete Modal -->
+    <!-- Toggle Active/Deactivate Modal -->
     <Teleport to="body">
       <transition name="modal">
         <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" @click.self="closeDeleteModal">
           <div class="bg-white dark:bg-[#111827] dark:text-gray-100 rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
-            <h3 class="text-xl font-semibold text-red-600 mb-4">Delete Offer</h3>
-            <p class="text-gray-600 dark:text-gray-300 mb-6">
+            <h3 class="text-xl font-semibold text-red-600 mb-4" v-if="offerToDelete?.active">Deactivate Offer</h3>
+            <h3 class="text-xl font-semibold text-green-600 mb-4" v-else>Activate Offer</h3>
+
+            <p class="text-gray-600 dark:text-gray-300 mb-6" v-if="offerToDelete?.active">
               Are you sure you want to deactivate the offer "<strong>{{ offerToDelete?.title }}</strong>"?<br/>
-              <span class="text-sm text-gray-500">This action will mark the offer as inactive (soft delete) and can be restored later.</span>
+              <span class="text-sm text-gray-500">This action will mark the offer as inactive and can be re-activated later.</span>
+            </p>
+
+            <p class="text-gray-600 dark:text-gray-300 mb-6" v-else>
+              Are you sure you want to activate the offer "<strong>{{ offerToDelete?.title }}</strong>"?<br/>
+              <span class="text-sm text-gray-500">This action will mark the offer as active and make it available to users.</span>
             </p>
 
             <div class="flex justify-center gap-4">
-              <button @click="performSoftDelete" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition">Deactivate</button>
+              <button @click="performToggle" :class="['px-6 py-2 font-semibold rounded-lg transition', offerToDelete?.active ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white']">
+                {{ offerToDelete?.active ? 'Deactivate' : 'Activate' }}
+              </button>
               <button @click="closeDeleteModal" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 font-semibold rounded-lg transition">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </Teleport>
+
+    <!-- Permanent Delete Modal -->
+    <Teleport to="body">
+      <transition name="modal">
+        <div v-if="showPermanentDeleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" @click.self="closePermanentDeleteModal">
+          <div class="bg-white dark:bg-[#111827] dark:text-gray-100 rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <h3 class="text-xl font-semibold text-red-600 mb-4">Delete Offer Permanently</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">
+              Are you sure you want to <strong>permanently delete</strong> the offer "<strong>{{ offerToPermanentDelete?.title }}</strong>"?<br/>
+              <span class="text-sm text-gray-500">This action cannot be undone — the offer will be removed from the database.</span>
+            </p>
+
+            <div class="flex justify-center gap-4">
+              <button @click="performPermanentDelete" class="px-6 py-2 bg-red-700 hover:bg-red-800 text-white font-semibold rounded-lg transition">Delete Permanently</button>
+              <button @click="closePermanentDeleteModal" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 font-semibold rounded-lg transition">Cancel</button>
             </div>
           </div>
         </div>
@@ -295,7 +281,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { db } from "../../firebase/firebase";
-import { collection, getDocs, addDoc, updateDoc, doc, orderBy, query } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, doc, orderBy, query, deleteDoc, deleteField } from "firebase/firestore";
 import { uploadImageOnly } from "@/composables/useImageUpload";
 import { useTestLang } from "@/langTest/useTestLang";
 
@@ -313,9 +299,13 @@ const imagePreview = ref(null);
 const isEditing = ref(false);
 const editId = ref(null);
 
-/* Delete Modal */
+/* Toggle Modal (used for activating/deactivating) */
 const showDeleteModal = ref(false);
 const offerToDelete = ref(null);
+
+/* Permanent Delete Modal */
+const showPermanentDeleteModal = ref(false);
+const offerToPermanentDelete = ref(null);
 
 /* Categories: try fetch from Firestore; fallback to static */
 const categories = ref([]);
@@ -328,37 +318,57 @@ const fallbackCategories = [
 
 /* Form model */
 const form = ref({
+  // title & description will be generated automatically before save
   title: "",
   description: "",
-  discountType: "percentage", // percentage | fixed
+  // discountType removed - always percentage
   discountValue: null,
-  minOrder: 0,
   maxUsage: 1,
   expiresAt: "", // yyyy-mm-dd (string)
   active: true,
   image: "",
-  // targeting (Option B)
-  targetType: "all", // all | multiple-categories | technicians-only | companies-only | both
-  targetCategories: [], // array of category ids when multiple-categories
+  // targeting (now single category)
+  targetType: "plumbing", // default to plumbing
+  targetCategories: [], // kept for compatibility
 });
 
 /* Firestore refs */
 const offersCollection = collection(db, "offers");
 const categoriesCollection = collection(db, "services");
 
+/* helpers: icons map and generator */
+const sectionIcons = {
+  plumbing: "🔧",
+  carpentry: "🪚",
+  finishing: "🎨",
+  electrical: "⚡",
+};
+
+const generateTitleAndDescription = (category, discountValue) => {
+  const sectionNameMap = {
+    plumbing: "plumbing",
+    carpentry: "carpentry",
+    finishing: "finishing",
+    electrical: "electrical",
+  };
+  const sec = sectionNameMap[category] || category || "service";
+  const icon = sectionIcons[category] || "";
+  const title = `${discountValue} %off on ${sec}`;
+  const description = `${sec} ${icon}`.trim();
+  return { title, description };
+};
+
 /* Helpers */
 const resetForm = () => {
   form.value = {
     title: "",
     description: "",
-    discountType: "percentage",
     discountValue: null,
-    minOrder: 0,
     maxUsage: 1,
     expiresAt: "",
     active: true,
     image: "",
-    targetType: "all",
+    targetType: "plumbing",
     targetCategories: [],
   };
   selectedFile.value = null;
@@ -370,21 +380,12 @@ const resetForm = () => {
 
 const validateForm = () => {
   // basic presence
-  if (!form.value.title || !form.value.description) return "Title and description are required.";
+  // title & description no longer required as they are generated automatically
 
-  // discount
+  // discount (percentage only now)
   if (!form.value.discountValue && form.value.discountValue !== 0) return "Discount value is required.";
-
-  if (form.value.discountType === "percentage") {
-    if (form.value.discountValue <= 0 || form.value.discountValue > 90) {
-      return "Percentage must be between 1 and 90.";
-    }
-  } else {
-    // fixed
-    if (form.value.discountValue <= 0) return "Fixed discount must be greater than 0.";
-    if (form.value.minOrder && Number(form.value.discountValue) >= Number(form.value.minOrder)) {
-      return "Fixed discount should be less than the minimum order.";
-    }
+  if (form.value.discountValue <= 0 || form.value.discountValue > 90) {
+    return "Percentage must be between 1 and 90.";
   }
 
   if (!form.value.maxUsage || form.value.maxUsage < 1) return "Max usage per user must be at least 1.";
@@ -394,11 +395,6 @@ const validateForm = () => {
     const now = new Date();
     const expiry = new Date(form.value.expiresAt + "T23:59:59");
     if (expiry <= now) return "Expiry date must be in the future.";
-  }
-
-  // targeting
-  if (form.value.targetType === "multiple-categories" && (!form.value.targetCategories || form.value.targetCategories.length === 0)) {
-    return "Please pick at least one category for this offer.";
   }
 
   // image required on create
@@ -455,7 +451,11 @@ const describeTarget = (offer) => {
     case "both":
       return "Technicians + Companies";
     default:
-      return "Custom";
+      // if targetType is a single category id, try map to name
+      const foundCat = categories.value.find(c => (c.id || c) === offer.targetType || (c.name && c.name === offer.targetType));
+      if (foundCat) return foundCat.name || offer.targetType;
+      // fallback: show the raw value
+      return offer.targetType || "Custom";
   }
 };
 
@@ -511,20 +511,53 @@ const handleSubmit = async () => {
       form.value.image = url;
     }
 
-    const payload = {
-      title: form.value.title,
-      description: form.value.description,
-      discountType: form.value.discountType,
-      discountValue: Number(form.value.discountValue),
-      minOrder: Number(form.value.minOrder || 0),
-      maxUsage: Number(form.value.maxUsage || 1),
-      expiresAt: form.value.expiresAt || null,
-      active: !!form.value.active,
-      image: form.value.image || "",
-      createdAt: isEditing.value ? (new Date()) : new Date(),
-      targetType: form.value.targetType,
-      targetCategories: form.value.targetCategories || [],
-    };
+    // generate title & description automatically from discountValue and targetType
+    const { title, description } = generateTitleAndDescription(form.value.targetType, Number(form.value.discountValue));
+    // ensure we store generated values
+    form.value.title = title;
+    form.value.description = description;
+
+    // --- generate title & description automatically ---
+const sectionKey = form.value.targetType || "plumbing";
+
+// map id -> nice name
+const sectionNames = {
+  plumbing: "Plumbing",
+  carpentry: "Carpentry",
+  finishing: "Finishing",
+  electrical: "Electrical",
+};
+
+// simple icon mapping
+const sectionIcons = {
+  plumbing: "🔧",
+  carpentry: "🪚",
+  finishing: "🎨",
+  electrical: "💡",
+};
+
+const sectionName = sectionNames[sectionKey] || sectionKey;
+const sectionIcon = sectionIcons[sectionKey] || "";
+
+const discountNum = Number(form.value.discountValue) || 0;
+
+const autoTitle = `${discountNum}%off on ${sectionName}`;
+const autoDescription = `${sectionName} ${sectionIcon}`;
+
+const payload = {
+  title: autoTitle,
+  description: autoDescription,
+  discountType: 'percentage',
+  discountValue: discountNum,
+  maxUsage: Number(form.value.maxUsage || 1),
+  expiresAt: form.value.expiresAt || null,
+  active: !!form.value.active,
+  image: form.value.image || "",
+  createdAt: isEditing.value ? (new Date()) : new Date(),
+  targetType: form.value.targetType,
+  targetCategories: form.value.targetCategories || [],
+};
+
 
     if (isEditing.value && editId.value) {
       // update
@@ -552,16 +585,20 @@ const initEdit = (offer) => {
   form.value = {
     title: offer.title || "",
     description: offer.description || "",
-    discountType: offer.discountType || "percentage",
     discountValue: offer.discountValue || null,
-    minOrder: offer.minOrder || 0,
     maxUsage: offer.maxUsage || 1,
     expiresAt: offer.expiresAt || "",
     active: !!offer.active,
     image: offer.image || "",
-    targetType: offer.targetType || "all",
+    targetType: offer.targetType || "plumbing",
     targetCategories: offer.targetCategories ? [...offer.targetCategories] : [],
   };
+
+  // regenerate title/description from targetType & discountValue to keep automatic behavior
+  const { title, description } = generateTitleAndDescription(form.value.targetType, Number(form.value.discountValue || 0));
+  form.value.title = title;
+  form.value.description = description;
+
   // preview current image
   imagePreview.value = offer.image || null;
   selectedFile.value = null;
@@ -572,8 +609,8 @@ const cancelEdit = () => {
   resetForm();
 };
 
-/* Soft delete flow */
-const confirmSoftDelete = (offer) => {
+/* Toggle (activate/deactivate) flow */
+const confirmToggle = (offer) => {
   offerToDelete.value = offer;
   showDeleteModal.value = true;
 };
@@ -583,18 +620,51 @@ const closeDeleteModal = () => {
   offerToDelete.value = null;
 };
 
-const performSoftDelete = async () => {
+const performToggle = async () => {
   if (!offerToDelete.value) return;
   try {
-    await updateDoc(doc(db, "offers", offerToDelete.value.id), {
-      active: false,
-      deletedAt: new Date(),
-    });
+    const offerRef = doc(db, "offers", offerToDelete.value.id);
+    if (offerToDelete.value.active) {
+      // deactivate
+      await updateDoc(offerRef, {
+        active: false,
+        deletedAt: new Date(),
+      });
+    } else {
+      // activate: set active true and remove deletedAt
+      await updateDoc(offerRef, {
+        active: true,
+        deletedAt: deleteField(),
+      });
+    }
     await fetchOffers();
   } catch (err) {
-    console.error("Soft delete failed:", err);
+    console.error("Toggle active failed:", err);
   } finally {
     closeDeleteModal();
+  }
+};
+
+/* Permanent delete flow */
+const confirmPermanentDelete = (offer) => {
+  offerToPermanentDelete.value = offer;
+  showPermanentDeleteModal.value = true;
+};
+
+const closePermanentDeleteModal = () => {
+  showPermanentDeleteModal.value = false;
+  offerToPermanentDelete.value = null;
+};
+
+const performPermanentDelete = async () => {
+  if (!offerToPermanentDelete.value) return;
+  try {
+    await deleteDoc(doc(db, "offers", offerToPermanentDelete.value.id));
+    await fetchOffers();
+  } catch (err) {
+    console.error("Permanent delete failed:", err);
+  } finally {
+    closePermanentDeleteModal();
   }
 };
 

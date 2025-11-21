@@ -121,8 +121,12 @@
 
               <div class="card-body mt-2 items-center text-center p-3">
                 <h2 class="text-(--accent) font-bold text-xl">
-                  {{ offer.title }} {{ texts[lang].offersPage.grid.suffix }}
+                  {{ offer.title }}
+                  <span v-if="!String(offer.title || '').toLowerCase().includes('off')">
+                    {{ texts[lang].offersPage.grid.suffix }}
+                  </span>
                 </h2>
+
                 <p class="text-(--text-muted) text-sm">{{ offer.description }}</p>
 
                 <!-- Offer Status -->
@@ -292,5 +296,4 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Scoped styles remain the same */
 </style>

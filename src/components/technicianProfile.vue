@@ -77,6 +77,84 @@ const orderDescription = ref("");
 const availableOffers = ref([]);
 const selectedOffer = ref(null);
 
+// --- NEW: computed filtered offers for the current technician's section ---
+// helper to normalize section/skill strings to the offer targetType values
+const normalizeSectionKey = (str) => {
+  if (!str) return "";
+  const s = String(str).trim().toLowerCase();
+  if (s.includes("plumb")) return "plumbing";
+  if (s.includes("elect") || s.includes("electric")) return "electrical";
+  if (s.includes("carpen") || s.includes("carpentry")) return "carpentry";
+  if (s.includes("finish") || s.includes("finishing") || s.includes("painting")) return "finishing";
+  // fallback: return raw lowercase
+  return s;
+};
+
+// compute techSectionKey once technician is loaded
+const technicianSectionKey = computed(() => normalizeSectionKey(technician.value?.skill || technician.value?.category || ""));
+
+// filtered list: only offers that match technicianSectionKey (or offers that target "all" or multiple categories containing the key)
+const filteredAvailableOffers = computed(() => {
+  const key = technicianSectionKey.value;
+  if (!key) return availableOffers.value || [];
+
+  return (availableOffers.value || []).filter((o) => {
+    // handle different offer structures safely
+    const target = (o.targetType || "").toString().toLowerCase();
+    if (target && target === key) return true;
+    if (target === "all") return true;
+    // support multiple-categories array
+    const cats = o.targetCategories || o.categories || [];
+    if (Array.isArray(cats) && cats.length > 0) {
+      // compare normalized category values
+      return cats.some((c) => {
+        const cc = (c && c.toString().toLowerCase()) || "";
+        return cc === key || cc.includes(key);
+      });
+    }
+    // fallback: if offer has a 'section' or 'category' field
+    const alt = (o.section || o.category || "").toString().toLowerCase();
+    if (alt && alt === key) return true;
+
+    return false;
+  });
+});
+// --- END NEW computed ---
+// Helper to format an offer's discount into a percentage string (e.g., "10%")
+const formatOfferPercent = (offer) => {
+  if (!offer) return "";
+  // try multiple possible fields
+  const raw =
+    offer.discountValue ??
+    offer.discount ??
+    offer.value ??
+    offer.discount_amount ??
+    "";
+  let s = String(raw ?? "").trim();
+  if (!s) {
+    // try title fallback (e.g., "10% off Electrical")
+    const t = (offer.title || "").match(/(\d+(\.\d+)?%?)/);
+    if (t) s = t[1];
+  }
+  // remove % if present
+  s = s.replace("%", "").trim();
+  let num = Number(s);
+  if (!Number.isFinite(num)) {
+    // try parse as fraction like 0.1
+    const maybeFrac = Number(String(raw).trim());
+    if (Number.isFinite(maybeFrac)) {
+      num = maybeFrac;
+    } else {
+      return String(offer.discountValue ?? offer.discount ?? offer.title ?? "");
+    }
+  }
+  if (Math.abs(num) <= 1 && num !== 0) {
+    num = num * 100;
+  }
+  // ensure integer if whole, else keep one decimal
+  const formatted = Number.isInteger(num) ? String(num) : Number(num.toFixed(1)).toString();
+  return `${formatted}%`;
+};
 // --- Live Feedbacks from Firestore Ratings ---
 const feedbacks = ref([]);
 
@@ -131,15 +209,30 @@ const offerTotals = computed(() => {
     return { basePrice, discountAmount: 0, finalPrice: basePrice };
   }
 
-  const discountType = selectedOffer.value.discountType || "flat";
-  const discountValue = Number(selectedOffer.value.discountValue) || 0;
+  // robust parsing & normalization for discountValue
+  const rawVal = String(selectedOffer.value.discountValue ?? "").replace("%", "").trim();
+  let num = Number(rawVal);
 
-  let discountAmount =
-    discountType === "percentage"
-      ? (basePrice * discountValue) / 100
-      : discountValue;
+  if (!Number.isFinite(num)) {
+    // fallback if it's not parseable
+    num = 0;
+  }
 
+  // If stored as fraction (e.g., 0.15) convert to percent (15)
+  let discountPercent = num;
+  if (Math.abs(discountPercent) <= 1 && discountPercent !== 0) {
+    discountPercent = discountPercent * 100;
+  }
+
+  // clamp between 0 and 100
+  discountPercent = Math.min(Math.max(discountPercent, 0), 100);
+
+  // calculate percentage discount
+  let discountAmount = (basePrice * discountPercent) / 100;
+
+  // clamp discount amount
   discountAmount = Math.min(Math.max(discountAmount, 0), basePrice);
+
   const finalPrice = Number((basePrice - discountAmount).toFixed(2));
 
   return {
@@ -148,6 +241,8 @@ const offerTotals = computed(() => {
     finalPrice,
   };
 });
+
+
 
 const priceSummary = computed(() => {
   const { basePrice, discountAmount, finalPrice } = offerTotals.value;
@@ -460,12 +555,20 @@ const uploadImagesToCloudinary = async (files) => {
   return urls;
 };
 
-const fetchAvailableOffers = async (uidParam) => {
+const fetchAvailableOffers = async (uidParam, techSectionParam) => {
+  // uidParam: uid of client (claimedOffers are stored per client)
+  // techSectionParam: e.g. 'electrical' - the technician's section/skill (normalized)
   const targetUid = uidParam || clientUser.value?.uid;
   if (!targetUid) {
     availableOffers.value = [];
     return;
   }
+
+  // normalize technician section (lowercase, trim)
+  const techSec = (techSectionParam || technician.value?.skill || "")
+    .toString()
+    .toLowerCase()
+    .trim();
 
   try {
     const offersCol = collection(db, "clients", targetUid, "claimedOffers");
@@ -473,10 +576,40 @@ const fetchAvailableOffers = async (uidParam) => {
 
     const list = [];
     snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      if (data.used === false) {
-        list.push({ docId: docSnap.id, ...data });
-      }
+      const data = docSnap.data() || {};
+
+      // skip if already used
+      if (data.used === true) return;
+
+      // skip if explicitly inactive or deleted
+      if (data.active === false) return;
+      if (data.deletedAt) return;
+
+      // determine offer's target (normalize)
+      const offerTarget = (data.targetType || "")
+        .toString()
+        .toLowerCase()
+        .trim();
+
+      // If offer uses 'targetCategories' array, normalize values
+      const offerCats = Array.isArray(data.targetCategories)
+        ? data.targetCategories.map((c) => (c || "").toString().toLowerCase().trim())
+        : [];
+
+      // Accept offer if:
+      // - targetType === 'all'
+      // - targetType explicitly matches technician section
+      // - targetCategories includes technician section
+      // - OR offer has no targeting (treat as global)
+      let matchesSection = false;
+      if (!offerTarget || offerTarget === "all") matchesSection = true;
+      if (offerTarget && techSec && offerTarget === techSec) matchesSection = true;
+      if (offerCats.length > 0 && techSec && offerCats.includes(techSec)) matchesSection = true;
+
+      if (!matchesSection) return;
+
+      // all checks passed => include
+      list.push({ docId: docSnap.id, ...data });
     });
 
     availableOffers.value = list;
@@ -485,6 +618,7 @@ const fetchAvailableOffers = async (uidParam) => {
     availableOffers.value = [];
   }
 };
+
 
 const markOfferAsUsed = async ({
   offer,
@@ -518,7 +652,8 @@ watch(
   clientUser,
   (user) => {
     if (user?.uid) {
-      fetchAvailableOffers(user.uid);
+      const techSection = (technician.value?.skill || "").toLowerCase().trim();
+      fetchAvailableOffers(user.uid, techSection);
     } else {
       availableOffers.value = [];
       selectedOffer.value = null;
@@ -526,6 +661,7 @@ watch(
   },
   { immediate: true }
 );
+
 
 watch(
   availableOffers,
@@ -729,7 +865,11 @@ onMounted(async () => {
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       technician.value = docSnap.data();
-
+      const techSection = (technician.value?.skill || "").toLowerCase().trim();
+      // if user already logged in:
+      if (clientUser.value?.uid) {
+        await fetchAvailableOffers(clientUser.value.uid, techSection);
+      }
       if (technician.value.availability && Array.isArray(technician.value.availability)) {
         availabilitySchedule.value = technician.value.availability;
       } else {
@@ -1118,47 +1258,39 @@ watch(selectedDayInfo, () => {
               </button>
 
             </div>
-            <div v-if="availableOffers.length > 0" class="mt-4">
+            <div v-if="filteredAvailableOffers.length > 0" class="mt-4">
               <label class="font-semibold text-gray-700 dark:text-white">Available Offers:</label>
 
-              <select v-model="selectedOffer" class="w-full p-2 rounded border mt-2 text-black">
-                <option :value="null">No offer</option>
-                <option
-                  v-for="offer in availableOffers"
+              <!-- NEW: Coupon-style clickable offers -->
+              <!-- Coupon background image + overlayed text (clickable per-offer cards) -->
+              <div class="coupon-list mt-3">
+
+                <!-- dynamic offers: each uses the same PNG background with overlay text -->
+                <div
+                  v-for="offer in filteredAvailableOffers"
                   :key="offer.docId || offer.id"
-                  :value="offer"
+                  class="coupon-wrapper"
+                  :class="{ selected: selectedOffer && (selectedOffer.docId || selectedOffer.id) === (offer.docId || offer.id) }"
+                  @click="selectedOffer = offer"
+                  role="button"
+                  tabindex="0"
+                  :title="offer.title || ''"
                 >
-                  {{ offer.title }} - 
-                  {{
-                    offer.discountType === "percentage"
-                      ? `${offer.discountValue}% off`
-                      : `${offer.discountValue} EGP off`
-                  }}
-                </option>
-              </select>
+                  <img
+                    src="/src/images/coupon.png"
+                    alt="Coupon background"
+                    class="coupon-bg"
+                  />
+                  <div class="coupon-overlay">
+                    <div class="coupon-top">COUPON</div>
+                    <div class="coupon-bottom">{{ formatOfferPercent(offer) }} off</div>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
-            <div
-              v-if="priceSummary.show && (selectedOffer || availableOffers.length > 0)"
-              class="mt-3 space-y-1 rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-            >
-              <div class="flex items-center justify-between">
-                <span>Original price</span>
-                <span>{{ priceSummary.originalLabel }}</span>
-              </div>
-              <div
-                v-if="selectedOffer && priceSummary.discountLabel"
-                class="flex items-center justify-between text-green-600 dark:text-green-400"
-              >
-                <span>Offer discount</span>
-                <span>- {{ priceSummary.discountLabel }}</span>
-              </div>
-              <div class="flex items-center justify-between font-semibold text-accent-color dark:text-accent-color">
-                <span>Total after offer</span>
-                <span>{{ priceSummary.finalLabel }}</span>
-              </div>
-            </div>
-
+            
             <div>
               <label class="block text-left font-semibold text-gray-700 mb-1 dark:text-white">Price</label>
               <input
@@ -1171,6 +1303,24 @@ watch(selectedDayInfo, () => {
                 class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-accent-color disabled:bg-gray-100 dark:disabled:bg-transparent"
               />
             </div>
+
+            <div
+              v-if="priceSummary.show && (selectedOffer || availableOffers.length > 0)"
+              class="mt-3 space-y-1 rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+            >
+              <div
+                v-if="selectedOffer && priceSummary.discountLabel"
+                class="flex items-center justify-between text-green-600 dark:text-green-400"
+              >
+                <span>Offer discount</span>
+                <span>- {{ priceSummary.discountLabel }}</span>
+              </div>
+              <div class="flex items-center justify-between font-semibold text-accent-color dark:text-white">
+                <span>Total after offer</span>
+                <span>{{ priceSummary.finalLabel }}</span>
+              </div>
+            </div>
+
           </div>
           <div class="orderTime w-full md:w-1/2 flex flex-col items-center">
             <h3 class="text-xl font-semibold text-accent-color mb-4 dark:text-white">Choose Appointment</h3>
@@ -1339,11 +1489,124 @@ watch(selectedDayInfo, () => {
 </template>
 
 <style scoped>
-/* Add any specific styles if needed */
 .feedback-item {
   min-height: 350px; /* Adjust as needed */
 }
-/* Basic styling for Font Awesome icons if not globally included */
+/* Coupon image wrapper + overlay text styles (use the provided PNG as background) */
+.coupon-list {
+  display: flex;
+  flex-direction: row;      /* lay items next to each other */
+  flex-wrap: wrap;         /* wrap to next row when needed */
+  gap: 10px 14px;          /* vertical gap 10px, horizontal 14px */
+  width: 100%;
+  align-items: flex-start; /* align to top so items don't add extra vertical space */
+  padding: 0;              /* remove extra internal padding */
+  margin: 6px 0 8px 0;     /* reduce top/bottom spacing around the whole list */
+}
+
+/* wrapper that holds the PNG and overlay */
+.coupon-wrapper {
+  position: relative;
+  width: auto;
+  max-width: 140px;       /* ticket size - adjust if you want slightly larger/smaller */
+  height: auto;
+  cursor: pointer;
+  user-select: none;
+  transition: transform .12s ease, box-shadow .12s ease;
+  display: inline-block;  /* shrink to image width and allow horizontal flow */
+  outline: none;
+  border: none;
+  padding: 0;             /* remove added padding that creates extra vertical space */
+  margin: 0;              /* control spacing with .coupon-list gap instead */
+  background: transparent;
+  box-shadow: none;
+  vertical-align: top;    /* keep items aligned at top when in a row */
+}
+
+/* remove lift on select; we only change text color now */
+.coupon-wrapper.selected {
+  transform: none;
+  box-shadow: none;
+}
+
+/* the PNG background (the user's uploaded coupon image) */
+.coupon-bg {
+  width: 100%;
+  height: auto;
+  display: block;
+  pointer-events: none; /* let parent handle clicks */
+  object-fit: contain;
+  border: none;
+  background: transparent;
+}
+
+/* overlay container for text (centers content inside the ticket) */
+.coupon-overlay {
+  position: absolute;
+  inset: 0; /* top:0; right:0; bottom:0; left:0 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  padding: 4px 6px;    /* smaller padding so text sits tighter inside the image */
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* big top label "COUPON" */
+.coupon-top {
+  font-weight: 900;
+  font-size: 11px;        /* slightly larger than tiny but still compact */
+  color: #ffffff;         /* default white */
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-top: 2px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.45);
+}
+
+/* bottom offer text "20% OFF" */
+.coupon-bottom {
+  font-weight: 800;
+  font-size: 14px;       /* compact size so it fits without extra vertical space */
+  color: #ffffff;
+  text-transform: uppercase;
+  margin-top: 4px;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.45);
+}
+
+/* Muted look for 'no-offer' */
+.coupon-wrapper.no-offer .coupon-bottom {
+  color: #bfc3c8;
+  font-weight: 700;
+}
+
+/* Selected state: DO NOT add border — change text color inside image to blue */
+.coupon-wrapper.selected .coupon-top,
+.coupon-wrapper.selected .coupon-bottom {
+  color: #4A90E2; /* accent blue */
+  text-shadow: none; /* remove heavy shadow for crisp colored text */
+}
+
+/* Remove any focus outline that appears */
+.coupon-wrapper:focus {
+  outline: none;
+  box-shadow: none;
+  transform: none;
+}
+
+/* small screens */
+@media (max-width: 640px) {
+  .coupon-list { gap: 8px 10px; }
+  .coupon-wrapper { max-width: 120px; }
+  .coupon-top { font-size: 11px; }
+  .coupon-bottom { font-size: 13px; }
+}
+
+
+
+
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 </style>
 
