@@ -472,7 +472,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed, watch, onUnmounted } from 'vue';
 import { useTestLang } from "@/langTest/useTestLang";
 const { lang, texts, switchLang } = useTestLang();
 import { db } from '@/firebase/firebase';
@@ -482,24 +482,24 @@ defineOptions({
   name: 'HomePage'
 });
 const currentSlide = ref(0);
-const slides = ref([]); 
+const slides = ref([]);
 const works = ref([]);
 let interval = null;
 const offers = ref([]);
 
-// 🌓 Detect Tailwind dark mode (class-based)
+// -------------------- Robust Dark-mode detection --------------------
+const isDark = ref(false);
 
-const isDark = ref(document.documentElement.classList.contains('dark'))
+// helper to read current state (try html then body)
+const readDarkClass = () =>
+  document.documentElement.classList.contains("dark") ||
+  document.body.classList.contains("dark");
 
-// Watch for changes to <html class="dark">
-const observer = new MutationObserver(() => {
-  isDark.value = document.documentElement.classList.contains('dark')
-})
+// MutationObserver and matchMedia refs
+let observer = null;
+let mq = null;
 
-onMounted(() => {
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
-})
-
+// -------------------- Hero / Images / Services data --------------------
 // 🟦 Responsive Hero Images Logic
 const heroImagesDesktop = [
   new URL("../images/hero img.png", import.meta.url).href,
@@ -524,6 +524,7 @@ const plumbingDark = new URL('../images/plumbing dark.png', import.meta.url).hre
 const finishingDark = new URL('../images/finishing dark.png', import.meta.url).href;
 const electricalDark = new URL('../images/dark electrecal.png', import.meta.url).href;
 const carpentryDark = new URL('../images/dark carpentery.png', import.meta.url).href;
+
 const heroImages = ref(heroImagesDesktop);
 const currentHeroIndex = ref(0);
 
@@ -554,33 +555,17 @@ const goToHero = (index) => {
   currentHeroIndex.value = index;
 };
 
-onMounted(() => {
-  updateHeroImages();
-  window.addEventListener('resize', updateHeroImages);
-
-  heroInterval = setInterval(() => {
-    currentHeroIndex.value = (currentHeroIndex.value + 1) % heroImages.value.length;
-  }, 7000);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', updateHeroImages);
-  clearInterval(heroInterval);
-});
-
-
 // 🔹 Feedback + Offers logic (unchanged)
 const loading = ref(true);
 
 const nextSlide = () => {
-  if (slides.value.length === 0) return; 
+  if (slides.value.length === 0) return;
   currentSlide.value = (currentSlide.value + 1) % slides.value.length;
 };
 
 const prevSlide = () => {
-  if (slides.value.length === 0) return; 
-  currentSlide.value =
-    (currentSlide.value - 1 + slides.value.length) % slides.value.length;
+  if (slides.value.length === 0) return;
+  currentSlide.value = (currentSlide.value - 1 + slides.value.length) % slides.value.length;
 };
 
 const goToSlide = (index) => {
@@ -599,7 +584,7 @@ const fetchOffers = async () => {
         ...doc.data()
       });
     });
-    offers.value = fetchedOffers; 
+    offers.value = fetchedOffers;
   } catch (error) {
     console.error("Error fetching offers: ", error);
   } finally {
@@ -607,7 +592,52 @@ const fetchOffers = async () => {
   }
 };
 
+// -------------------- Single organized onMounted --------------------
 onMounted(() => {
+  // 1) Dark mode initial + observers
+  isDark.value = readDarkClass();
+  console.log("[dark-detect] initial isDark =", isDark.value);
+
+  observer = new MutationObserver(() => {
+    const val = readDarkClass();
+    if (isDark.value !== val) {
+      isDark.value = val;
+      console.log("[dark-detect] MutationObserver set isDark =", val);
+    }
+  });
+
+  try {
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+  } catch (e) {
+    console.warn("[dark-detect] observer.observe failed:", e);
+  }
+
+  // matchMedia fallback (only update when no explicit class present)
+  try {
+    mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const mqHandler = (ev) => {
+      const explicit = document.documentElement.classList.contains("dark") || document.body.classList.contains("dark");
+      if (!explicit) {
+        isDark.value = !!ev.matches;
+        console.log("[dark-detect] matchMedia change -> isDark =", isDark.value);
+      }
+    };
+    mq.addEventListener ? mq.addEventListener("change", mqHandler) : mq.addListener(mqHandler);
+    mq.__handler = mqHandler;
+  } catch (e) {
+    console.warn("[dark-detect] matchMedia not supported", e);
+  }
+
+  // 2) Hero images + resize listener + hero interval
+  updateHeroImages();
+  window.addEventListener('resize', updateHeroImages);
+
+  heroInterval = setInterval(() => {
+    currentHeroIndex.value = (currentHeroIndex.value + 1) % heroImages.value.length;
+  }, 7000);
+
+  // 3) Initialize slides, works, auto slides, offers
   slides.value = [
     {
       image:
@@ -634,6 +664,7 @@ onMounted(() => {
       text: "Very smooth process, fair pricing and great communication!",
     },
   ];
+
   works.value = [
     {
       src: "https://res.cloudinary.com/dlrgf0myy/image/upload/v1760888695/service-maintenance-worker-repairing_slghmb.jpg",
@@ -671,10 +702,33 @@ onMounted(() => {
   fetchOffers();
 });
 
+// -------------------- Cleanup --------------------
 onBeforeUnmount(() => {
-  clearInterval(interval);
+  // hero resize + hero interval cleanup
+  try { window.removeEventListener('resize', updateHeroImages); } catch (e) { /* ignore */ }
+  try { clearInterval(heroInterval); } catch (e) { /* ignore */ }
+  // slides auto interval
+  try { clearInterval(interval); } catch (e) { /* ignore */ }
+});
+
+onUnmounted(() => {
+  // observer disconnect
+  try { if (observer) observer.disconnect(); } catch (e) { /* ignore */ }
+
+  // matchMedia removal
+  try {
+    if (mq && mq.__handler) {
+      mq.removeEventListener ? mq.removeEventListener("change", mq.__handler) : mq.removeListener(mq.__handler);
+    }
+  } catch (e) { /* ignore */ }
+
+  // keep safe-check for _ordersUnsub if present elsewhere
+  try { if (typeof _ordersUnsub !== 'undefined' && _ordersUnsub) _ordersUnsub(); } catch (e) { /* ignore */ }
+
+  console.log("[dark-detect] cleaned up");
 });
 </script>
+
 
 <style scoped>
 .offer {

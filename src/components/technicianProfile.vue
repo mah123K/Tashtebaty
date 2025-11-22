@@ -22,6 +22,82 @@ import UserServiceCard from "../components/UserServiceCard.vue";
 // NEW: Import the custom alert popup
 import AlertPopup from "../components/AlertPopup.vue"; // <-- Adjust path if needed
 
+// -------------------- Robust Dark-mode detection --------------------
+const isDark = ref(false);
+
+// helper to read current state (try html then body)
+const readDarkClass = () =>
+  document.documentElement.classList.contains("dark") ||
+  document.body.classList.contains("dark");
+
+// MutationObserver and matchMedia refs
+let observer = null;
+let mq = null;
+let pollIntervalId = null;
+
+onMounted(() => {
+  // initial
+  isDark.value = readDarkClass();
+  console.log("[dark-detect] initial isDark =", isDark.value);
+
+  // observer
+  observer = new MutationObserver(() => {
+    const val = readDarkClass();
+    if (isDark.value !== val) {
+      isDark.value = val;
+      console.log("[dark-detect] MutationObserver set isDark =", val);
+    }
+  });
+
+  try {
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+  } catch (e) {
+    console.warn("[dark-detect] observer.observe failed:", e);
+  }
+
+  // matchMedia fallback (only update when no explicit class present)
+  try {
+    mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const mqHandler = (ev) => {
+      const explicit = document.documentElement.classList.contains("dark") || document.body.classList.contains("dark");
+      if (!explicit) {
+        isDark.value = !!ev.matches;
+        console.log("[dark-detect] matchMedia change -> isDark =", isDark.value);
+      }
+    };
+    mq.addEventListener ? mq.addEventListener("change", mqHandler) : mq.addListener(mqHandler);
+    mq.__handler = mqHandler;
+  } catch (e) {
+    console.warn("[dark-detect] matchMedia not supported", e);
+  }
+
+  // POLL fallback (مهم جداً في بعض الحالات)
+  pollIntervalId = setInterval(() => {
+    const val = readDarkClass();
+    if (isDark.value !== val) {
+      isDark.value = val;
+      console.log("[dark-detect] Poll set isDark =", val);
+    }
+  }, 150);
+});
+
+onUnmounted(() => {
+  try { if (observer) observer.disconnect(); } catch (e) { /* ignore */ }
+  try {
+    if (mq && mq.__handler) {
+      mq.removeEventListener ? mq.removeEventListener("change", mq.__handler) : mq.removeListener(mq.__handler);
+    }
+  } catch (e) { /* ignore */ }
+  try { if (pollIntervalId) clearInterval(pollIntervalId); } catch (e) { /* ignore */ }
+  console.log("[dark-detect] cleaned up");
+});
+// -------------------- End dark-mode detection --------------------
+
+const couponDark = new URL('../images/coupon.png', import.meta.url).href;
+const couponLight = new URL('../images/coupon light.png', import.meta.url).href;
+
+
 // NEW: Refs for the custom alert popup
 const showPopupMessage = ref(false);
 const popupMessageContent = ref("");
@@ -379,7 +455,6 @@ const analyzeImageWithAI = async () => {
 
 
 
-
 // ✅ Converts "09:00 AM" → "09:00 PM" into 12-hour slot list (every 30 mins)
 const generateTimeSlots = (startStr, endStr, intervalMinutes = 30) => {
   const slots = [];
@@ -518,7 +593,7 @@ const handleFileUpload = async (event) => {
 
   // 🟦 Step 1: show previews first
   for (const file of files) {
-    if (file && file.type && file.type.startsWith("image/")) {
+    if (file && file.type && file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = (e) => {
         previewUrls.value.push(e.target.result);
@@ -541,7 +616,6 @@ const handleFileUpload = async (event) => {
     }
   }
 };
-
 
 
 
@@ -987,6 +1061,7 @@ watch(selectedDayInfo, () => {
 </script>
 
 
+
 <template>
   <!-- Loading State -->
   <div v-if="isLoading" class="flex justify-center items-center min-h-screen">
@@ -1277,13 +1352,13 @@ watch(selectedDayInfo, () => {
                   :title="offer.title || ''"
                 >
                   <img
-                    src="/src/images/coupon.png"
+                    :src="isDark ? couponDark : couponLight"
                     alt="Coupon background"
                     class="coupon-bg"
                   />
                   <div class="coupon-overlay">
-                    <div class="coupon-top">COUPON</div>
-                    <div class="coupon-bottom">{{ formatOfferPercent(offer) }} off</div>
+                    <div class="coupon-top dark:text-white">COUPON</div>
+                    <div class="coupon-bottom dark:text-white">{{ formatOfferPercent(offer) }} off</div>
                   </div>
                 </div>
               </div>
@@ -1558,7 +1633,6 @@ watch(selectedDayInfo, () => {
 .coupon-top {
   font-weight: 900;
   font-size: 11px;        /* slightly larger than tiny but still compact */
-  color: #ffffff;         /* default white */
   letter-spacing: 0.6px;
   text-transform: uppercase;
   line-height: 1;
@@ -1570,7 +1644,6 @@ watch(selectedDayInfo, () => {
 .coupon-bottom {
   font-weight: 800;
   font-size: 14px;       /* compact size so it fits without extra vertical space */
-  color: #ffffff;
   text-transform: uppercase;
   margin-top: 4px;
   text-shadow: 0 1px 6px rgba(0,0,0,0.45);
