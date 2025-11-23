@@ -37,7 +37,7 @@
         class="h-15 w-15 rounded-full absolute z-20 top-1/2 right-10 rtl:right-auto rtl:left-10 border border-white flex items-center justify-center transition-all duration-500"
         :class="isHovered ? 'bg-dark-blue' : 'bg-accent-color'"
       >
-        <img src="../images/plumberIcon.png" alt="" class="transition-all duration-500 p-2" />
+        <img :src="serviceIcon" alt="service icon" class="transition-all duration-500 p-2" />
       </div>
 
       <div class="absolute bottom-0 w-full px-4 py-3 z-20 flex flex-col items-center text-center">
@@ -192,6 +192,24 @@ export default {
   },
 
   computed: {
+          // import images via import.meta.url so bundler resolves them correctly
+  electIcon() { return new URL('../images/electretionIcon.png', import.meta.url).href; },
+  finishIcon() { return new URL('../images/finishcompanyIcon.png', import.meta.url).href; },
+  carpIcon() { return new URL('../images/carpenterIcon.png', import.meta.url).href; },
+  plumbIcon() { return new URL('../images/plumberIcon.png', import.meta.url).href; },
+
+  serviceIcon() {
+    const svc = (this.profile?.service || "").toString().toLowerCase().trim();
+    if (svc.includes("elect") || svc.includes("electric") || svc.includes("electrical")) return this.electIcon;
+    if (svc.includes("finish") || svc.includes("finishing") || svc.includes("painting")) return this.finishIcon;
+    if (svc.includes("carp") || svc.includes("carpentry")) return this.carpIcon;
+    if (svc.includes("plumb") || svc.includes("plumbing")) return this.plumbIcon;
+
+    // fallback to profile image or default
+    if (this.profile?.profileImage) return this.profile.profileImage;
+    return new URL('../images/engineer2.png', import.meta.url).href;
+  },
+
     profileImageSrc() {
       return typeof this.profile.profileImage === "string" && this.profile.profileImage
         ? this.profile.profileImage

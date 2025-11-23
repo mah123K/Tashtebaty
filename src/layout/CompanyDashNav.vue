@@ -152,18 +152,6 @@ const handleLogout = async () => {
 
         <!-- Navigation -->
         <nav class="flex flex-col w-full space-y-1 px-2">
-             <button
-            @click="emit('changeTab', 'dashboard')"
-            :class="[
-              props.active === 'dashboard'
-                ? 'bg-[#1b5383]'
-                : 'hover:bg-[#1b5383]/60',
-            ]"
-            class="flex items-center gap-2 py-2.5 rounded-xl w-[88%] mx-auto transition p-3 font-semibold text-[16px]"
-          >
-            <i class="bi bi-house"></i>
-            Dashboard
-          </button>
           <button
             @click="emit('changeTab', 'projects')"
             :class="[
