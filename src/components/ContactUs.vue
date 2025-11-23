@@ -117,6 +117,7 @@
         referrerpolicy="no-referrer-when-downgrade"
       ></iframe>
     </section>
+    <chat-bot/>
   </div>
 </template>
 
@@ -130,7 +131,7 @@ const { lang, texts } = useTestLang();
 import { ref } from "vue";
 import { db } from "../firebase/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-
+import ChatBot from "./chatbot/ChatBot.vue";
 defineOptions({
   name: "ContactUs",
 });

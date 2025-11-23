@@ -143,6 +143,7 @@
         </div>
       </div>
     </div>
+
     <!-- 🎉 FLOATING CELEBRATION CARD -->
 <transition name="slide-up">
   <div
@@ -156,6 +157,8 @@
   </div>
 </transition>
 
+<chat-bot/>
+
   </div>
 </template>
 
@@ -168,6 +171,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { collection, getDocs, doc, setDoc } from "firebase/firestore";
 import confetti from "canvas-confetti";
 
+import ChatBot from "./chatbot/ChatBot.vue";
 const { lang, texts } = useTestLang();
 const offers = ref([]);
 const isLoading = ref(true);

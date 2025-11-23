@@ -3,6 +3,7 @@ import { uploadImageOnly } from "@/composables/useImageUpload";
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { db, auth } from "@/firebase/firebase";
+import ChatBot from "./chatbot/ChatBot.vue";
 import {
   doc,
   getDoc,
@@ -1063,6 +1064,7 @@ watch(selectedDayInfo, () => {
 
 
 <template>
+  <div>
   <!-- Loading State -->
   <div v-if="isLoading" class="flex justify-center items-center min-h-screen">
     <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-accent-color"></div>
@@ -1560,6 +1562,8 @@ watch(selectedDayInfo, () => {
 
       <AlertPopup :show="showPopupMessage" :message="popupMessageContent" @close="closeAlert" />
     </div>
+  </div>
+  <chat-bot/>
   </div>
 </template>
 

@@ -1,4 +1,5 @@
 <template>
+  <div >
   <div class="profiles-page">
     <h1 class="main-header mt-20">
       {{ texts[lang][translatedServiceName.section][translatedServiceName.key] }}
@@ -55,6 +56,9 @@
         Please check again later or try a different search.
       </div>
     </div>
+    
+  </div>
+  <chat-bot/>
   </div>
 </template>
 
@@ -66,13 +70,15 @@ import { db } from "@/firebase/firebase";
 import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
+import ChatBot from "./chatbot/ChatBot.vue";
+
 export default {
   setup() {
     const { lang, texts } = useTestLang();
     return { lang, texts };
   },
   name: "ProfilesPage",
-  components: { ProfileCard, TopBar },
+  components: { ProfileCard, TopBar , ChatBot},
   data() {
     return {
       currentView: "grid",

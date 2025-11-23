@@ -9,7 +9,7 @@
                 <!-- Header -->
                 <div class="bg-accent-color dark:bg-[#16222b] text-white p-4 rounded-t-lg flex justify-between items-center flex-shrink-0">
                     <h3 class="font-bold text-lg">Chat with AI</h3>
-                    <button @click="toggleChat" class="p-1 rounded-full hover:bg-accent-color transition-colors">
+                    <button @click="toggleChat" class="p-1 dark:bg-[#16222b] rounded-full hover:bg-accent-color transition-colors">
                         <!-- Close Icon -->
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />

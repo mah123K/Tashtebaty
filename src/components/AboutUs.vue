@@ -1,4 +1,5 @@
 <template>
+  <div>
   <div
     class="heroSection mt-18 relative h-[70vh] flex flex-col justify-center items-center overflow-hidden text-white"
   >
@@ -242,13 +243,22 @@
           </svg>
         </span>
       </button>
+      
     </div>
+    <chat-bot/>
+  </div>
 </template>
 
 <script>
 import { useTestLang } from "@/langTest/useTestLang";
+import ChatBot from "./chatbot/ChatBot.vue";
+import { components } from "daisyui/imports";
+
 export default{
   name:"AboutUs",
+  components:{
+        ChatBot,
+      },
   data(){
     return{
       

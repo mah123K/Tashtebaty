@@ -292,6 +292,7 @@
         </button>
       </div>
     </div>
+    <chat-bot/>
   </div>
 </template>
 
@@ -300,6 +301,7 @@ import { ref, computed, onMounted, watch } from "vue";
 import { getAuth, onAuthStateChanged , updatePassword, updateEmail,} from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
+import ChatBot from "./chatbot/ChatBot.vue";
 // NEW: Import the new component
 // Removed unused AlertPopup import
 
