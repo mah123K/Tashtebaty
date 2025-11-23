@@ -23,26 +23,38 @@
         :key="n"
         class="bg-white dark:bg-dark-blue text-(--text-muted) rounded-2xl shadow-xl p-4 animate-pulse flex flex-col items-center"
       >
-        <div class="w-full h-48  bg-gray-200 dark:bg-(--surface) rounded-xl mb-4"></div>
+        <div class="w-full h-48 bg-gray-200 dark:bg-(--surface) rounded-xl mb-4"></div>
         <div class="h-4 bg-gray-200 dark:bg-(--surface) w-2/3 mb-2 rounded"></div>
         <div class="h-3 bg-gray-200 dark:bg-(--surface) w-1/2 mb-2 rounded"></div>
         <div class="h-3 bg-gray-200 dark:bg-(--surface) w-3/4 rounded"></div>
       </div>
     </div>
 
-    <div
-      v-else
-      :class="[
-        'px-4 sm:px-8 max-w-7xl mx-auto mb-12 gap-6',
-        currentView === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'flex flex-col',
-      ]"
-    >
-      <ProfileCard
-        v-for="(profile, index) in filteredProfiles"
-        :key="index"
-        :profile="profile"
-        :viewType="currentView"
-      />
+    <div v-else>
+      <!-- Profiles List -->
+      <div
+        v-if="filteredProfiles.length > 0"
+        :class="[
+          'px-4 sm:px-8 max-w-7xl mx-auto mb-12 gap-6',
+          currentView === 'grid'
+            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+            : 'flex flex-col',
+        ]"
+      >
+        <ProfileCard
+          v-for="(profile, index) in filteredProfiles"
+          :key="index"
+          :profile="profile"
+          :viewType="currentView"
+        />
+      </div>
+
+      <!-- Empty State Message -->
+      <div v-else class="text-center py-20 text-lg text-gray-600 dark:text-gray-300">
+        No technicians available in this category at the moment.
+        <br />
+        Please check again later or try a different search.
+      </div>
     </div>
     
   </div>
@@ -57,8 +69,8 @@ import TopBar from "./topBar.vue";
 import { db } from "@/firebase/firebase";
 import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import ChatBot from "./chatbot/ChatBot.vue";
 
+import ChatBot from "./chatbot/ChatBot.vue";
 
 export default {
   setup() {
@@ -84,29 +96,27 @@ export default {
   computed: {
     // UPDATED: New computed property to translate the service name
     translatedServiceName() {
-  const key = this.serviceName;
+      const key = this.serviceName;
 
-  const map = {
-    plumbing:  { section: "navbar", key: "plumbing" },
-    electrical:{ section: "navbar", key: "electrical" },
-    finishing: { section: "navbar", key: "finishing" },
-    carpentry: { section: "navbar", key: "carpentry" },
-  };
+      const map = {
+        plumbing: { section: "navbar", key: "plumbing" },
+        electrical: { section: "navbar", key: "electrical" },
+        finishing: { section: "navbar", key: "finishing" },
+        carpentry: { section: "navbar", key: "carpentry" },
+      };
 
-  // لو النوع موجود
-  if (map[key]) return map[key];
+      // لو النوع موجود
+      if (map[key]) return map[key];
 
-  // غير كده هيرجع All Profiles
-  return { section: "profilesPage", key: "allProfiles" };
-}
+      // غير كده هيرجع All Profiles
+      return { section: "profilesPage", key: "allProfiles" };
+    },
 
-,
     profilesInCategory() {
       if (!this.serviceName || this.serviceName === "All") {
         return this.profiles;
       }
-      return this.profiles.filter((p) => p.service?.toLowerCase() === this.serviceName
-);
+      return this.profiles.filter((p) => p.service?.toLowerCase() === this.serviceName);
     },
 
     filteredProfiles() {
@@ -114,8 +124,7 @@ export default {
 
       // Filter by service name
       if (this.serviceName && this.serviceName !== "All") {
-        results = results.filter((p) => p.service?.toLowerCase() === this.serviceName
-);
+        results = results.filter((p) => p.service?.toLowerCase() === this.serviceName);
       }
 
       // Filter by search keyword (case-insensitive)
@@ -251,11 +260,32 @@ export default {
             console.warn(`Could not fetch orders count for technician ${docSnap.id}:`, e);
           }
 
+          // Extract city from address (supports both object and string)
+          function extractCity(address) {
+            if (!address) return "not specified";
+
+            // Case 1: address is an object with a city field
+            if (typeof address === "object" && address.city) {
+              return address.city;
+            }
+
+            // Case 2: address is a string: "Egypt, Giza, Giza, Egypt"
+            if (typeof address === "string") {
+              const parts = address.split(",").map((p) => p.trim());
+
+              // لو أكتر من عنصر، غالبًا المدينة هي الجزء التاني
+              if (parts.length >= 2) {
+                return parts[1]; // EX: Egypt, **Giza**, Giza, Egypt
+              }
+            }
+
+            return "not specified";
+          }
           fetchedProfiles.push({
             id: docSnap.id,
             name: data.name,
             service: data.skill,
-            location: data.address?.city || ("not specified"),
+            location: extractCity(data.address),
             rating: data.ratingAverage || data.rating || 0,
             bio: data.description || ("no bio"),
             profileImage: data.profileImage || "/images/engineer2.png",

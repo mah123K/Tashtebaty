@@ -55,11 +55,10 @@
       </div>
     </div>
 
+    <!-- Offers Section -->
     <div class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-14">
       <div v-if="isLoading" class="text-center py-20">
-        <div
-          class="animate-spin rounded-full h-10 w-10 border-b-2 border-accent-color mx-auto"
-        ></div>
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-accent-color mx-auto"></div>
         <p class="mt-3 text-(--text-muted)">{{ texts[lang].offersPage.grid.loading }}</p>
       </div>
 
@@ -71,115 +70,95 @@
         <p class="text-(--text-muted) mt-2">{{ texts[lang].offersPage.grid.emptyText }}</p>
       </div>
 
-      <div class="pb-16">
-        <!-- Toast Message -->
-        <!-- <div
-          v-if="showMessage"
-          class="fixed top-5 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-xl shadow-lg z-50"
+      <!-- Offers Grid -->
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
+        <div
+          v-for="offer in offers"
+          :key="offer.id"
+          class="relative bg-(--surface) rounded-2xl w-full max-w-xs sm:max-w-none shadow-md hover:shadow-xl transition transform hover:scale-105"
         >
-          {{ showMessage }}
-        </div> -->
-
-        <!-- Offers Grid -->
-        <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-14">
-          <!-- Loading -->
-          <div v-if="isLoading" class="text-center py-20">
-            <div
-              class="animate-spin rounded-full h-10 w-10 border-b-2 border-accent-color mx-auto"
-            ></div>
-            <p class="mt-3 text-(--text-muted)">{{ texts[lang].offersPage.grid.loading }}</p>
+          <div class="absolute top-0 left-0 rtl:left-auto rtl:right-0">
+            <img src="../images/offerdisc.png" class="w-15" alt="" />
           </div>
 
-          <!-- Empty -->
-          <div v-else-if="offers.length === 0" class="text-center py-20">
-            <i class="fa-solid fa-tags text-4xl text-(--text-muted) mb-4"></i>
-            <h3 class="text-xl font-semibold text-(--text-primary)">
-              {{ texts[lang].offersPage.grid.emptyTitle }}
-            </h3>
-            <p class="text-(--text-muted) mt-2">{{ texts[lang].offersPage.grid.emptyText }}</p>
-          </div>
+          <img
+            :src="offer.image"
+            alt="offer image"
+            class="w-full rounded-t-2xl h-70 object-cover"
+          />
 
-          <!-- Offers -->
-          <div
-            v-else
-            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center"
-          >
-            <div
-              v-for="offer in offers"
-              :key="offer.id"
-              class="relative bg-(--surface) rounded-2xl w-full max-w-xs sm:max-w-none shadow-md hover:shadow-xl transition transform hover:scale-105"
+          <div class="card-body mt-2 items-center text-center p-3">
+            <h2 class="text-(--accent) font-bold text-xl">
+              {{ offer.title }}
+              <span v-if="!String(offer.title || '').toLowerCase().includes('off')">
+                {{ texts[lang].offersPage.grid.suffix }}
+              </span>
+            </h2>
+
+            <p class="text-(--text-muted) text-sm">{{ offer.description }}</p>
+
+            <p v-if="claimedOfferIds.has(offer.id)" class="text-green-600 mt-2 font-semibold">
+              {{ texts[lang].offersPage.grid.messageClaimed }}
+            </p>
+            <p
+              v-else-if="isExpired(offer) || !offer.active"
+              class="text-red-500 mt-2 font-semibold"
             >
-              <div class="absolute top-0 left-0 rtl:left-auto rtl:right-0">
-                <img src="../images/offerdisc.png" class="w-15" alt="" />
-              </div>
+              {{ texts[lang].offersPage.grid.messageExpired }}
+            </p>
 
-              <img
-                :src="offer.image"
-                alt="offer image"
-                class="w-full rounded-t-2xl h-70 object-cover"
-              />
-
-              <div class="card-body mt-2 items-center text-center p-3">
-                <h2 class="text-(--accent) font-bold text-xl">
-                  {{ offer.title }}
-                  <span v-if="!String(offer.title || '').toLowerCase().includes('off')">
-                    {{ texts[lang].offersPage.grid.suffix }}
-                  </span>
-                </h2>
-
-                <p class="text-(--text-muted) text-sm">{{ offer.description }}</p>
-
-                <!-- Offer Status -->
-                <p v-if="claimedOfferIds.has(offer.id)" class="text-green-600 mt-2 font-semibold">
-                  {{ texts[lang].offersPage.grid.messageClaimed }}
-                </p>
-                <p
-                  v-else-if="isExpired(offer) || !offer.active"
-                  class="text-red-500 mt-2 font-semibold"
-                >
-                  {{ texts[lang].offersPage.grid.messageExpired }}
-                </p>
-
-                <!-- Button -->
-                <div class="mt-4">
-                  <button
-                    @click="claimOffer(offer)"
-                    :disabled="
-                      isClaiming === offer.id ||
-                      claimedOfferIds.has(offer.id) ||
-                      isExpired(offer) ||
-                      !offer.active
-                    "
-                    class="text-white font-semibold py-2 transition rounded-[10px] px-3 text-lg"
-                    :class="[
-                      claimedOfferIds.has(offer.id) ? 'bg-green-600 cursor-default' : '',
-                      isExpired(offer) || !offer.active
-                        ? 'bg-gray-500 text-white cursor-not-allowed'
-                        : '',
-                      !claimedOfferIds.has(offer.id) && !isExpired(offer) && offer.active
-                        ? 'bg-accent-color hover:bg-(--accent)'
-                        : '',
-                      isClaiming === offer.id ? 'opacity-50 cursor-not-allowed' : '',
-                    ]"
-                  >
-                    {{
-                      isClaiming === offer.id
-                        ? texts[lang].offersPage.grid.buttonClaiming
-                        : claimedOfferIds.has(offer.id)
-                        ? texts[lang].offersPage.grid.buttonClaimed
-                        : isExpired(offer) || !offer.active
-                        ? "Not Available"
-                        : texts[lang].offersPage.grid.buttonClaim
-                    }}
-                  </button>
-                </div>
-              </div>
+            <div class="mt-4">
+              <button
+                @click="claimOffer(offer)"
+                :disabled="
+                  isClaiming === offer.id ||
+                  claimedOfferIds.has(offer.id) ||
+                  isExpired(offer) ||
+                  !offer.active
+                "
+                class="text-white font-semibold py-2 transition rounded-[10px] px-3 text-lg"
+                :class="[
+                  claimedOfferIds.has(offer.id) ? 'bg-green-600 cursor-default' : '',
+                  isExpired(offer) || !offer.active
+                    ? 'bg-gray-500 text-white cursor-not-allowed'
+                    : '',
+                  !claimedOfferIds.has(offer.id) && !isExpired(offer) && offer.active
+                    ? 'bg-accent-color hover:bg-(--accent)'
+                    : '',
+                  isClaiming === offer.id ? 'opacity-50 cursor-not-allowed' : '',
+                ]"
+              >
+                {{
+                  isClaiming === offer.id
+                    ? texts[lang].offersPage.grid.buttonClaiming
+                    : claimedOfferIds.has(offer.id)
+                    ? texts[lang].offersPage.grid.buttonClaimed
+                    : isExpired(offer) || !offer.active
+                    ? "Not Available"
+                    : texts[lang].offersPage.grid.buttonClaim
+                }}
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <chat-bot/>
+
+    <!-- 🎉 FLOATING CELEBRATION CARD -->
+<transition name="slide-up">
+  <div
+    v-if="showCard"
+    class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white shadow-2xl rounded-2xl px-6 py-4 z-[9999] flex items-center gap-3 border-l-4 border-green-500"
+  >
+    <span class="text-3xl">🎉</span>
+    <div class="text-gray-800 font-semibold text-lg">
+      {{ claimedMessage }}
+    </div>
+  </div>
+</transition>
+
+<chat-bot/>
+
   </div>
 </template>
 
@@ -190,6 +169,8 @@ import { useTestLang } from "@/langTest/useTestLang";
 import { db } from "@/firebase/firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { collection, getDocs, doc, setDoc } from "firebase/firestore";
+import confetti from "canvas-confetti";
+
 import ChatBot from "./chatbot/ChatBot.vue";
 const { lang, texts } = useTestLang();
 const offers = ref([]);
@@ -197,6 +178,11 @@ const isLoading = ref(true);
 const userId = ref(null);
 const claimedOfferIds = ref(new Set());
 const isClaiming = ref(null);
+
+// ⭐ Popup state
+const showCard = ref(false);
+const claimedMessage = ref("");
+
 
 // --- Composables ---
 const router = useRouter();
@@ -274,6 +260,22 @@ const claimOffer = async (offer) => {
     });
 
     claimedOfferIds.value.add(offer.id);
+
+    claimedMessage.value = `You claimed ${offer.title} successfully!`;
+showCard.value = true;
+
+// Auto hide
+setTimeout(() => {
+  showCard.value = false;
+}, 3000);
+
+    // 🎉 انيميشن الكونفيتي
+    confetti({
+      particleCount: 120,
+      spread: 80,
+      origin: { y: 0.6 }
+    });
+
   } catch (err) {
     console.error(err);
   } finally {
@@ -297,4 +299,30 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.slide-up-enter-active {
+  transition: all 0.35s ease;
+}
+.slide-up-leave-active {
+  transition: all 0.35s ease;
+}
+
+.slide-up-enter-from {
+  transform: translate(-50%, 20px);
+  opacity: 0;
+}
+.slide-up-enter-to {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+.slide-up-leave-from {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+.slide-up-leave-to {
+  transform: translate(-50%, 20px);
+  opacity: 0;
+}
+
 </style>
+

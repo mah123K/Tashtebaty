@@ -245,7 +245,22 @@
         </div>
       </div>
 
-      <div v-else class="text-center text-gray-500 mt-10">{{ texts[lang].myOrdersPage.empty }}</div>
+      <div v-if="orders.length === 0" class="text-center py-16">
+  <!-- <img src="/images/no-orders-big.svg" class="w-56 mx-auto mb-6" /> -->
+  <h2 class="text-2xl font-bold text-(--text-primary)">No Orders Yet</h2>
+  <p class="text-(--text-muted) mt-2 mb-6">
+  🎉 Ready? Book your first service and meet the best technicians!
+  </p>
+
+<router-link
+  to="profiles/Plumbing"
+  class="px-6 py-3 bg-accent-color text-white rounded-full font-semibold hover:scale-105 transition transform animate-bounce"
+>
+  Get service now
+</router-link>
+
+</div>
+
     </div>
 
     <transition name="fade">

@@ -964,7 +964,7 @@ watch(
           <p class="text-lg opacity-90">{{ texts[lang].technicianDashboard.earnings.totalEarningsLabel }}</p>
           <h1 class="text-5xl font-bold mt-2">{{ totalEarnings }} EGP</h1>
           <p class="text-sm text-gray-200 mt-2">{{ texts[lang].technicianDashboard.earnings.updatedToday }}</p>
-          <p
+          <p v-if ="earningsGrowth !== 0"
             class="text-sm mt-1 font-medium flex items-center"
             :class="{
               'text-green-300': earningsGrowth === 'first' || earningsGrowth > 0,
