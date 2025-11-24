@@ -148,10 +148,10 @@
 <transition name="slide-up">
   <div
     v-if="showCard"
-    class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white shadow-2xl rounded-2xl px-6 py-4 z-[9999] flex items-center gap-3 border-l-4 border-green-500"
+    class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white dark:bg-(--surface) shadow-2xl rounded-2xl px-6 py-4 z-9999 flex items-center gap-3 border-l-4 border-green-500"
   >
     <span class="text-3xl">🎉</span>
-    <div class="text-gray-800 font-semibold text-lg">
+    <div class="text-gray-800 font-semibold text-lg dark:text-white">
       {{ claimedMessage }}
     </div>
   </div>
@@ -168,7 +168,7 @@ import { useRouter } from "vue-router";
 import { useTestLang } from "@/langTest/useTestLang";
 import { db } from "@/firebase/firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { collection, getDocs, doc, setDoc } from "firebase/firestore";
+import { collection, getDocs, doc, setDoc , onSnapshot} from "firebase/firestore";
 import confetti from "canvas-confetti";
 
 import ChatBot from "./chatbot/ChatBot.vue";
@@ -189,15 +189,16 @@ const router = useRouter();
 const auth = getAuth();
 
 /** Fetch all offers from Firestore */
-const fetchOffers = async () => {
-  try {
-    const snapshot = await getDocs(collection(db, "offers"));
-    offers.value = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  } catch (err) {
-    console.error(err);
-  } finally {
+const fetchOffers = () => {
+  const offersRef = collection(db, "offers");
+
+  onSnapshot(offersRef, (snapshot) => {
+    offers.value = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
     isLoading.value = false;
-  }
+  });
 };
 
 /** Fetch claimed offers for current user */

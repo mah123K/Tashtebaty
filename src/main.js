@@ -136,10 +136,21 @@ const router = createRouter({
   },
 });
 
+let authReady = false;
+
+onAuthStateChanged(auth, () => {
+  authReady = true;
+});
+
+
 // ================================
 // Navigation Guards
 // ================================
 router.beforeEach(async (to, from, next) => {
+  if (!authReady) {
+    next();
+    return;
+  }
   const user = auth.currentUser;
   
   if (!user) {
@@ -202,15 +213,15 @@ router.beforeEach(async (to, from, next) => {
 
 
 // Save last dashboard route
-router.afterEach((to) => {
-  if (
-    to.path.startsWith("/dashboard") ||
-    to.path.startsWith("/technician-dashboard") ||
-    to.path.startsWith("/company-dashboard")
-  ) {
-    localStorage.setItem("lastDashboardRoute", to.fullPath);
-  }
-});
+// router.afterEach((to) => {
+//   if (
+//     to.path.startsWith("/dashboard") ||
+//     to.path.startsWith("/technician-dashboard") ||
+//     to.path.startsWith("/company-dashboard")
+//   ) {
+//     localStorage.setItem("lastDashboardRoute", to.fullPath);
+//   }
+// });
 // Save last dashboard route
 router.afterEach((to) => {
   if (

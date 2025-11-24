@@ -28,7 +28,7 @@
         <div>
           <!-- All -->
           <div v-show="activeTab === 'all'">
-            <h2 class="text-2xl font-semibold mb-4 text-center text-(--text-primary)">{{ texts[lang].myOrdersPage.tabs.all }}</h2>
+            <!-- <h2 class="text-2xl font-semibold mb-4 text-center text-(--text-primary)">{{ texts[lang].myOrdersPage.tabs.all }}</h2> -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div
                 v-for="order in orders"
@@ -94,7 +94,13 @@
 
           <!-- Unconfirmed -->
           <div v-show="activeTab === 'unconfirmed'">
-            <h2 class="text-2xl font-semibold mb-4 text-center text-(--text-primary)">{{ texts[lang].myOrdersPage.tabs.unconfirmed }}</h2>
+            <div v-if="grouped.unconfirmed.length === 0" class="flex flex-col items-center justify-center h-full w-full">
+              <DotLottieVue style="height: 200px; width: 200px" autoplay loop src="https://lottie.host/b55b784d-140d-477c-975a-8abd58abd5f0/vtgCO8hppv.lottie" />
+            <h2 class="text-xl font-bold text-(--text-primary)">No Orders Here</h2>
+            <p class="text-(--text-muted) mt-2">
+            This tab has no orders yet 
+            </p>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div
                 v-for="order in grouped.unconfirmed"
@@ -131,7 +137,13 @@
 
           <!-- Upcoming -->
           <div v-show="activeTab === 'upcoming'">
-            <h2 class="text-2xl font-semibold mb-4 text-center text-(--text-primary)">{{ texts[lang].myOrdersPage.tabs.upcoming }}</h2>
+               <div v-if="grouped.upcoming.length === 0" class="flex flex-col items-center justify-center h-full w-full">
+                <DotLottieVue style="height: 200px; width: 200px" autoplay loop src="https://lottie.host/b55b784d-140d-477c-975a-8abd58abd5f0/vtgCO8hppv.lottie" />
+            <h2 class="text-xl font-bold text-(--text-primary)">No Orders Here</h2>
+            <p class="text-(--text-muted) mt-2">
+            This tab has no orders yet 
+            </p>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div
                 v-for="order in grouped.upcoming"
@@ -166,8 +178,13 @@
 
           <!-- Completed -->
           <div v-show="activeTab === 'completed'">
-            <h2 class="text-2xl font-semibold mb-4 text-center text-(--text-primary)">{{ texts[lang].myOrdersPage.tabs.completed }}</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-if="grouped.completed.length === 0" class="flex flex-col items-center justify-center h-full w-full">
+            <DotLottieVue style="height: 200px; width: 200px" autoplay loop src="https://lottie.host/b55b784d-140d-477c-975a-8abd58abd5f0/vtgCO8hppv.lottie" />
+            <h2 class="text-xl font-bold text-(--text-primary)">No Orders Here</h2>
+            <p class="text-(--text-muted) mt-2">
+            This tab has no orders yet 
+            </p>
+            </div>            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div
                 v-for="order in grouped.completed"
                 :key="order.id"
@@ -211,7 +228,13 @@
 
           <!-- Declined / Cancelled -->
           <div v-show="activeTab === 'declined'">
-            <h2 class="text-2xl font-semibold mb-4 text-center text-(--text-primary)">{{ texts[lang].myOrdersPage.tabs.declined }}</h2>
+               <div v-if="grouped.declined.length === 0" class="flex flex-col items-center justify-center h-full w-full">
+                <DotLottieVue style="height: 200px; width: 200px" autoplay loop src="https://lottie.host/b55b784d-140d-477c-975a-8abd58abd5f0/vtgCO8hppv.lottie" />
+            <h2 class="text-xl font-bold text-(--text-primary)">No Orders Here</h2>
+            <p class="text-(--text-muted) mt-2">
+            This tab has no orders yet 
+            </p>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div
                 v-for="order in [...grouped.declined, ...grouped.cancelled]"
@@ -245,8 +268,10 @@
         </div>
       </div>
 
-      <div v-if="orders.length === 0" class="text-center py-16">
-  <!-- <img src="/images/no-orders-big.svg" class="w-56 mx-auto mb-6" /> -->
+      <div v-else class="flex flex-col items-center justify-center h-full w-full">
+        <div class="flex justify-center items-center">
+  <DotLottieVue style="height: 300px; width: 300px" autoplay loop src="https://lottie.host/b55b784d-140d-477c-975a-8abd58abd5f0/vtgCO8hppv.lottie" />
+        </div>
   <h2 class="text-2xl font-bold text-(--text-primary)">No Orders Yet</h2>
   <p class="text-(--text-muted) mt-2 mb-6">
   🎉 Ready? Book your first service and meet the best technicians!
@@ -383,6 +408,7 @@ import AlertPopup from "../components/AlertPopup.vue"; // <-- Adjust path as nee
 // NEW: Added missing import for i18n helper and test lang
 import { useI18n } from "vue-i18n";
 import { useTestLang } from "@/langTest/useTestLang";
+import { DotLottieVue } from '@lottiefiles/dotlottie-vue'
 
 const orders = ref([]);
 const loading = ref(true);

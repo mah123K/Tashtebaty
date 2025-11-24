@@ -209,6 +209,9 @@ const handleSignIn = async () => {
         if (userData.status === "banned") {
           showToastMessage(t("loginPage.errors.banned"), "error");
           await auth.signOut();
+          setTimeout(() => {
+          router.push("/contactus");
+          }, 2000);
           return;
         }
         found = true;
@@ -278,6 +281,9 @@ const handleGoogleSignIn = async () => {
         if (userData.status === "banned") {
           showToastMessage(t("loginPage.errors.banned"), "error");
           await auth.signOut();
+          setTimeout(() => {
+          router.push("/contactus");
+          }, 2000);
           return;
         }
         found = true;
