@@ -1298,10 +1298,10 @@ watch(
 <div
   v-if="showPopup"
   @click.self="closePopup"
-  class="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4"
+  class="fixed inset-0 bg-[#0000009c] bg-opacity-60 flex justify-center items-center z-50 p-4"
 >
   <div
-    class="bg-white rounded-2xl p-8 w-full max-w-md shadow-xl text-center relative"
+    class="bg-white dark:bg-[#16222B] rounded-2xl p-8 w-full max-w-md shadow-xl text-center relative"
   >
     <button
       @click="closePopup"
@@ -1309,7 +1309,7 @@ watch(
     >
       &times;
     </button>
-    <h2 class="text-2xl font-semibold text-[#133B5D] mb-6">
+    <h2 class="text-2xl font-semibold text-[#133B5D] dark:text-white mb-6">
       {{ selectedService ? texts[lang].technicianDashboard.popups.editServiceTitle : texts[lang].technicianDashboard.popups.createServiceTitle }}
     </h2>
     <div class="flex flex-col items-center mb-6">
@@ -1345,26 +1345,26 @@ watch(
     <div class="space-y-4">
       <div>
         <label
-          class="block text-left font-semibold text-gray-700 mb-1 text-sm"
+          class="block text-left font-semibold text-gray-700 dark:text-white mb-1 text-sm"
           >Service Title</label
         >
         <input
           v-model="serviceTitle"
           type="text"
           placeholder="Enter service name"
-          class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-[#133B5D]"
+          class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-[#133B5D] text-black dark:text-white"
         />
       </div>
       <div>
         <label
-          class="block text-left font-semibold text-gray-700 mb-1 text-sm"
+          class="block text-left font-semibold text-gray-700 dark:text-white mb-1 text-sm"
           >Service Price</label
         >
         <input
           v-model="servicePrice"
           type="text"
           placeholder="Enter price (e.g. 150 EGP)"
-          class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-[#133B5D]"
+          class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-[#133B5D] text-black dark:text-white"
         />
       </div>
     </div>

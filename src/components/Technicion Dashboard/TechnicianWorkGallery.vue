@@ -6,7 +6,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <!-- Upload Box -->
       <div
-        class="flex flex-col items-center justify-center border-2 border-dashed border-[#133B5D]/50 rounded-2xl p-6 bg-white dark:bg-[#16222B] shadow hover:shadow-lg cursor-pointer transition"
+        class="relative flex flex-col items-center justify-center border-2 border-dashed border-[#133B5D]/50 rounded-2xl p-6 bg-white dark:bg-[#16222B] shadow hover:shadow-lg cursor-pointer transition"
         @click="triggerUpload"
       >
         <i class="fa-solid fa-upload text-5xl text-[#133B5D] dark:text-white mb-3"></i>
@@ -22,6 +22,20 @@
         <p v-if="images.length >= 15" class="text-red-500 text-sm mt-2">
           (Maximum 15 images)
         </p>
+
+        <!-- Upload overlay with spinner + progress -->
+        <div
+          v-if="uploading"
+          class="absolute inset-0 bg-white/70 dark:bg-black/50 flex flex-col items-center justify-center rounded-2xl"
+        >
+          <i class="fa-solid fa-spinner animate-spin text-4xl text-[#133B5D] dark:text-white mb-3"></i>
+          <div class="w-3/4">
+            <div class="h-2 bg-[#e6e6e6] rounded">
+              <div :style="{ width: uploadProgress + '%' }" class="h-2 rounded bg-[#133B5D] transition-all"></div>
+            </div>
+            <p class="text-sm text-[#133B5D] dark:text-white mt-2 text-center">{{ uploadProgress }}%</p>
+          </div>
+        </div>
       </div>
 
       <!-- Gallery Images -->
@@ -74,6 +88,10 @@ const popupMessage = ref("");
 const deleteTarget = ref(null);
 const fileInput = ref(null);
 
+// NEW: uploading state + progress
+const uploading = ref(false);
+const uploadProgress = ref(0);
+
 const triggerUpload = () => {
   if (images.value.length >= 15) {
     popupMessage.value = "You can only upload up to 15 images.";
@@ -95,15 +113,31 @@ const handleUpload = async (e) => {
   const remainingSlots = 15 - images.value.length;
   const uploadList = files.slice(0, remainingSlots);
 
+  // Start upload UI
+  uploading.value = true;
+  uploadProgress.value = 0;
+
+  let completed = 0;
+  const total = uploadList.length;
+
   for (const file of uploadList) {
-    const imageUrl = await uploadImageOnly(file);
-    await addDoc(collection(db, "technicians", technicianId.value, "gallery"), {
-      url: imageUrl,
-      uploadedAt: serverTimestamp(),
-    });
+    try {
+      const imageUrl = await uploadImageOnly(file);
+      await addDoc(collection(db, "technicians", technicianId.value, "gallery"), {
+        url: imageUrl,
+        uploadedAt: serverTimestamp(),
+      });
+    } catch (err) {
+      console.error("Upload error for file:", file.name, err);
+      // you can choose to show an error per file but we keep existing behavior
+    }
+    completed++;
+    uploadProgress.value = Math.round((completed / total) * 100);
   }
 
-  popupMessage.value = "Images uploaded successfully!";
+  uploading.value = false;
+
+  popupMessage.value = "Image uploaded !";
   showPopup.value = true;
   await loadGallery();
 };
@@ -137,7 +171,7 @@ const handlePopupClose = async (confirmed) => {
       try {
         await deleteDoc(doc(db, "technicians", technicianId.value, "gallery", deleteTarget.value));
         deleteTarget.value = null;
-        popupMessage.value = "Image deleted successfully!";
+        popupMessage.value = "Image has been deleted";
         // reload gallery
         await loadGallery();
         // keep popup visible for success message

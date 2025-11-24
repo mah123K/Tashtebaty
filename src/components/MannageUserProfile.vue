@@ -271,7 +271,7 @@
 
     <div
       v-if="showPopup"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      class="fixed inset-0 bg-[#0000009b] bg-opacity-50 flex items-center justify-center z-50 p-4"
     >
       <div
         class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-sm text-center"

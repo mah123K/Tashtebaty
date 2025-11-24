@@ -10,7 +10,7 @@
     >
       <div class="navbar-start items-center gap-2">
         <router-link to="/" class="flex items-center space-x-2 rtl:space-x-reverse">
-          <img :src="logoSrc" alt="Logo" class="w-[180px] mt-3" />
+          <img :src="logoSrc" alt="Logo" class="w-[180px] " />
         </router-link>
       </div>
 
