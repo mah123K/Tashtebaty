@@ -22,7 +22,7 @@
     <img
       :src="service.image"
       :alt="texts[lang].technicianDashboard.services?.imageAlt || 'service icon'"
-      class="w-[120px] h-[120px] object-contain"
+      class="rounded-2xl object-cover h-50"
     />
     <h2 class="font-semibold">{{ service.descreption }}</h2>
     <h2 class="font-bold text-[#6897D4] dark:text-white">{{ service.price }} EGP</h2>
