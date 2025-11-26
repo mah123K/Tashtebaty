@@ -328,11 +328,7 @@ watch(messages, async () => {
 
 </script>
 
-<!-- 
-  Note: This <style> tag is NOT scoped.
-  This is intentional so the animations and scrollbar apply correctly.
-  If you move this to a scoped tag, you may need to use :deep() selectors.
--->
+
 <style>
 /* Animation for the chat window */
 .slide-up-enter-active,

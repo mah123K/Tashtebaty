@@ -409,9 +409,6 @@
             <div
               class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
             >
-              <p class="text-white text-sm md:text-base font-medium">
-                {{ image.alt }}
-              </p>
             </div>
           </div>
         </div>
@@ -437,10 +434,10 @@
         </div>
 
         <div
-          class="flex cursor-pointer items-center gap-4 bg-(--surface) shadow-md border border-(--border) rounded-2xl px-6 py-4 hover:shadow-lg transition-all duration-300 w-64"
+          class="flex cursor-pointer items-center bg-(--surface) shadow-md border border-(--border) rounded-2xl px-6 py-4 hover:shadow-lg transition-all duration-300 w-64"
         >
           <div
-            class="flex items-center justify-center w-12 h-12 bg-(--accent)/10 text-(--accent) rounded-full text-xl"
+            class="mr-1 flex items-center justify-center w-12 h-12 bg-(--accent)/10 text-(--accent) rounded-full text-xl"
           >
             <i class="fa-solid fa-envelope"></i>
           </div>
@@ -448,7 +445,7 @@
             <h3 class="text-lg font-semibold text-(--text-primary)">
               {{ texts[lang].home.contactInfo.email }}
             </h3>
-            <span class="text-(--text-muted) text-sm">tashtebaty12@gmail.com</span>
+            <span class="text-(--text-muted) text-sm">support@tashtebaty.com</span>
           </div>
         </div>
 
@@ -464,7 +461,7 @@
             <h3 class="text-lg font-semibold text-(--text-primary)">
               {{ texts[lang].home.contactInfo.address }}
             </h3>
-            <span class="text-(--text-muted) text-sm">XYZ Street</span>
+            <span class="text-(--text-muted) text-sm">talaat harb Street</span>
           </div>
         </div>
       </div>
@@ -680,22 +677,22 @@ onMounted(() => {
       size: "small",
     },
     {
-      src: "https://res.cloudinary.com/dlrgf0myy/image/upload/v1760888695/service-maintenance-worker-repairing_slghmb.jpg",
+      src: new URL('@/images/Rectangle 21.png', import.meta.url).href,
       alt: "Work 3",
       size: "small",
     },
     {
-      src: "https://res.cloudinary.com/dlrgf0myy/image/upload/v1760702374/image_6_y3qk8x.jpg",
+      src: new URL('@/images/w1.png', import.meta.url).href,
       alt: "Work 4",
       size: "large",
     },
     {
-      src: "https://res.cloudinary.com/dlrgf0myy/image/upload/v1760888695/service-maintenance-worker-repairing_slghmb.jpg",
+      src: new URL('@/images/w4.png', import.meta.url).href,
       alt: "Work 5",
       size: "small",
     },
     {
-      src: "https://res.cloudinary.com/dlrgf0myy/image/upload/v1760702374/image_6_y3qk8x.jpg",
+      src: new URL('@/images/work3.jpg', import.meta.url).href,
       alt: "Work 6",
       size: "large",
     },
