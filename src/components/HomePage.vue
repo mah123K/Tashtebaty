@@ -345,6 +345,7 @@
         
     </section>
 
+
     <section class="work-gallery mt-16 bg-(--section) py-10">
       <div class="text-center mb-10">
         <h2 class="text-3xl md:text-4xl font-semibold text-accent-color mb-2">

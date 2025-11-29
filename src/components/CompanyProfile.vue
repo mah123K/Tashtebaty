@@ -779,7 +779,7 @@ watch(selectedDayInfo, () => {
                         />
                       </div>
                       <h2 class="font-bold mb-4 text-lg md:text-xl text-gray-800 dark:text-white">
-                        Custom Service
+                        Request for inspection
                       </h2>
                       <button
                         @click="openPopup()"
@@ -839,7 +839,7 @@ watch(selectedDayInfo, () => {
         >
           &times;
         </button>
-        <h2 class="text-2xl font-semibold mb-6 text-accent-color">Inspection Fee</h2>
+        <h2 class="text-2xl font-semibold mb-6 text-accent-color">Inspection Order</h2>
         <div class="subContainer flex flex-col md:flex-row gap-6">
           <div class="orderDetails w-full md:w-1/2 space-y-4">
             <div class="flex flex-col items-start">
