@@ -29,32 +29,7 @@
           </router-link>
         </div>
 
-        <div
-          v-if="userId"
-          class="bg-gradient-to-br w-full mx-auto from-purple-600 to-pink-500 rounded-2xl p-8 text-white shadow-2xl hover:scale-105 transition duration-300"
-        >
-          <div class="flex flex-col items-center justify-between gap-6">
-            <div class="flex-1 text-center">
-              <h2 class="text-2xl md:text-3xl font-bold mb-2">{{ texts[lang].offersPage.banner2.title }}</h2>
-              <p class="text-lg opacity-90">
-                {{ texts[lang].offersPage.banner2.text }}
-              </p>
-            </div>
-
-            <div
-              class="bg-white/10 backdrop-blur-md rounded-2xl px-8 py-6 border-2 border-white/30"
-            >
-              <div class="text-3xl md:text-4xl font-black">100 EGP</div>
-              <div class="text-sm font-semibold mt-1">{{ texts[lang].offersPage.banner2.subtitle }}</div>
-            </div>
-
-            <button
-              class="bg-white text-purple-600 px-8 py-4 rounded-full font-semibold hover:shadow-xl transition transform hover:scale-105 flex items-center space-x-2 rtl:space-x-reverse whitespace-nowrap"
-            >
-              <span>{{ texts[lang].offersPage.banner2.button }}</span>
-            </button>
-          </div>
-        </div>
+        
       </div>
     </div>
 

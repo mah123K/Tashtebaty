@@ -839,7 +839,6 @@ const submitOrder = async () => {
       appliedOffer: selectedOffer.value
         ? {
             docId: selectedOffer.value.docId || selectedOffer.value.id,
-            id: selectedOffer.value.id,
             title: selectedOffer.value.title,
             discountType: selectedOffer.value.discountType || "flat",
             discountValue: selectedOffer.value.discountValue || 0,
