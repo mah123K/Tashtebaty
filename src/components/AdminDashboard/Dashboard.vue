@@ -117,79 +117,34 @@
           </span>
         </div>
 
-        <!-- Top Craftsmen -->
-        <div class="mb-4 sm:mb-6">
-          <h3 class="text-sm sm:text-base lg:text-lg font-medium text-gray-800 dark:text-gray-200 mb-2 sm:mb-3">
-            {{ texts[lang].adminDashboard.providers.craftsmen }}
-          </h3>
-
-          <div class="space-y-2 sm:space-y-3">
-            <div v-if="!topProviders.filter(p => p.type === 'Technician').length" class="text-gray-500 dark:text-gray-300 text-sm">
-              {{ texts[lang].adminDashboard.dashboard.noProviders }}
-            </div>
-
-            <div
-              v-for="p in topProviders.filter(p => p.type === 'Technician')"
-              :key="p.id"
-              class="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-            >
-              <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden flex items-center justify-center bg-[#dedede] dark:bg-gray-800 border-2 border-[#5984C6] dark:border-[#8db4ff]">
-                <img :src="p.image || defaultAvatar" @error="(e)=>e.target.src=defaultAvatar" class="w-full h-full object-cover" />
-              </div>
-
-              <div class="flex-1 min-w-0">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                  <div class="truncate">
-                    <p class="font-semibold text-xs sm:text-sm lg:text-base">{{ p.name }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-300">{{ p.type }}</p>
-                  </div>
-
-                  <div class="text-right mt-1 sm:mt-0">
-                    <p class="font-semibold text-xs sm:text-sm">{{ p.rating?.toFixed(2) || '0.00' }}</p>
-                    <div class="text-yellow-400 text-xs">★</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+        <!-- Top Providers -->
+        <div class="space-y-2 sm:space-y-3">
+          <div v-if="!topProviders.length" class="text-gray-500 dark:text-gray-300 text-sm">
+            {{ texts[lang].adminDashboard.dashboard.noProviders }}
           </div>
-        </div>
 
-        <!-- Top Companies -->
-        <div>
-          <h3 class="text-sm sm:text-base lg:text-lg font-medium text-gray-800 dark:text-gray-200 mb-2 sm:mb-3">
-            {{ texts[lang].adminDashboard.providers.company }}
-          </h3>
-
-          <div class="space-y-2 sm:space-y-3">
-            <div v-if="!topProviders.filter(p => p.type === 'Company').length" class="text-gray-500 dark:text-gray-300 text-sm">
-              {{ texts[lang].adminDashboard.dashboard.noProviders }}
+          <div
+            v-for="p in topProviders"
+            :key="p.id"
+            class="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+          >
+            <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden flex items-center justify-center bg-[#dedede] dark:bg-gray-800 border-2 border-[#5984C6] dark:border-[#8db4ff]">
+              <img :src="p.image || defaultAvatar" @error="(e)=>e.target.src=defaultAvatar" :class="p.type === 'Company' ? 'w-full h-full object-contain' : 'w-full h-full object-cover'" />
             </div>
 
-            <div
-              v-for="p in topProviders.filter(p => p.type === 'Company')"
-              :key="p.id"
-              class="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-            >
-              <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-full overflow-hidden flex items-center justify-center bg-[#dedede] dark:bg-gray-800 border-2 border-[#5984C6] dark:border-[#8db4ff]">
-                <img :src="p.image || defaultAvatar" @error="(e)=>e.target.src=defaultAvatar" class="w-full h-full object-contain" />
-              </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div class="truncate">
+                  <p class="font-semibold text-xs sm:text-sm lg:text-base">{{ p.name }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-300">{{ p.type }}</p>
+                </div>
 
-              <div class="flex-1 min-w-0">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                  <div class="truncate">
-                    <p class="font-semibold text-xs sm:text-sm lg:text-base">{{ p.name }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-300">{{ p.type }}</p>
-                  </div>
-
-                  <div class="text-right mt-1 sm:mt-0">
-                    <p class="font-semibold text-xs sm:text-sm">{{ p.rating?.toFixed(2) || '0.00' }}</p>
-                    <div class="text-yellow-400 text-xs">★</div>
-                  </div>
+                <div class="text-right mt-1 sm:mt-0 flex items-center justify-end">
+                  <p class="font-semibold text-xs sm:text-sm mr-1">{{ p.rating?.toFixed(2) || '0.00' }}</p>
+                  <div class="text-yellow-400 text-xs">★</div>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
 
@@ -426,7 +381,7 @@ export default {
               });
             });
             // Sort technicians by rating and take top 3
-            const topTechs = list.sort((a,b) => (b.rating || 0) - (a.rating || 0)).slice(0, 3);
+            const topTechs = list.filter(p => p.rating > 0).sort((a,b) => b.rating - a.rating).slice(0, 3);
             // Merge with top companies
             const comps = topProviders._companiesCache || [];
             topProviders.value = topTechs.concat(comps);
@@ -449,9 +404,9 @@ export default {
               });
             });
             // Sort companies by rating and take top 2
-            const topComps = list.sort((a,b) => (b.rating || 0) - (a.rating || 0)).slice(0, 2);
+            const topComps = list.filter(p => p.rating > 0).sort((a,b) => b.rating - a.rating).slice(0, 2);
             // Merge with top technicians
-            const techs = topProviders._techCache?.sort((a,b) => (b.rating || 0) - (a.rating || 0)).slice(0, 3) || [];
+            const techs = (topProviders._techCache || []).filter(p => p.rating > 0).sort((a,b) => b.rating - a.rating).slice(0, 3);
             topProviders.value = techs.concat(topComps);
             // cache companies
             topProviders._companiesCache = list;
