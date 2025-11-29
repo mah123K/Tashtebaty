@@ -289,7 +289,7 @@
     </div>
 
     <transition name="fade">
-      <div v-if="showPopup" class="fixed inset-0 bg-[#000000d0] flex items-center justify-center z-50">
+      <div v-if="showPopup" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50">
         <div class="bg-white rounded-2xl p-8 w-[90%] max-w-md shadow-lg text-center">
           <h2 class="text-2xl font-semibold text-[#133B5D] mb-4">{{ texts[lang].myOrdersPage.paymentPopup.confirm }}</h2>
 
@@ -497,11 +497,12 @@ const confirmPayment = async () => {
     const id = selectedOrder.value.id;
     const amount = Number(selectedOrder.value.price) || 0;
 
-    // 🟡 بدل "upcoming" نخليها مؤقتًا pending_payment
     const orderRef = doc(db, "orders", id);
-    await updateDoc(orderRef, { status: "pending_payment" });
 
-    // 🟦 تغيير اللينك → /api/pay (Fix #1)
+    // ← هنا: force update to "upcoming" immediately (test site hack)
+    await updateDoc(orderRef, { status: "upcoming" });
+
+    // Call backend to create payment iframe / token
     const response = await fetch("/api/pay", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -516,19 +517,19 @@ const confirmPayment = async () => {
     const data = await response.json();
 
     if (!response.ok || !data.url) {
-      // ❌ لو الدفع فشل → رجّع الحالة unconfirmed (Fix #2)
+      // If pay request failed, revert to unconfirmed
       await updateDoc(orderRef, { status: "unconfirmed" });
       triggerAlert(getT()?.myOrdersPage?.alerts?.paymentFailed || "Payment request failed.");
       return;
     }
 
-    // 🚀 لو نجح → روح لصفحة الدفع
+    // Redirect to iframe/payment page
     window.location.href = data.url;
 
   } catch (err) {
     console.error("Error:", err);
 
-    // ❌ رجّع الأوردر لحالته الطبيعية (Fix #2)
+    // revert on unexpected error
     try {
       await updateDoc(doc(db, "orders", selectedOrder.value.id), { status: "unconfirmed" });
     } catch (_) {}
@@ -539,6 +540,7 @@ const confirmPayment = async () => {
     selectedOrder.value = null;
   }
 };
+
 
 
 // 🟦 Open cancel confirmation
