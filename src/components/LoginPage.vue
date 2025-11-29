@@ -14,11 +14,13 @@
         class="absolute left-[10%] md:left-[15%] lg:left-[20%] top-5 md:top-8 lg:top-10 bottom-5 md:bottom-8 lg:bottom-20 w-[80%] md:w-[75%] lg:w-[70%] bg-[#5984C6] rounded-l-3xl rtl:rounded-l-none rtl:rounded-r-3xl rtl:left-auto rtl:right-[10%] md:rtl:right-[15%] lg:rtl:right-[20%]"
       ></div>
 
+      <img src="../images/white logo.png" alt="" class="hidden lg:block absolute z-50 top-15 left-70 w-80">
       <img
         src="https://res.cloudinary.com/dhmzl1tb0/image/upload/v1760978847/worker.png_siviza.png"
         alt="Worker"
-        class="absolute bottom-5 md:bottom-8 lg:bottom-20 left-[20px] md:left-[50px] lg:left-[70px] h-[40vh] md:h-[45vh] lg:h-[80vh] object-contain z-10 rtl:left-auto rtl:right-[20px] md:rtl:right-[50px] lg:rtl:right-[70px]"
+        class="absolute bottom-5 md:bottom-8 lg:bottom-20 left-[20px] md:left-[50px] lg:left-[70px] h-[40vh] md:h-[45vh] lg:h-[75vh] object-contain z-10 rtl:left-auto rtl:right-[20px] md:rtl:right-[50px] lg:rtl:right-[70px]"
       />
+      
 
       <div
         class="absolute text-white text-3xl md:text-4xl lg:text-5xl font-bold z-20 left-1/2 top-[30%] md:top-[28%] lg:top-[30%] transform -translate-y-1/2 rtl:text-center rtl:left-1/2 rtl:right-auto rtl:translate-x-[-30%] rtl:top-[25%] rtl-hero-title"
