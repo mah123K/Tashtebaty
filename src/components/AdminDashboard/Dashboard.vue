@@ -100,7 +100,7 @@
           {{ texts[lang].adminDashboard.dashboard.monthlyRevenue }}
         </h2>
 
-        <div class="w-full h-48 sm:h-64 lg:h-80 xl:h-96">
+        <div class="w-full h-48 sm:h-64 lg:h-80 xl:h-115">
           <canvas id="revenueChart" class="w-full h-full"></canvas>
         </div>
       </div>

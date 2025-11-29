@@ -12,8 +12,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-8 md:gap-6 lg:gap-8">
 
       <!-- ADD / EDIT FORM -->
-      <div class="md:col-span-1">
-        <div class="sticky top-4 bg-white dark:bg-[#1f2937] rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div class="md:col-span-1 min-h-[600px] flex flex-col">
+        <div class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden flex-1">
           <div class="bg-linear-to-r from-[#5984C6] to-[#7ba3d9] px-4 sm:px-6 py-4 sm:py-5">
             <h2 class="text-lg sm:text-xl font-bold text-white">
               {{ isEditing ? 'Edit Offer' : texts[lang].adminDashboard.offers.addNewOffer }}
@@ -149,8 +149,8 @@
       </div>
 
       <!-- EXISTING OFFERS LIST -->
-      <div class="md:col-span-1">
-        <div class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div class="md:col-span-1 min-h-[600px] flex flex-col">
+        <div class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden flex-1 flex flex-col">
           <div class="bg-linear-to-r from-[#5984C6] to-[#7ba3d9] px-4 sm:px-6 py-4 sm:py-5">
             <h2 class="text-lg sm:text-xl font-bold text-white">
               {{ texts[lang].adminDashboard.offers.currentOffers }}
@@ -158,7 +158,7 @@
             <p class="text-xs sm:text-sm text-blue-100 mt-1">{{ offers.length }} active offers</p>
           </div>
 
-          <div class="p-4 sm:p-6">
+          <div class="p-4 sm:p-6 flex-1" :class="offers.length > 3 ? 'max-h-[500px] overflow-y-auto' : ''">
             <div v-if="isLoading" class="text-center py-12">
               <div class="animate-spin rounded-full h-10 w-10 border-4 border-[#5984C6] border-t-[#7ba3d9] mx-auto mb-4"></div>
               <p class="text-gray-600 dark:text-gray-400 text-sm">{{ texts[lang].adminDashboard.offers.loading }}</p>
@@ -479,7 +479,7 @@ const fetchCategories = async () => {
 const fetchOffers = async () => {
   isLoading.value = true;
   try {
-    const q = query(offersCollection);
+    const q = query(offersCollection, orderBy('createdAt', 'desc'));
     const snap = await getDocs(q);
     offers.value = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }));
     // ensure arrays exist

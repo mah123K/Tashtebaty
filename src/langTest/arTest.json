@@ -821,7 +821,8 @@
       "dateTimeLabel": "التاريخ والوقت",
       "saveChanges": "حفظ التغييرات",
       "deleteConfirmText": "هل أنت متأكد من أنك تريد حذف هذا الطلب؟",
-      "cancel": "إلغاء"
+      "cancel": "إلغاء",
+      "noOrders": "لا توجد طلبات بعد"
     },
     "payments": {
       "title": "إدارة المدفوعات",
@@ -873,7 +874,9 @@
         "declined": "مرفوض",
         "cancelled": "ملغى",
         "new": "جديد"
-      }
+  
+      },
+            "noPayments": "لا توجد مدفوعات بعد"
     },
 
     "services": {
@@ -967,7 +970,8 @@
       "close": "إغلاق",
       "loadingTickets": "جار تحميل التذاكر...",
       "noTickets": "لم يتم العثور على تذاكر.",
-      "viewMessage": "عرض الرسالة"
+      "viewMessage": "عرض الرسالة",
+        "adminRead": "تم قراءة الرسالة"
     },
     "providers": {
       "title": "إدارة مقدمي الخدمات",
@@ -1052,7 +1056,8 @@
         "idCardImage": "صورة بطاقة الهوية",
         "crnImage": "صورة السجل التجاري",
         "teamSize": "حجم الفريق"
-      }
+      },
+      "noProvidersYet": "لا يوجد مزودين بعد"
     },
     "serviceCategoryCard": {
       "status": "الحالة",

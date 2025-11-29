@@ -69,6 +69,11 @@
         {{ texts[lang].adminDashboard.payments.loading }}
       </div>
 
+      <!-- No Payments -->
+      <div v-else-if="filteredPayments.length === 0" class="text-center py-6 text-gray-400 dark:text-gray-300">
+        {{ texts[lang].adminDashboard.payments.noPayments }}
+      </div>
+
       <!-- TABLE - Desktop -->
       <div v-else class="hidden md:block">
         <table class="min-w-full text-xs sm:text-sm text-gray-700 dark:text-gray-200">
@@ -460,14 +465,20 @@ export default {
 
   computed: {
     filteredPayments() {
+      const searchTerm = this.searchQuery.toLowerCase().trim();
+
       return this.payments
         .filter((payment) => {
-          const q = this.searchQuery.toLowerCase();
-
-          const matchesSearch =
-            payment.customer.toLowerCase().includes(q) ||
-            payment.orderId.toLowerCase().includes(q) ||
-            payment.method.toLowerCase().includes(q);
+          const matchesSearch = searchTerm === '' || (
+            payment.id.toLowerCase().includes(searchTerm) ||
+            payment.customer.toLowerCase().includes(searchTerm) ||
+            payment.orderId.toLowerCase().includes(searchTerm) ||
+            payment.amount.toString().toLowerCase().includes(searchTerm) ||
+            payment.method.toLowerCase().includes(searchTerm) ||
+            payment.date.toLowerCase().includes(searchTerm) ||
+            payment.time.toLowerCase().includes(searchTerm) ||
+            payment.status.toLowerCase().includes(searchTerm)
+          );
 
           const matchesStatus =
             this.filterStatus === "All" || payment.status === this.filterStatus;

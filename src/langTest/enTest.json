@@ -645,7 +645,7 @@
     },
   "adminDashboard": {
     "sidebar": {
-      "title": "Tashtibaty Admin",
+      "title": "Tashtebaty Admin",
       "dashboard": "Dashboard",
       "users": "Users",
       "services": "Services",
@@ -762,7 +762,8 @@
       "dateTimeLabel": "Date & Time",
       "saveChanges": "Save Changes",
       "deleteConfirmText": "Are you sure you want to delete this order?",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "noOrders": "No orders yet"
     },
     "payments": {
       "title": "Payment Management",
@@ -814,7 +815,8 @@
         "declined": "Declined",
         "cancelled": "Cancelled",
         "new": "New"
-      }
+      },
+      "noPayments": "No payments yet"
     },
     "providers": {
       "title": "Provider Management",
@@ -899,7 +901,8 @@
         "idCardImage": "ID Card Image",
         "crnImage": "CRN Image",
         "teamSize": "Team Size"
-      }
+      },
+      "noProvidersYet": "No providers yet"
     },
     "services": {
       "title": "Service Categories",
@@ -992,7 +995,8 @@
       "close": "Close",
       "loadingTickets": "Loading tickets...",
       "noTickets": "No tickets found.",
-      "viewMessage": "View Message"
+      "viewMessage": "View Message",
+      "adminRead": "Admin Read"
     },
     "serviceCategoryCard": {
       "status": "Status",

@@ -234,6 +234,13 @@
           </tr>
         </tbody>
       </table>
+
+      <div
+        v-if="filteredCompanies.length === 0"
+        class="text-center py-6 text-gray-500 dark:text-gray-300"
+      >
+        {{ texts[lang].adminDashboard.providers.noProvidersYet }}
+      </div>
     </div>
 
     <!-- Companies Cards - Mobile -->
@@ -507,6 +514,13 @@
           </tr>
         </tbody>
       </table>
+
+      <div
+        v-if="filteredCraftsmen.length === 0"
+        class="text-center py-6 text-gray-500 dark:text-gray-300"
+      >
+        {{ texts[lang].adminDashboard.providers.noProvidersYet }}
+      </div>
     </div>
 
     <!-- Craftsmen Cards - Mobile -->

@@ -129,18 +129,19 @@
 
 
           <!-- Language Switch -->
-          <!-- <button
+          <button
             ref="langButton"
             @click="toggleLanguage"
-            class="group relative h-9 w-9 rounded-full border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-[#5984C6] dark:hover:border-[#5984C6] transition-colors duration-200 language-switch-button"
+            class="group relative h-9 w-9 rounded-full border  border-[#5984C6] dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-[#5984C6] dark:hover:border-[#5984C6] transition-colors duration-200 language-switch-button"
             :title="texts[lang]?.adminDashboard?.sidebar?.switchToEnglish || 'Switch language'"
           >
             <i
               ref="langIcon"
-              class="fa-solid fa-language absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-600 transition-all duration-500 dark:text-gray-100 group-hover:text-[#5984C6] dark:group-hover:text-white"
+              class="fa-solid fa-globe absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[#5984C6] transition-all duration-500 dark:text-gray-100 group-hover:text-[#5984C6] dark:group-hover:text-white"
             ></i>
+               <i class="fa-solid fa-globe "></i>
             <span class="sr-only">Toggle language</span>
-          </button> -->
+          </button>
 
 
 
@@ -194,7 +195,7 @@
           <!-- Profile button -->
           <div
             @click.stop="toggleUserMenu"
-            class="w-10 h-10 flex items-center justify-center bg-gray-200 rounded-full hover:bg-[#5984C6] transition-all duration-300 cursor-pointer overflow-hidden"
+            class="w-12 h-12 ml-4 flex items-center justify-center bg-gray-200 rounded-full hover:bg-[#5984C6] transition-all duration-300 cursor-pointer overflow-hidden"
           >
             <img
               v-if="userPhoto && userPhoto !== 'null' && !userPhoto.startsWith('undefined')"
@@ -219,16 +220,16 @@
           >
             <div class="flex flex-col items-center py-4 border-b border-gray-200">
               <div
-                class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center border border-gray-300 dark:border-gray-600 overflow-hidden"
+                class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center border border-gray-300 dark:border-gray-600 overflow-hidden"
               >
-                <img 
-                  v-if="userPhoto && userPhoto !== 'null' && !userPhoto.startsWith('undefined')" 
-                  :src="userPhoto" 
-                  alt="profile" 
+                <img
+                  v-if="userPhoto && userPhoto !== 'null' && !userPhoto.startsWith('undefined')"
+                  :src="userPhoto"
+                  alt="profile"
                   class="w-full h-full object-cover"
-                  @error="handleImageError" 
+                  @error="handleImageError"
                 />
-                <i v-else class="bi bi-person text-2xl text-gray-500"></i>
+                <i v-else class="bi bi-person text-xl text-gray-500"></i>
               </div>
               <h3 class="text-gray-800 dark:text-gray-100 font-medium mt-2">{{ userName || 'Admin' }}</h3>
               <p class="text-gray-500 dark:text-gray-300 text-sm">{{ userEmail }}</p>
@@ -815,7 +816,10 @@ export default {
     })
 
     // 🟧 قائمة المستخدم
-    const toggleUserMenu = () => isUserMenuOpen.value = !isUserMenuOpen.value
+    const toggleUserMenu = () => {
+      isNotifOpen.value = false;
+      isUserMenuOpen.value = !isUserMenuOpen.value;
+    }
     const closeMenu = () => isUserMenuOpen.value = false
 
     const handleClickOutside = (e) => {
@@ -876,33 +880,33 @@ export default {
       localStorage.setItem("theme", next)
     }
 
-    // const toggleLanguage = () => {
-    //   isLanguageSwitching.value = true
+    const toggleLanguage = () => {
+      isLanguageSwitching.value = true
 
-    //   const next = lang.value === "ar" ? "en" : "ar"
-    //   const isClockwise = next === "ar" // Clockwise for English to Arabic
+      const next = lang.value === "ar" ? "en" : "ar"
+      const isClockwise = next === "ar" // Clockwise for English to Arabic
 
-    //   // Add rotation class to icon
-    //   if (langIcon.value) {
-    //     langIcon.value.classList.add(isClockwise ? 'rotate-animate-clockwise' : 'rotate-animate-counterclockwise')
-    //   }
+      // Add rotation class to icon
+      if (langIcon.value) {
+        langIcon.value.classList.add(isClockwise ? 'rotate-animate-clockwise' : 'rotate-animate-counterclockwise')
+      }
 
-    //   switchLang(next)
+      switchLang(next)
 
-    //   document.documentElement.lang = next
-    //   document.documentElement.dir = next === "ar" ? "rtl" : "ltr"
+      document.documentElement.lang = next
+      document.documentElement.dir = next === "ar" ? "rtl" : "ltr"
 
-    //   localStorage.setItem("lang", next)
+      localStorage.setItem("lang", next)
 
-    //   // إنهاء الانيميشن بعد انتهاء الدوران
-    //   setTimeout(() => {
-    //     isLanguageSwitching.value = false
-    //     // Remove rotation class after animation
-    //     if (langIcon.value) {
-    //       langIcon.value.classList.remove('rotate-animate-clockwise', 'rotate-animate-counterclockwise')
-    //     }
-    //   }, 600) // Slightly longer than animation duration
-    // }
+      // إنهاء الانيميشن بعد انتهاء الدوران
+      setTimeout(() => {
+        isLanguageSwitching.value = false
+        // Remove rotation class after animation
+        if (langIcon.value) {
+          langIcon.value.classList.remove('rotate-animate-clockwise', 'rotate-animate-counterclockwise')
+        }
+      }, 600) // Slightly longer than animation duration
+    }
 
     const handleImageError = (event) => {
       userPhoto.value = null
@@ -911,7 +915,10 @@ export default {
     }
 
     // Notifications
-    const toggleNotifMenu = () => isNotifOpen.value = !isNotifOpen.value
+    const toggleNotifMenu = () => {
+      isUserMenuOpen.value = false;
+      isNotifOpen.value = !isNotifOpen.value;
+    }
 
     // Sidebar toggle functions
     const toggleSidebar = () => {
@@ -933,8 +940,8 @@ export default {
     return {
       lang,
       texts,
-      // switchLang,
-      // toggleLanguage,
+      switchLang,
+      toggleLanguage,
       email,
       password,
       handleSignIn,

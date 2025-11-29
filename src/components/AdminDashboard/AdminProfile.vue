@@ -5,7 +5,7 @@
         <h2 class="text-2xl font-semibold text-[#5984C6] dark:text-[#8db4ff]">{{ texts.adminDashboard?.adminProfile?.title || 'Admin Profile' }}</h2>
         
         <!-- Language Switch -->
-        <button
+        <!-- <button
           ref="langButton"
           @click="toggleLanguage"
           class="group relative h-9 w-9 rounded-full border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-[#5984C6] dark:hover:border-[#5984C6] transition-colors duration-200 language-switch-button"
@@ -16,7 +16,7 @@
             class="fa-solid fa-language absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-600 transition-all duration-500 dark:text-gray-100 group-hover:text-[#5984C6] dark:group-hover:text-white"
           ></i>
           <span class="sr-only">Toggle language</span>
-        </button>
+        </button> -->
       </div>
       
       <!-- Loading -->
@@ -89,7 +89,7 @@
           <button
             @click="updateProfile"
             :disabled="saving"
-            class="w-full bg-[#5984C6] text-white py-2 rounded-lg hover:bg-[#4a6ea8] transition disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full bg-[#5984C6] text-white py-2 rounded-lg hover:bg-[#4a6ea8] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {{ saving ? (texts.adminDashboard?.adminProfile?.saving || 'Saving...') : (texts.adminDashboard?.adminProfile?.saveChanges || 'Save Changes') }}
           </button>
@@ -110,6 +110,7 @@ import { auth, db } from "../../firebase/firebase";
 import { getDoc, doc, setDoc } from "firebase/firestore";
 import { updateProfile, reload } from "firebase/auth";
 import { useTestLang } from "@/langTest/useTestLang";
+import { uploadImageOnly } from "../../composables/useImageUpload";
 
 export default {
   name: "AdminProfile",
@@ -122,248 +123,14 @@ export default {
 
     const name = ref("");
     const email = ref("");
-    const photoURL = ref(null);
-    const photoPublicId = ref(null);
-    const file = ref(null);
-    const loading = ref(true);
-    const saving = ref(false);
+    const photoURL = ref("");
+    const fileInput = ref(null);
     const successMessage = ref("");
     const errorMessage = ref("");
-    const fileInput = ref(null);
 
-    // Load user data
-    const loadUserData = async () => {
-      const user = auth.currentUser;
-      if (!user) {
-        loading.value = false;
-        return;
-      }
+    const loading = ref(true);
+    const saving = ref(false);
 
-      await reload(user);
-
-      email.value = user.email;
-      name.value = user.displayName || "Admin";
-
-      const docRef = doc(db, "admin", user.uid);
-      const snap = await getDoc(docRef);
-      if (snap.exists()) {
-        const data = snap.data();
-        name.value = data.name || name.value;
-
-        if (data.photoURL && data.photoURL !== "null" && !data.photoURL.startsWith("undefined")) {
-          photoURL.value = data.photoURL;
-        } else {
-          photoURL.value = null;
-        }
-
-        if (data.photoPublicId) {
-          photoPublicId.value = data.photoPublicId;
-        }
-      } else {
-        if (user.photoURL && user.photoURL !== "null" && !user.photoURL.startsWith("undefined")) {
-          photoURL.value = user.photoURL;
-        } else {
-          photoURL.value = null;
-        }
-      }
-      loading.value = false;
-    };
-
-    const triggerFileInput = () => {
-      if (fileInput.value) fileInput.value.click();
-    };
-
-    const handleImageError = (event) => {
-      photoURL.value = null;
-      event.target.style.display = "none";
-    };
-
-    const onFileChange = (e) => {
-      const selectedFile = e.target.files[0];
-      if (!selectedFile) {
-        errorMessage.value =
-          texts.value.adminDashboard?.adminProfile?.noFileSelected ||
-          "No file selected";
-        return;
-      }
-
-      if (!selectedFile.type.startsWith("image/")) {
-        errorMessage.value =
-          texts.value.adminDashboard?.adminProfile?.selectValidImage ||
-          "Please select a valid image file";
-        if (fileInput.value) fileInput.value.value = "";
-        return;
-      }
-
-      const maxSize = 5 * 1024 * 1024;
-      if (selectedFile.size > maxSize) {
-        errorMessage.value =
-          texts.value.adminDashboard?.adminProfile?.imageSizeError ||
-          "Image size should be less than 5MB";
-        if (fileInput.value) fileInput.value.value = "";
-        return;
-      }
-
-      try {
-        file.value = selectedFile;
-        photoURL.value = URL.createObjectURL(selectedFile);
-        errorMessage.value = "";
-        successMessage.value =
-          texts.value.adminDashboard?.adminProfile?.imageSelected ||
-          "Image selected successfully";
-      } catch (error) {
-        console.error("Error handling file:", error);
-        errorMessage.value = "Error processing image. Please try again.";
-        file.value = null;
-        photoURL.value = null;
-        if (fileInput.value) fileInput.value.value = "";
-      }
-    };
-
-    const clearImageCaches = async () => {
-      if (photoURL.value) {
-        const timestamp = Date.now();
-        await updateProfile(auth.currentUser, {
-          photoURL: `null?t=${timestamp}`,
-        });
-
-        localStorage.removeItem("adminPhoto");
-        sessionStorage.removeItem("adminPhoto");
-
-        if (photoURL.value.startsWith("blob:")) {
-          URL.revokeObjectURL(photoURL.value);
-        }
-
-        const img = document.querySelector('img[alt="Profile"]');
-        if (img) {
-          img.src = "";
-        }
-      }
-
-      if (fileInput.value) {
-        fileInput.value.value = "";
-      }
-
-      photoURL.value = null;
-      file.value = null;
-    };
-
-    const deleteProfileImage = async () => {
-      try {
-        const user = auth.currentUser;
-        if (!user) {
-          errorMessage.value =
-            texts.value.adminDashboard?.adminProfile?.loginFirst ||
-            "Please log in first";
-          return;
-        }
-
-        saving.value = true;
-        errorMessage.value = "";
-        successMessage.value = "";
-
-        const timestamp = Date.now();
-
-        if (photoPublicId.value) {
-          try {
-            const { deleteImage } = await import(
-              "../../composables/useImageUpload"
-            );
-            await deleteImage(photoPublicId.value);
-          } catch (deleteError) {
-            console.error("Error deleting from Cloudinary:", deleteError);
-          }
-        }
-
-        photoURL.value = null;
-        photoPublicId.value = null;
-        file.value = null;
-
-        localStorage.removeItem("adminPhoto");
-        sessionStorage.removeItem("adminPhoto");
-
-        window.dispatchEvent(
-          new CustomEvent("adminProfileChanged", {
-            detail: {
-              name: name.value,
-              photoURL: null,
-              timestamp,
-              forceUpdate: true,
-            },
-          })
-        );
-
-        document.querySelectorAll('img[alt="Profile"]').forEach((img) => {
-          if (img.src.startsWith("blob:")) {
-            URL.revokeObjectURL(img.src);
-          }
-          img.src = "";
-          img.style.display = "none";
-        });
-
-        if (fileInput.value) {
-          fileInput.value.value = "";
-        }
-
-        await updateProfile(user, {
-          photoURL: null,
-        });
-
-        const refDoc = doc(db, "admin", user.uid);
-        await setDoc(
-          refDoc,
-          {
-            photoURL: null,
-            photoPublicId: null,
-            lastImageUpdate: timestamp,
-          },
-          { merge: true }
-        );
-
-        await reload(user);
-
-        window.dispatchEvent(
-          new CustomEvent("adminProfileChanged", {
-            detail: {
-              name: name.value,
-              photoURL: null,
-              timestamp: Date.now(),
-              forceUpdate: true,
-            },
-          })
-        );
-
-        successMessage.value =
-          texts.value.adminDashboard?.adminProfile?.success ||
-          "Profile picture removed successfully";
-      } catch (error) {
-        console.error("Error removing profile picture:", error);
-        errorMessage.value =
-          texts.value.adminDashboard?.adminProfile?.error ||
-          "Error removing profile picture";
-
-        try {
-          const storedPhoto = localStorage.getItem("adminPhoto");
-          if (storedPhoto) {
-            photoURL.value = storedPhoto;
-            window.dispatchEvent(
-              new CustomEvent("adminProfileChanged", {
-                detail: {
-                  name: name.value,
-                  photoURL: storedPhoto,
-                  timestamp: Date.now(),
-                  forceUpdate: true,
-                },
-              })
-            );
-          }
-        } catch (e) {
-          console.error("Failed to revert changes:", e);
-        }
-      } finally {
-        saving.value = false;
-      }
-    };
 
     const toggleLanguage = () => {
       isLanguageSwitching.value = true;
@@ -397,104 +164,148 @@ export default {
       }, 600);
     };
 
-    const updateProfile = async () => {
+    // Load profile data
+    const loadProfile = async () => {
       try {
         const user = auth.currentUser;
-        if (!user) {
-          errorMessage.value = texts.value.adminDashboard?.adminProfile?.loginFirst || 'Please log in first';
-          return;
-        }
+        if (user) {
+          email.value = user.email || "";
+          name.value = user.displayName || "";
+          photoURL.value = user.photoURL || "";
 
-        saving.value = true;
-        errorMessage.value = "";
-        successMessage.value = "";
-
-        let newPhotoURL = photoURL.value;
-        let newPhotoPublicId = photoPublicId.value;
-
-        if (file.value) {
-          try {
-            const { uploadImageOnly } = await import("../../composables/useImageUpload");
-            const uploadResult = await uploadImageOnly(file.value);
-
-            if (uploadResult && uploadResult.url) {
-              newPhotoURL = uploadResult.url;
-              newPhotoPublicId = uploadResult.publicId || null;
-            } else {
-              throw new Error("Invalid upload result");
-            }
-          } catch (uploadError) {
-            console.error("Error uploading to Cloudinary:", uploadError);
-            errorMessage.value = `Upload failed: ${uploadError.message || 'Unknown error'}`;
-            saving.value = false;
-            return;
+          // Also check Firestore for additional data
+          const adminDoc = await getDoc(doc(db, 'admin', user.uid));
+          if (adminDoc.exists()) {
+            const data = adminDoc.data();
+            if (data.name) name.value = data.name;
+            if (data.photoURL) photoURL.value = data.photoURL;
           }
         }
-
-        await updateProfile(user, {
-          displayName: name.value,
-          photoURL: newPhotoURL,
-        });
-
-        const refDoc = doc(db, "admin", user.uid);
-        await setDoc(refDoc, {
-          name: name.value,
-          photoURL: newPhotoURL,
-          photoPublicId: newPhotoPublicId
-        }, { merge: true });
-
-        photoURL.value = newPhotoURL;
-        photoPublicId.value = newPhotoPublicId;
-        localStorage.setItem("adminPhoto", newPhotoURL);
-        localStorage.setItem("adminName", name.value);
-
-        const event = new CustomEvent("adminProfileChanged", {
-          detail: { name: name.value, photoURL: newPhotoURL },
-        });
-        window.dispatchEvent(event);
-
-        successMessage.value = texts.value.adminDashboard?.adminProfile?.changesSaved || 'Changes saved successfully';
-
-        if (fileInput.value) {
-          fileInput.value.value = '';
-        }
-        file.value = null;
-
-      } catch (err) {
-        console.error("Error updating profile:", err);
-        errorMessage.value = texts.value.adminDashboard?.adminProfile?.saveError || 'Error saving changes';
+      } catch (error) {
+        console.error("Error loading profile:", error);
+        errorMessage.value = "Failed to load profile data.";
       } finally {
-        saving.value = false;
-        setTimeout(() => {
-          successMessage.value = "";
-          errorMessage.value = "";
-        }, 3000);
+        loading.value = false;
       }
     };
 
-    onMounted(() => {
-      loadUserData();
+    // Trigger file input
+    const triggerFileInput = () => {
+      if (fileInput.value) {
+        fileInput.value.click();
+      }
+    };
+
+    // Handle file change
+    const onFileChange = async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        errorMessage.value = "Please select a valid image file.";
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        errorMessage.value = "Image size must be less than 5MB.";
+        return;
+      }
 
       try {
-        const saved = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const hasClass = document.documentElement.classList.contains('dark');
-        const target = saved ? saved : (prefersDark ? 'dark' : 'light');
+        errorMessage.value = "";
+        successMessage.value = "Uploading image...";
 
-        if ((hasClass && target === 'dark') || (!hasClass && target === 'light')) {
-          // do nothing
-        } else {
-          if (target === 'dark') {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            document.documentElement.classList.add('dark');
-          } else {
-            document.documentElement.removeAttribute('data-theme');
-            document.documentElement.classList.remove('dark');
-          }
-        }
-      } catch (e) {
-        console.error("Error setting theme:", e);
+        const imageUrl = await uploadImageOnly(file);
+        photoURL.value = imageUrl;
+
+        successMessage.value = "Image uploaded successfully!";
+        setTimeout(() => successMessage.value = "", 3000);
+      } catch (error) {
+        console.error("Upload failed:", error);
+        errorMessage.value = "Failed to upload image. Please try again.";
+        successMessage.value = "";
       }
+    };
+
+    // Delete profile image
+    const deleteProfileImage = async () => {
+      try {
+        photoURL.value = "";
+        successMessage.value = "Profile image removed.";
+        setTimeout(() => successMessage.value = "", 3000);
+      } catch (error) {
+        console.error("Error removing image:", error);
+        errorMessage.value = "Failed to remove image.";
+      }
+    };
+
+    // Handle image error
+    const handleImageError = (event) => {
+      photoURL.value = "";
+      event.target.style.display = "none";
+    };
+
+    // Update profile
+    const updateProfile = async () => {
+      if (saving.value) return; // Prevent multiple calls
+
+      if (!name.value.trim()) {
+        errorMessage.value = "Name is required.";
+        return;
+      }
+
+      saving.value = true;
+      errorMessage.value = "";
+      successMessage.value = "";
+
+      try {
+        const user = auth.currentUser;
+        if (!user) throw new Error("No user logged in");
+
+        // Update Firebase Auth
+        await updateProfile(user, {
+          displayName: name.value,
+          photoURL: photoURL.value || null,
+        });
+
+        // Update Firestore
+        await setDoc(doc(db, 'admin', user.uid), {
+          name: name.value,
+          photoURL: photoURL.value || null,
+          updatedAt: new Date(),
+        }, { merge: true });
+
+        // Update localStorage
+        localStorage.setItem('adminName', name.value);
+        if (photoURL.value) {
+          localStorage.setItem('adminPhoto', photoURL.value);
+        } else {
+          localStorage.removeItem('adminPhoto');
+        }
+
+        // Dispatch event to update sidebar
+        window.dispatchEvent(new CustomEvent('adminProfileChanged', {
+          detail: {
+            name: name.value,
+            photoURL: photoURL.value,
+          }
+        }));
+
+        successMessage.value = "Profile updated successfully!";
+        setTimeout(() => successMessage.value = "", 3000);
+      } catch (error) {
+        console.error("Update failed:", error);
+        errorMessage.value = "Failed to update profile. Please try again.";
+      } finally {
+        saving.value = false;
+      }
+    };
+
+    // Load profile on mount
+    onMounted(() => {
+      loadProfile();
     });
 
     return {
@@ -506,20 +317,18 @@ export default {
       name,
       email,
       photoURL,
-      photoPublicId,
-      file,
-      loading,
-      saving,
+      fileInput,
       successMessage,
       errorMessage,
-      fileInput,
-      triggerFileInput,
-      handleImageError,
-      onFileChange,
-      clearImageCaches,
-      deleteProfileImage,
-      updateProfile,
+      loading,
+      saving,
+
       toggleLanguage,
+      triggerFileInput,
+      onFileChange,
+      deleteProfileImage,
+      handleImageError,
+      updateProfile,
     };
   }
 };

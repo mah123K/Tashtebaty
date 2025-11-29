@@ -97,11 +97,11 @@
              <!-- Admin Read Button -->
   <button
     @click="adminReadTicket(ticket.id)"
-    class="flex items-center gap-1 p-2 rounded-lg text-blue-600 hover:bg-blue-100 transition"
-    :title="texts[lang].adminDashboard.support.adminReadTicket"
+    class="flex items-center gap-1 p-2 rounded-lg text-blue-600 hover:bg-blue-100 transition" 
+    :title="texts[lang].adminDashboard.support.adminRead"
   >
     <i class="bi bi-check-circle"></i>
-    <span class="text-xs font-semibold">{{ texts[lang].adminDashboard.support.adminRead }}</span>
+    
   </button>
 </td>
          
