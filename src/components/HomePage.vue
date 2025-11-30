@@ -509,7 +509,7 @@ import { ref, onMounted, onBeforeUnmount, computed, watch, onUnmounted } from 'v
 import { useTestLang } from "@/langTest/useTestLang";
 const { lang, texts, switchLang } = useTestLang();
 import { db } from '@/firebase/firebase';
-import { collection, getDocs, query, limit,setDoc ,doc } from 'firebase/firestore';
+import { collection, getDocs, query, limit,setDoc ,doc,orderBy } from 'firebase/firestore';
 import ChatBot from './chatbot/ChatBot.vue';
 import confetti from "canvas-confetti";
 import { useRouter } from "vue-router";
@@ -705,7 +705,7 @@ const goToSlide = (index) => {
 const fetchOffers = async () => {
   try {
     const offersCollection = collection(db, "offers");
-    const q = query(offersCollection, limit(4));
+    const q = query(offersCollection, orderBy("createdAt", "desc"),limit(4));
     const querySnapshot = await getDocs(q);
     const fetchedOffers = [];
     querySnapshot.forEach((doc) => {

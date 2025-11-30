@@ -614,10 +614,18 @@ onMounted(() => {
   onAuthStateChanged(auth, (user) => {
     if (user) {
       const q = query(collection(db, "orders"), where("clientId", "==", user.uid));
-      onSnapshot(q, (snap) => {
-        orders.value = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        loading.value = false;
-      });
+     onSnapshot(q, (snap) => {
+  orders.value = snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => {
+      const da = a.createdAt?.toMillis?.() || a.timestamp?.toMillis?.() || 0;
+      const db = b.createdAt?.toMillis?.() || b.timestamp?.toMillis?.() || 0;
+      return db - da; // ترتيب من الأحدث → الأقدم
+    });
+
+  loading.value = false;
+});
+
 
       // Load existing ratings by this client to prevent duplicates
       const rq = query(collection(db, "Ratings"), where("clientId", "==", user.uid));
