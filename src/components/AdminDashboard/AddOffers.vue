@@ -158,7 +158,7 @@
             <p class="text-xs sm:text-sm text-blue-100 mt-1">{{ offers.length }} active offers</p>
           </div>
 
-          <div class="p-4 sm:p-6 flex-1" :class="offers.length > 3 ? 'max-h-[500px] overflow-y-auto' : ''">
+          <div class="p-4 sm:p-6 flex-1" :class="offers.length > 3 ? 'max-h-[560px] overflow-y-auto' : ''">
             <div v-if="isLoading" class="text-center py-12">
               <div class="animate-spin rounded-full h-10 w-10 border-4 border-[#5984C6] border-t-[#7ba3d9] mx-auto mb-4"></div>
               <p class="text-gray-600 dark:text-gray-400 text-sm">{{ texts[lang].adminDashboard.offers.loading }}</p>

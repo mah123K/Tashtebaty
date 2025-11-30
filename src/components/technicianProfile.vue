@@ -1005,10 +1005,7 @@ onMounted(async () => {
             .filter((r) => {
               const techId = technicianIdParam;
               return (
-                r.technicianId === techId ||
-                r.technicianID === techId ||
-                r.providerId === techId ||
-                r.providerID === techId
+                r.providerId === techId 
               );
             })
             .map((r) => ({
@@ -1037,19 +1034,10 @@ onMounted(async () => {
 
         // 'Ratings' collection
         const ratingsRefA = collection(db, "Ratings");
-        const rqAFallback = query(ratingsRefA, where("technicianId", "==", technicianIdParam));
+        const rqAFallback = query(ratingsRefA, where("providerId", "==", technicianIdParam));
         onSnapshot(rqAFallback, (snapA) => {
-          const itemsA = mapRatings(snapA.docs).map((x) => ({ ...x, __src: "ratingsA" }));
-          feedbacks.value = mergeAndSort(itemsA, feedbacks.value.filter((x) => x.__src !== "ratingsA"));
-          if (currentIndex.value >= feedbacks.value.length) currentIndex.value = 0;
-        });
-
-        // 'ratings' (lowercase) for backward compatibility
-        const ratingsRefB = collection(db, "ratings");
-        const rqBFallback = query(ratingsRefB, where("technicianId", "==", technicianIdParam));
-        onSnapshot(rqBFallback, (snapB) => {
-          const itemsB = mapRatings(snapB.docs).map((x) => ({ ...x, __src: "ratingsB" }));
-          feedbacks.value = mergeAndSort(feedbacks.value.filter((x) => x.__src !== "ratingsB"), itemsB);
+          const itemsA = mapRatings(snapA.docs).map((x) => ({ ...x, __src: "RatingsA" }));
+          feedbacks.value = mergeAndSort(itemsA, feedbacks.value.filter((x) => x.__src !== "RatingsA"));
           if (currentIndex.value >= feedbacks.value.length) currentIndex.value = 0;
         });
       } catch (e) {
@@ -1555,13 +1543,13 @@ watch(selectedDayInfo, () => {
       >
         <button
           @click="prevFeedback"
-          class="absolute left-[-20px] md:left-0 top-1/2 -translate-y-1/2 text-3xl md:text-4xl text-accent-color hover:text-[#4a74b3] transition z-10 p-2 md:p-4 opacity-70 hover:opacity-100"
+          class="absolute -left-5 md:left-0 top-1/2 -translate-y-1/2 text-3xl md:text-4xl text-accent-color hover:text-[#4a74b3] transition z-10 p-2 md:p-4 opacity-70 hover:opacity-100"
         >
           &#10094;
         </button>
         <button
           @click="nextFeedback"
-          class="absolute right-[-20px] md:right-0 top-1/2 -translate-y-1/2 text-3xl md:text-4xl text-accent-color hover:text-[#4a74b3] transition z-10 p-2 md:p-4 opacity-70 hover:opacity-100"
+          class="absolute -right-5 md:right-0 top-1/2 -translate-y-1/2 text-3xl md:text-4xl text-accent-color hover:text-[#4a74b3] transition z-10 p-2 md:p-4 opacity-70 hover:opacity-100"
         >
           &#10095;
         </button>
@@ -1572,7 +1560,7 @@ watch(selectedDayInfo, () => {
             class="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover shadow-lg mb-4 border-4 border-white"
             alt="Customer photo"
           />
-          <p class="text-xl md:text-2xl font-semibold text-gray-800">
+          <p class="text-xl md:text-2xl font-semibold text-(--accent)">
             {{ feedbacks[currentIndex].name }}
           </p>
           <div class="flex justify-center my-2 text-yellow-400 text-lg md:text-xl">

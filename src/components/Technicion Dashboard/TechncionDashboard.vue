@@ -192,7 +192,7 @@ onMounted(() => {
 const listenForReviews = () => {
   if (!technicianId.value) return;
  const reviewsRef = collection(db, "Ratings");
-  const q = query(reviewsRef, where("technicianId", "==", technicianId.value));
+  const q = query(reviewsRef, where("providerId", "==", technicianId.value));
   onSnapshot(q, (snapshot) => {
     reviews.value = snapshot.docs.map((doc) => ({
       id: doc.id,
