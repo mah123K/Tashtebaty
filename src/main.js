@@ -48,6 +48,8 @@ import Support from "./components/AdminDashboard/Support.vue";
 import Settings from "./components/AdminDashboard/Settings.vue";
 import AdminProfile from "./components/AdminDashboard/AdminProfile.vue";
 import AddOffer from "./components/AdminDashboard/AddOffers.vue";
+import AdminChatPage from "./components/AdminDashboard/AdminChatPage.vue";
+
 
 // Technician Dashboard
 import TechncionDashboard from "./components/Technicion Dashboard/TechncionDashboard.vue";
@@ -118,6 +120,11 @@ const routes = [
         path: "adminprofile",
         name: "AdminProfile",
         component: AdminProfile,
+      },
+      {
+        path: "chats",
+        name: "AdminChats",
+        component: AdminChatPage,
         meta: { requiresAdmin: true },
       },
     ],

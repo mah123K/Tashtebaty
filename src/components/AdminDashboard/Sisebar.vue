@@ -96,6 +96,16 @@
             <i class="bi bi-tags"></i>
             <span>{{ texts[lang]?.adminDashboard?.sidebar?.offers || 'Offers' }}</span>
           </router-link>
+
+          <RouterLink
+            to="/dashboard/chats"
+            class="flex items-center px-4 py-3 text-sm text-gray-200 hover:bg-[#111827] rounded-xl"
+            active-class="bg-[#111827]"
+          >
+            <i class="fa-solid fa-comments mr-3"></i>
+            <span>Chats</span>
+          </RouterLink>
+
         </nav>
       </div>
 
