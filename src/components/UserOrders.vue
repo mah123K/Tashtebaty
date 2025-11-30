@@ -337,15 +337,15 @@
 
     <!-- ⭐ Rating popup -->
     <transition name="fade">
-      <div v-if="showRatePopup" class="fixed inset-0 bg-[#000000d0] flex items-center justify-center z-50">
-        <div class="bg-white rounded-2xl p-8 w-[90%] max-w-md shadow-lg text-center">
-          <h2 class="text-2xl font-semibold text-[#133B5D] mb-4">{{ texts[lang].myOrdersPage.ratePopup.title.replace('{providerType}', getOrderProviderLabel(ratingOrder)) }}</h2>
+      <div v-if="showRatePopup" class="fixed inset-0 bg-[#000000d0] flex items-center justify-center z-50 ">
+        <div class="bg-white dark:bg-[#16222B] dark:text-white rounded-2xl p-8 w-[90%] max-w-md shadow-lg text-center">
+          <h2 class="text-2xl font-semibold text-[#133B5D] dark:text-white mb-4">{{ texts[lang].myOrdersPage.ratePopup.title.replace('{providerType}', getOrderProviderLabel(ratingOrder)) }}</h2>
 
-          <p class="text-gray-700 mb-4">
+          <p class="text-gray-700 dark:text-white mb-4">
             <span class="font-semibold">{{ getOrderProviderLabel(ratingOrder) }}:</span>
             {{ getOrderProviderName(ratingOrder) }}
           </p>
-          <p class="text-gray-700 mb-4">
+          <p class="text-gray-700 dark:text-white mb-4">
             <span class="font-semibold">{{ texts[lang].myOrdersPage.paymentPopup.service }}</span>
             {{ getTranslatedName(ratingOrder?.serviceTitle) || texts[lang].myOrdersPage.card.service }}
           </p>
